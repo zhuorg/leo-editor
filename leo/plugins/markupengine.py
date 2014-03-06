@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:peckj.20140305081017.6794: * @file markupengine.py
+#@+node:peckj.20140306074510.22537: * @file markupengine.py
 #@@language python
 #@@tabwidth -4
 
@@ -107,6 +107,7 @@ class MarkupEngineController:
         
         self.c = c
         self.markup_engines = {}
+        self.markup_aliases = {}
         self.initialize_markup_engines()
 
     #@+node:peckj.20140305081017.6822: *4* initialize_markup_engines
@@ -115,6 +116,7 @@ class MarkupEngineController:
         if got_docutils:
             rme = RSTMarkupEngine(self.c)
             self.markup_engines['rst'] = rme
+            self.markup_aliases['rest'] = 'rst'
         if got_markdown:
             mde = MDMarkupEngine(self.c)
             self.markup_engines['md'] = mde
@@ -129,19 +131,23 @@ class MarkupEngineController:
             type of markup given as 'name', or None, if not 
             supported
         '''
+        if name in self.markup_aliases.keys():
+            name = self.markup_aliases[name]
         return self.markup_engines.get(name, None)
     #@+node:peckj.20140305081017.6824: *3* get_html
-    def get_html(self, rootNode, subtree=False, sections=False, showCode=False, 
-                 executeCode=False, codeReturnsMarkup=False, slideshow=False, 
+    def get_html(self, rootNode, subtreeMode=None, showCode=False, 
+                 executeCode=False, codeReturnsMarkup=False, 
                  verbose=False, assets=None, headers=None, mode='rst'):
         ''' explanation of arguments:
             rootNode: root node of the tree to be rendered, or just the node to be rendered
-            subtree: render the subtree?
-            sections: honor @others, @all, and < < sections > >?
+            subtreeMode: one of 'inorder', 'sections', 'slideshow', or None
+                         inorder -> subtree in order, ignoring @others and < < sections > >
+                         sections -> expanded value of rootNode, ignoring headlines
+                         slideshow -> same as inorder, but output formatted as a slideshow
+                         None -> just the single rootNode
             showCode: render code in a <pre> block?
             executeCode: run any @language python nodes?
             codeReturnsMarkup: any executed code returns markup
-            slideshow: generate output as a slideshow?
             verbose: extra logging and output of intermediate files
             assets: a list of .js and .css files to include in the headers
             headers: custom text inserted verbatim into the headers
@@ -154,9 +160,39 @@ class MarkupEngineController:
         result = None
         engine = self.get_engine(mode)
         if engine:
-            result = engine.get_html(rootNode, subtree=subtree, sections=sections, showCode=showCode,
+            result = engine.get_html(rootNode, subtreeMode=subtreeMode, showCode=showCode,
                                      executeCode=executeCode, codeReturnsMarkup=codeReturnsMarkup, 
-                                     slideshow=slideshow, verbose=verbose, assets=assets, headers=headers)
+                                     verbose=verbose, assets=assets, headers=headers)
+        else:
+            g.es("%s not supported!" % mode, color='red')
+        return result
+        
+    #@+node:peckj.20140306074510.22568: *3* get_markup
+    def get_markup(self, rootNode, subtreeMode=None, showCode=False, 
+                 executeCode=False, codeReturnsMarkup=False, 
+                 verbose=False, mode='rst'):
+        ''' explanation of arguments:
+            rootNode: root node of the tree to be rendered, or just the node to be rendered
+            subtreeMode: one of 'inorder', 'sections', or None
+                         inorder -> subtree in order, ignoring @others and < < sections > >
+                         sections -> expanded value of rootNode, ignoring headlines
+                         None -> just the single rootNode
+            showCode: render code in a <pre> block?
+            executeCode: run any @language python nodes?
+            codeReturnsMarkup: any executed code returns markup
+            verbose: extra logging and output of intermediate files
+            mode: incoming markup language, used to delegate to a proper MarkupEngine instance
+      
+            delegates to a MarkupEngine instance that does the fancy stuff that vr2 currently does, returning
+            a constructed markup string
+        '''
+        
+        result = None
+        engine = self.get_engine(mode)
+        if engine:
+            result = engine.get_markup(rootNode, subtreeMode=subtreeMode, showCode=showCode,
+                                     executeCode=executeCode, codeReturnsMarkup=codeReturnsMarkup, 
+                                     verbose=verbose)
         else:
             g.es("%s not supported!" % mode, color='red')
         return result
@@ -166,9 +202,13 @@ class MarkupEngineController:
 #@+at
 # These classes must provide the following function with this sigature:
 # 
-#     get_html(rootNode, subtree, sections, showCodee,
+#     get_html(rootNode, subtreeMode, showCode,
 #              executeCode, codeReturnsMarkup, 
-#              slideshow, verbose, assets, headers)
+#              verbose, assets, headers)
+#     
+#     get_markup(rootNode, subtreeMode, showCode,
+#                executeCode, codeReturnsMarkup,
+#                verbose)
 # 
 #     See MarkupEngineController.get_html() for details on these params.
 #@+node:peckj.20140305081017.6818: *3* class RSTMarkupEngine
@@ -186,16 +226,16 @@ class MDMarkupEngine:
         self.c = c
         self.name = 'Markdown MarkupEngine' # not terribly useful
     #@+node:peckj.20140305081017.6849: *4* get_html
-    def get_html(self, rootNode, subtree=False, sections=False, showCode=False, 
-                 executeCode=False, codeReturnsMarkup=False, slideshow=False, 
+    def get_html(self, rootNode, subtreeMode=None, showCode=False, 
+                 executeCode=False, codeReturnsMarkup=False,  
                  verbose=False, assets=None, headers=None):
         self.rootNode = rootNode.copy()
-        self.subtree = subtree
+        self.subtreeMode = subtreeMode
         self.sections = sections
         self.showCode = showCode
         self.executeCode = executeCode
         self.codeReturnsMarkup = codeReturnsMarkup
-        self.slideshow = slideshow # unused
+        self.slideshow = (subtreeMode == 'slideshow') # unused
         self.verbose = verbose
         self.assets = assets
         self.headers = headers
@@ -252,7 +292,7 @@ class MDMarkupEngine:
         result = []
         environment = {'c': c, 'g': g, 'p': c.p}
         self.process_one_node(root,result,environment)
-        if self.subtree:
+        if self.subtreeMode in ['inorder', 'slideshow']:
             for p in root.subtree():
                 self.process_one_node(p,result,environment)
         s = '\n'.join(result)
@@ -381,6 +421,20 @@ class MDMarkupEngine:
         f = open(pathname,'wb')
         f.write(s.encode('utf8'))
         f.close()
+    #@+node:peckj.20140306074510.22566: *4* get_markup
+    def get_markup(self, rootNode, subtreeMode=None, showCode=False, 
+                 executeCode=False, codeReturnsMarkup=False,  
+                 verbose=False):
+        self.rootNode = rootNode.copy()
+        self.subtreeMode = subtreeMode
+        self.sections = sections
+        self.showCode = showCode
+        self.executeCode = executeCode
+        self.codeReturnsMarkup = codeReturnsMarkup
+        self.verbose = verbose
+        self.slideshow = False
+        
+        markup = self.process_nodes()
     #@-others
 #@-others
 #@-leo
