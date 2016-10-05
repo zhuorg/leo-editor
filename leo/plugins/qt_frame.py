@@ -12,6 +12,8 @@ import leo.core.leoFrame as leoFrame
 import leo.core.leoMenu as leoMenu
 import leo.commands.gotoCommands as gotoCommands
 from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
+if g.qtdock:
+    from leo.core.leoQt import QtConst
 from leo.core.leoQt import Qsci
 import leo.plugins.qt_events as qt_events
 import leo.plugins.qt_text as qt_text
@@ -21,14 +23,15 @@ import os
 import sys
 import platform
 from collections import defaultdict
-try:
-    import leo.plugins.nested_splitter as nested_splitter
-    splitter_class = nested_splitter.NestedSplitter
-    nested_splitter.NestedSplitter.enabled = False
-        # Disable special behavior, turned back on by associated plugin.
-except ImportError:
-    print('Can not import nested_splitter')
-    splitter_class = QtWidgets.QSplitter
+if not g.qtdock:
+    try:
+        import leo.plugins.nested_splitter as nested_splitter
+        splitter_class = nested_splitter.NestedSplitter
+        nested_splitter.NestedSplitter.enabled = False
+            # Disable special behavior, turned back on by associated plugin.
+    except ImportError:
+        print('Can not import nested_splitter')
+        splitter_class = QtWidgets.QSplitter
 #@-<< imports >>
 #@+others
 #@+node:ekr.20110605121601.18137: ** class  DynamicWindow (QtWidgets.QMainWindow)
@@ -100,7 +103,11 @@ class DynamicWindow(QtWidgets.QMainWindow):
         # g.pr('DynamicWindw.__init__,ui_description_file)
         assert g.os_path_exists(ui_description_file)
         self.bigTree = c.config.getBool('big_outline_pane')
-        main_splitter, secondary_splitter = self.createMainWindow()
+
+        if g.qtdock:
+            self.createMainWindow()
+        else:
+            main_splitter, secondary_splitter = self.createMainWindow()
         self.iconBar = self.addToolBar("IconBar")
         self.set_icon_bar_orientation(c)
         # #266 A setting to hide the icon bar.
@@ -110,8 +117,9 @@ class DynamicWindow(QtWidgets.QMainWindow):
         self.leo_menubar = self.menuBar()
         self.statusBar = QtWidgets.QStatusBar()
         self.setStatusBar(self.statusBar)
-        orientation = c.config.getString('initial_split_orientation')
-        self.setSplitDirection(main_splitter, secondary_splitter, orientation)
+        if not g.qtdock:
+            orientation = c.config.getString('initial_split_orientation')
+            self.setSplitDirection(main_splitter, secondary_splitter, orientation)
         if hasattr(c, 'styleSheetManager'):
             c.styleSheetManager.set_style_sheets(top=self, all=True)
     #@+node:ekr.20140915062551.19519: *4* dw.set_icon_bar_orientation
@@ -137,6 +145,30 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw = self
         self.leo_ui = self
         self.setMainWindowOptions()
+
+        if g.qtdock:
+            self.verticalLayout = self.createVLayout(self, 'mainVLayout', margin=3)
+
+            body = QtWidgets.QDockWidget("Body")
+            log = QtWidgets.QDockWidget("Log")
+            tree = QtWidgets.QDockWidget("Tree")
+
+            body.setWidget(self.createBodyPane(None))
+            log.setWidget(self.createLogPane(None))
+            tree.setWidget(self.createOutlinePane(None))
+
+            for i in tree, log, body:
+                dw.addDockWidget(QtConst.TopDockWidgetArea, i)
+
+            self.centralwidget = QtWidgets.QWidget()
+            self.setCentralWidget(self.centralwidget)
+
+            self.createMiniBuffer(self.centralwidget)
+            self.createMenuBar()
+            self.createStatusBar(dw)
+
+            return
+
         self.createCentralWidget()
         main_splitter, secondary_splitter = self.createMainLayout(self.centralwidget)
             # Creates .verticalLayout
@@ -181,13 +213,17 @@ class DynamicWindow(QtWidgets.QMainWindow):
         sw.addWidget(page2)
         innerGrid.addWidget(sw, 0, 0, 1, 1)
         grid.addWidget(innerFrame, 0, 0, 1, 1)
-        self.verticalLayout.addWidget(parent)
+        if not g.qtdock:
+            self.verticalLayout.addWidget(parent)
         # Official ivars
         self.text_page = page2
         self.stackedWidget = sw # used by LeoQtBody
         self.richTextEdit = body
         self.leo_body_frame = bodyFrame
         self.leo_body_inner_frame = innerFrame
+
+        if g.qtdock:
+            return bodyFrame
     #@+node:ekr.20110605121601.18144: *5* dw.createCentralWidget
     def createCentralWidget(self):
         '''Create the central widget.'''
@@ -230,6 +266,9 @@ class DynamicWindow(QtWidgets.QMainWindow):
         tabWidget.setCurrentIndex(1)
         # Official ivars
         self.tabWidget = tabWidget # Used by LeoQtLog.
+
+        if g.qtdock:
+            return logFrame
     #@+node:ekr.20131118172620.16858: *6* dw.finishCreateLogPane
     def finishCreateLogPane(self):
         '''It's useful to create this late, because c.config is now valid.'''
@@ -321,10 +360,17 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw = self
         dw.setObjectName("MainWindow")
         dw.resize(691, 635)
-        dw.setDockNestingEnabled(False)
-        dw.setDockOptions(
-            QtWidgets.QMainWindow.AllowTabbedDocks |
-            QtWidgets.QMainWindow.AnimatedDocks)
+        if not g.qtdock:
+            dw.setDockNestingEnabled(False)
+            dw.setDockOptions(
+                QtWidgets.QMainWindow.AllowTabbedDocks |
+                QtWidgets.QMainWindow.AnimatedDocks)
+        else:
+            # dw.setDockNestingEnabled() redundant
+            dw.setDockOptions(
+                QtWidgets.QMainWindow.AllowNestedDocks |
+                QtWidgets.QMainWindow.AllowTabbedDocks |
+                QtWidgets.QMainWindow.AnimatedDocks)
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
     #@+node:ekr.20110605121601.18153: *5* dw.createButton
     def createButton(self, parent, name, label):
@@ -2540,6 +2586,11 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20110605121601.18283: *4* qtFrame.divideLeoSplitter1/2
     def divideLeoSplitter1(self, frac):
         '''Divide the main splitter.'''
+
+        if g.qtdock:
+            print("QTDOCK: divideLeoSplitter1() not implemented")
+            return
+
         free_layout = self.c and self.c.free_layout
         w = free_layout.get_main_splitter()
         if w:
@@ -2547,6 +2598,11 @@ class LeoQtFrame(leoFrame.LeoFrame):
 
     def divideLeoSplitter2(self, frac):
         '''Divide the secondary splitter.'''
+
+        if g.qtdock:
+            print("QTDOCK: divideLeoSplitter2() not implemented")
+            return
+
         free_layout = self.c and self.c.free_layout
         w = free_layout.get_secondary_splitter()
         if w:
@@ -2878,6 +2934,9 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20160424080815.2: *4* qtFrame.ratio property
     def __get_ratio(self):
         '''Return splitter ratio of the main splitter.'''
+        if g.qtdock:
+            print("QTDOCK: __get_ratio() not implemented")
+            return 0.5
         trace = False and not g.unitTesting
         c = self.c
         free_layout = c.free_layout
@@ -2899,6 +2958,9 @@ class LeoQtFrame(leoFrame.LeoFrame):
     #@+node:ekr.20160424080815.3: *4* qtFrame.secondary_ratio property
     def __get_secondary_ratio(self):
         '''Return the splitter ratio of the secondary splitter.'''
+        if g.qtdock:
+            print("QTDOCK: __get_secondary_ratio() not implemented")
+            return 0.5
         trace = False and not g.unitTesting
         c = self.c
         free_layout = c.free_layout

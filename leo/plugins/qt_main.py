@@ -10,8 +10,15 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(691, 635)
-        MainWindow.setDockNestingEnabled(False)
-        MainWindow.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks | QtGui.QMainWindow.AnimatedDocks)
+        if g.qtdock:
+            # MainWindow.setDockNestingEnabled() redundant
+            MainWindow.setDockOptions(
+                QtGui.QMainWindow.AllowNestedDocks |
+                QtGui.QMainWindow.AllowTabbedDocks |
+                QtGui.QMainWindow.AnimatedDocks)
+        else:
+            MainWindow.setDockNestingEnabled(False)
+            MainWindow.setDockOptions(QtGui.QMainWindow.AllowTabbedDocks | QtGui.QMainWindow.AnimatedDocks)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)

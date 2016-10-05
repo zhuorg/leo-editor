@@ -322,8 +322,9 @@ class Commands(object):
         self.cacher = leoCache.Cacher(c)
         self.cacher.initFileDB(self.mFileName)
         self.undoer = leoUndo.Undoer(self)
-        import leo.plugins.free_layout as free_layout
-        self.free_layout = free_layout.FreeLayoutController(c)
+        if not g.qtdock:
+            import leo.plugins.free_layout as free_layout
+            self.free_layout = free_layout.FreeLayoutController(c)
         if hasattr(g.app.gui, 'styleSheetManagerClass'):
             self.styleSheetManager = g.app.gui.styleSheetManagerClass(c)
         else:
