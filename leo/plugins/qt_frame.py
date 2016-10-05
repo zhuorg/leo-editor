@@ -150,7 +150,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             self.verticalLayout = self.createVLayout(self, 'mainVLayout', margin=3)
 
             body = QtWidgets.QDockWidget("Body")
-            log = QtWidgets.QDockWidget("Log")
+            log = self.log_dock = QtWidgets.QDockWidget("Log")
             tree = QtWidgets.QDockWidget("Tree")
 
             body.setWidget(self.createBodyPane(None))
@@ -160,6 +160,31 @@ class DynamicWindow(QtWidgets.QMainWindow):
             dw.addDockWidget(QtConst.TopDockWidgetArea, tree)
             dw.addDockWidget(QtConst.TopDockWidgetArea, body)
             dw.splitDockWidget(tree, log, QtConst.Vertical)
+
+            if 0:
+                # Find
+
+                # Embed the Find tab in a QScrollArea.
+                findScrollArea = QtWidgets.QScrollArea()
+                findScrollArea.setObjectName('findScrollArea')
+                # Find tab.
+                findTab = QtWidgets.QDockWidget("Find")
+                findTab.setObjectName('findTab')
+                findTab.setWidget(findScrollArea)
+                # Do this later, in LeoFind.finishCreate
+                self.findScrollArea = findScrollArea
+                self.findTab = findTab
+
+                dw.addDockWidget(QtConst.TopDockWidgetArea, findTab)
+                dw.tabifyDockWidget(self.log_dock, findTab)
+
+            # Spell
+
+            spellTab = QtWidgets.QDockWidget("Spell")
+            spellTab.setObjectName('spellTab')
+            spellTab.setWidget(self.createSpellTab(None))
+            dw.addDockWidget(QtConst.TopDockWidgetArea, spellTab)
+            dw.tabifyDockWidget(self.log_dock, spellTab)
 
             # self.centralwidget = QtWidgets.QWidget()
             # self.setCentralWidget(self.centralwidget)
@@ -256,21 +281,23 @@ class DynamicWindow(QtWidgets.QMainWindow):
         innerGrid.addWidget(tabWidget, 0, 0, 1, 1)
         outerGrid = self.createGrid(logFrame, 'logGrid')
         outerGrid.addWidget(innerFrame, 0, 0, 1, 1)
-        # Embed the Find tab in a QScrollArea.
-        findScrollArea = QtWidgets.QScrollArea()
-        findScrollArea.setObjectName('findScrollArea')
-        # Find tab.
-        findTab = QtWidgets.QWidget()
-        findTab.setObjectName('findTab')
-        tabWidget.addTab(findScrollArea, 'Find')
-        # Do this later, in LeoFind.finishCreate
-        self.findScrollArea = findScrollArea
-        self.findTab = findTab
-        # Spell tab.
-        spellTab = QtWidgets.QWidget()
-        spellTab.setObjectName('spellTab')
-        tabWidget.addTab(spellTab, 'Spell')
-        self.createSpellTab(spellTab)
+        if True or not g.qtdock:
+            # Embed the Find tab in a QScrollArea.
+            findScrollArea = QtWidgets.QScrollArea()
+            findScrollArea.setObjectName('findScrollArea')
+            # Find tab.
+            findTab = QtWidgets.QWidget()
+            findTab.setObjectName('findTab')
+            tabWidget.addTab(findScrollArea, 'Find')
+            # Do this later, in LeoFind.finishCreate
+            self.findScrollArea = findScrollArea
+            self.findTab = findTab
+        if not g.qtdock:
+            # Spell tab.
+            spellTab = QtWidgets.QWidget()
+            tabWidget.addTab(spellTab, 'Spell')
+            self.createSpellTab(spellTab)
+            spellTab.setObjectName('spellTab')
         tabWidget.setCurrentIndex(1)
         # Official ivars
         self.tabWidget = tabWidget # Used by LeoQtLog.
@@ -562,6 +589,8 @@ class DynamicWindow(QtWidgets.QMainWindow):
         self.leo_spell_widget = parent # 2013/09/20: To allow bindings to be set.
         self.leo_spell_listBox = listBox # Must exist
         self.leo_spell_label = lab # Must exist (!!)
+        if g.qtdock:
+            return spellFrame
     #@+node:ekr.20110605121601.18166: *5* dw.createFindTab & helpers
     def createFindTab(self, parent, tab_widget):
         '''Create a Find Tab in the given parent.'''
@@ -592,6 +621,8 @@ class DynamicWindow(QtWidgets.QMainWindow):
         # Official ivars (in addition to checkbox ivars).
         self.leo_find_widget = tab_widget # A scrollArea.
         ftm.init_widgets()
+        if g.qtdock:
+            return tab_widget
     #@+node:ekr.20131118152731.16847: *6* dw.create_find_grid
     def create_find_grid(self, parent):
         grid = self.createGrid(parent, 'findGrid', margin=10, spacing=10)
