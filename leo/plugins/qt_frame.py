@@ -157,13 +157,21 @@ class DynamicWindow(QtWidgets.QMainWindow):
             log.setWidget(self.createLogPane(None))
             tree.setWidget(self.createOutlinePane(None))
 
-            for i in tree, log, body:
-                dw.addDockWidget(QtConst.TopDockWidgetArea, i)
+            dw.addDockWidget(QtConst.TopDockWidgetArea, tree)
+            dw.addDockWidget(QtConst.TopDockWidgetArea, body)
+            dw.splitDockWidget(tree, log, QtConst.Vertical)
 
-            self.centralwidget = QtWidgets.QWidget()
-            self.setCentralWidget(self.centralwidget)
+            # self.centralwidget = QtWidgets.QWidget()
+            # self.setCentralWidget(self.centralwidget)
 
-            self.createMiniBuffer(self.centralwidget)
+            self.miniBufferToolBar = QtWidgets.QToolBar()
+            self.addToolBar(QtConst.BottomToolBarArea, self.miniBufferToolBar)
+
+            # self.createMiniBuffer(self.centralwidget)
+            # self.createMiniBuffer(self.miniBufferToolBar)
+            mb = self.createMiniBuffer(None)
+            self.miniBufferToolBar.addWidget(mb)
+
             self.createMenuBar()
             self.createStatusBar(dw)
 
@@ -303,9 +311,14 @@ class DynamicWindow(QtWidgets.QMainWindow):
     def createMiniBuffer(self, parent):
         '''Create the widgets for Leo's minibuffer area.'''
         # Create widgets.
-        frame = self.createFrame(self.centralwidget, 'minibufferFrame',
-            hPolicy=QtWidgets.QSizePolicy.MinimumExpanding,
-            vPolicy=QtWidgets.QSizePolicy.Fixed)
+        if g.qtdock:
+            frame = self.createFrame(None, 'minibufferFrame',
+                hPolicy=QtWidgets.QSizePolicy.MinimumExpanding,
+                vPolicy=QtWidgets.QSizePolicy.Fixed)
+        else:
+            frame = self.createFrame(self.centralwidget, 'minibufferFrame',
+                hPolicy=QtWidgets.QSizePolicy.MinimumExpanding,
+                vPolicy=QtWidgets.QSizePolicy.Fixed)
         frame.setMinimumSize(QtCore.QSize(100, 0))
         label = self.createLabel(frame, 'minibufferLabel', 'Minibuffer:')
 
@@ -330,6 +343,8 @@ class DynamicWindow(QtWidgets.QMainWindow):
         self.lineEdit = lineEdit
         # self.leo_minibuffer_frame = frame
         # self.leo_minibuffer_layout = layout
+        if g.qtdock:
+            return frame
     #@+node:ekr.20110605121601.18149: *5* dw.createOutlinePane
     def createOutlinePane(self, parent):
         '''Create the widgets and ivars for Leo's outline.'''
