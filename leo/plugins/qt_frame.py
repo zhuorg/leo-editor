@@ -161,22 +161,23 @@ class DynamicWindow(QtWidgets.QMainWindow):
             dw.addDockWidget(QtConst.TopDockWidgetArea, body)
             dw.splitDockWidget(tree, log, QtConst.Vertical)
 
-            if 0:
-                # Find
+            # Find
 
-                # Embed the Find tab in a QScrollArea.
-                findScrollArea = QtWidgets.QScrollArea()
-                findScrollArea.setObjectName('findScrollArea')
-                # Find tab.
-                findTab = QtWidgets.QDockWidget("Find")
-                findTab.setObjectName('findTab')
-                findTab.setWidget(findScrollArea)
-                # Do this later, in LeoFind.finishCreate
-                self.findScrollArea = findScrollArea
-                self.findTab = findTab
+            # Embed the Find tab in a QScrollArea.
+            findScrollArea = QtWidgets.QScrollArea()
+            findScrollArea.setObjectName('findScrollArea')
+            # Find tab.
+            findTab = QtWidgets.QWidget()
+            findTab.setObjectName('findTab')
+            # Do this later, in LeoFind.finishCreate
+            self.findScrollArea = findScrollArea
+            self.findTab = findTab
 
-                dw.addDockWidget(QtConst.TopDockWidgetArea, findTab)
-                dw.tabifyDockWidget(self.log_dock, findTab)
+            findDock = QtWidgets.QDockWidget("Find")
+            findDock.setWidget(findScrollArea)
+
+            dw.addDockWidget(QtConst.TopDockWidgetArea, findDock)
+            dw.tabifyDockWidget(self.log_dock, findDock)
 
             # Spell
 
@@ -281,7 +282,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
         innerGrid.addWidget(tabWidget, 0, 0, 1, 1)
         outerGrid = self.createGrid(logFrame, 'logGrid')
         outerGrid.addWidget(innerFrame, 0, 0, 1, 1)
-        if True or not g.qtdock:
+        if not g.qtdock:
             # Embed the Find tab in a QScrollArea.
             findScrollArea = QtWidgets.QScrollArea()
             findScrollArea.setObjectName('findScrollArea')
