@@ -414,6 +414,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMainWindow.AllowNestedDocks |
                 QtWidgets.QMainWindow.AllowTabbedDocks |
                 QtWidgets.QMainWindow.AnimatedDocks)
+            dw.setTabPosition(QtConst.AllDockWidgetAreas, QtWidgets.QTabWidget.North)
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
     #@+node:ekr.20110605121601.18153: *5* dw.createButton
     def createButton(self, parent, name, label):
@@ -3123,6 +3124,10 @@ class LeoQtLog(leoFrame.LeoLog):
     #@+node:ekr.20110605121601.18315: *4* LeoQtLog.finishCreate
     def finishCreate(self):
         '''Finish creating the LeoQtLog class.'''
+
+        if g.qtdock:
+            return
+
         c = self.c; log = self
         w = self.tabWidget
         # Remove unneeded tabs.
@@ -3322,6 +3327,7 @@ class LeoQtLog(leoFrame.LeoLog):
         if widget is None, Create a QTextBrowser,
         suitable for log functionality.
         """
+
         trace = False and not g.unitTesting
         c = self.c
         if trace: g.trace(tabName, widget and g.app.gui.widget_name(widget) or '<no widget>')
@@ -3343,7 +3349,8 @@ class LeoQtLog(leoFrame.LeoLog):
             # Set binding on all log pane widgets.
             g.app.gui.setFilter(c, widget, self, tag='log')
             self.contentsDict[tabName] = widget
-            self.tabWidget.addTab(widget, tabName)
+            if not g.qtdock:
+                self.tabWidget.addTab(widget, tabName)
         else:
             contents = widget
                 # Unlike text widgets, contents is the actual widget.
@@ -3352,7 +3359,20 @@ class LeoQtLog(leoFrame.LeoLog):
             if trace: g.trace('** using', tabName, widget)
             g.app.gui.setFilter(c, widget, contents, 'tabWidget')
             self.contentsDict[tabName] = contents
-            self.tabWidget.addTab(contents, tabName)
+            if not g.qtdock:
+                self.tabWidget.addTab(contents, tabName)
+
+        if g.qtdock:
+
+            g.__dict__.setdefault("__references", []).append([widget, contents])
+
+            c = self.c
+            dock_widget = QtWidgets.QDockWidget(tabName)
+            dock_widget.setObjectName(tabName)
+            dock_widget.setWidget(widget)
+            c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, dock_widget)
+            c.frame.top.tabifyDockWidget(c.frame.top.log_dock, dock_widget)
+
         return contents
     #@+node:ekr.20110605121601.18327: *4* LeoQtLog.cycleTabFocus
     def cycleTabFocus(self, event=None):
@@ -3397,6 +3417,17 @@ class LeoQtLog(leoFrame.LeoLog):
 
     def selectTab(self, tabName, createText=True, widget=None, wrap='none'):
         '''Create the tab if necessary and make it active.'''
+
+        if g.qtdock:
+            dw = self.c.frame.top
+            dock = dw.findChild(QtWidgets.QWidget, name=tabName)
+            if dock:
+                # if dock's tabbed with other docks, make it show
+                others = dw.tabifiedDockWidgets(dock)
+                if others:
+                    dw.tabifyDockWidget(others[0], dock)
+                return
+
         if not self.selectHelper(tabName):
             self.createTab(tabName, widget=widget, wrap=wrap)
             self.selectHelper(tabName)
