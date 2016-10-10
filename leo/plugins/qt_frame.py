@@ -151,6 +151,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
 
             body = QtWidgets.QDockWidget("Body")
             log = self.log_dock = QtWidgets.QDockWidget("Log")
+            # log.setObjectName("Log")
             tree = QtWidgets.QDockWidget("Tree")
 
             body.setWidget(self.createBodyPane(None))
@@ -174,6 +175,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             self.findTab = findTab
 
             findDock = QtWidgets.QDockWidget("Find")
+            findDock.setObjectName("Find")
             findDock.setWidget(findScrollArea)
 
             dw.addDockWidget(QtConst.TopDockWidgetArea, findDock)
@@ -182,6 +184,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             # Spell
 
             spellTab = QtWidgets.QDockWidget("Spell")
+            spellTab.setObjectName("Spell")
             spellTab.setObjectName('spellTab')
             spellTab.setWidget(self.createSpellTab(None))
             dw.addDockWidget(QtConst.TopDockWidgetArea, spellTab)
@@ -3421,11 +3424,9 @@ class LeoQtLog(leoFrame.LeoLog):
         if g.qtdock:
             dw = self.c.frame.top
             dock = dw.findChild(QtWidgets.QWidget, name=tabName)
-            if dock:
-                # if dock's tabbed with other docks, make it show
-                others = dw.tabifiedDockWidgets(dock)
-                if others:
-                    dw.tabifyDockWidget(others[0], dock)
+            if dock is not None:
+                dock.show()
+                dock.raise_()
                 return
 
         if not self.selectHelper(tabName):
