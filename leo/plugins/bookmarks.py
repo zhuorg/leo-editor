@@ -219,7 +219,7 @@ import leo.core.leoGlobals as g
 # Fail gracefully if the gui is not qt.
 g.assertUi('qt')
 
-from leo.core.leoQt import QtCore, QtWidgets
+from leo.core.leoQt import QtCore, QtWidgets, QtConst
 
 import hashlib
 #@-<< imports >>
@@ -272,9 +272,15 @@ def cmd_show(event):
     c = event.get('c')
     bmd = BookMarkDisplay(c)
     # Careful: we could be unit testing.
-    splitter = bmd.c.free_layout.get_top_splitter()
-    if splitter:
-        splitter.add_adjacent(bmd.w, 'bodyFrame', 'above')
+    if g.qtdock:
+        dock = QtWidgets.QDockWidget("Bookmarks")
+        dock.setObjectName("Bookmarks")
+        dock.setWidget(bmd.w)
+        c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, dock)
+    else:
+        splitter = bmd.c.free_layout.get_top_splitter()
+        if splitter:
+            splitter.add_adjacent(bmd.w, 'bodyFrame', 'above')
 #@+node:tbrown.20131226095537.26309: ** bookmarks-switch
 @g.command('bookmarks-switch')
 def cmd_switch(event):
@@ -1040,10 +1046,11 @@ class BookMarkDisplayProvider(object):
         # if hasattr(c, 'free_layout') and hasattr(c.free_layout, 'get_top_splitter'):
             # Second hasattr temporary until free_layout merges with trunk
 
-        splitter = c.free_layout.get_top_splitter()
-        # Careful: we could be unit testing.
-        if splitter:
-            splitter.register_provider(self)
+        if not g.qtdock:
+            splitter = c.free_layout.get_top_splitter()
+            # Careful: we could be unit testing.
+            if splitter:
+                splitter.register_provider(self)
     #@+node:tbrown.20110712121053.19748: *3* ns_provides
     def ns_provides(self):
         return[('Bookmarks', '_leo_bookmarks_show')]
