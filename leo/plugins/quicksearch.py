@@ -226,10 +226,11 @@ def install_qt_quicksearch_tab(c):
             wdg.ui.lineEdit.selectAll()
             wdg.ui.lineEdit.setFocus()
 
-    # Careful: we may be unit testing.
-    if wdg and wdg.parent():
-        tab_widget = wdg.parent().parent()
-        tab_widget.currentChanged.connect(activate_input)
+    if not g.qtdock:
+        # Careful: we may be unit testing.
+        if wdg and wdg.parent():
+            tab_widget = wdg.parent().parent()
+            tab_widget.currentChanged.connect(activate_input)
 #@+node:jlunz.20151027094647.1: ** class OrderedDefaultDict
 class OrderedDefaultDict(OrderedDict):
     '''
