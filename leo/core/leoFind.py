@@ -465,7 +465,10 @@ class LeoFind(object):
         if c.config.getBool('use_find_dialog', default=True):
             g.app.gui.openFindDialog(c)
         else:
-            c.frame.log.selectTab('Find')
+            if g.qtdock:
+                c.frame.top.selectTabDockWidget('Find')
+            else:
+                c.frame.log.selectTab('Find')
     #@+node:ekr.20131117164142.17016: *4* find.changeAllCommand
     def changeAllCommand(self, event=None):
         self.setup_command()

@@ -149,53 +149,35 @@ class DynamicWindow(QtWidgets.QMainWindow):
         if g.qtdock:
             self.verticalLayout = self.createVLayout(self, 'mainVLayout', margin=3)
 
-            # create three docks
+            # create two docks
             body = QtWidgets.QDockWidget("Body")
-            dw.log_dock = QtWidgets.QDockWidget("TempDock")
             tree = QtWidgets.QDockWidget("Tree")
             # add their widgets
             body.setWidget(self.createBodyPane(None))
-            self.log_dock.setWidget(self.createLogPane(None))
             tree.setWidget(self.createOutlinePane(None))
             # place them
             dw.addDockWidget(QtConst.TopDockWidgetArea, tree)
             dw.addDockWidget(QtConst.TopDockWidgetArea, body)  # left of tree
-            dw.splitDockWidget(tree, dw.log_dock, QtConst.Vertical)
+
+            # for some reason this fails:
+            # assert dw.findChild(QtWidgets.QDockWidget, name="Tree")
+            # but we're going to need it in selectTabDockWidget(), so
+            dw.tree_dock = tree
+
+            # Log
+            # selecting non-existent Tab creates it, with a "log" text widget
+            dw.selectTabDockWidget("Log")
 
             # Find
-            # Embed the Find tab in a QScrollArea.
-            findScrollArea = QtWidgets.QScrollArea()
-            findScrollArea.setObjectName('findScrollArea')
-            # Find tab.
-            findTab = QtWidgets.QWidget()
-            findTab.setObjectName('findTab')
-            # Do this later, in LeoFind.finishCreate
-            self.findScrollArea = findScrollArea
-            self.findTab = findTab
-
-            findDock = QtWidgets.QDockWidget("Find")
-            findDock.setObjectName("Find")
-            findDock.setWidget(findScrollArea)
-
-            dw.addDockWidget(QtConst.TopDockWidgetArea, findDock)
-            dw.tabifyDockWidget(self.log_dock, findDock)
-
-            # Spell
-
-            spellTab = QtWidgets.QDockWidget("Spell")
-            spellTab.setObjectName("Spell")
-            spellTab.setObjectName('spellTab')
-            spellTab.setWidget(self.createSpellTab(None))
-            dw.addDockWidget(QtConst.TopDockWidgetArea, spellTab)
-            dw.tabifyDockWidget(self.log_dock, spellTab)
+            # widget = QtWidgets.QWidget()
+            # dw.createFindTab(dw, widget)
+            # dw.addTabDockWidget(widget, "Find")
 
             # mini buffer
-
-            self.miniBufferToolBar = QtWidgets.QToolBar()
-            self.addToolBar(QtConst.BottomToolBarArea, self.miniBufferToolBar)
-
+            miniBufferToolBar = QtWidgets.QToolBar()
+            self.addToolBar(QtConst.BottomToolBarArea, miniBufferToolBar)
             mb = self.createMiniBuffer(None)
-            self.miniBufferToolBar.addWidget(mb)
+            miniBufferToolBar.addWidget(mb)
 
             self.createMenuBar()
             self.createStatusBar(dw)
@@ -307,8 +289,14 @@ class DynamicWindow(QtWidgets.QMainWindow):
     #@+node:ekr.20131118172620.16858: *6* dw.finishCreateLogPane
     def finishCreateLogPane(self):
         '''It's useful to create this late, because c.config is now valid.'''
-        self.createFindTab(self.findTab, self.findScrollArea)
-        self.findScrollArea.setWidget(self.findTab)
+        if g.qtdock:
+            widget = QtWidgets.QWidget()
+            self.createFindTab(widget, None)
+            self.addTabDockWidget(widget, "Find")
+            print '404'
+        else:
+            self.createFindTab(self.findTab, self.findScrollArea)
+            self.findScrollArea.setWidget(self.findTab)
     #@+node:ekr.20110605121601.18146: *5* dw.createMainLayout
     def createMainLayout(self, parent):
         '''Create the layout for Leo's main window.'''
@@ -541,6 +529,48 @@ class DynamicWindow(QtWidgets.QMainWindow):
         self.setName(w, name)
         return w
     #@+node:ekr.20110605121601.18165: *4* dw.log tabs
+    #@+node:tbrown.20161011201651.1: *5* dw.addTabDockWidget
+    def addTabDockWidget(self, widget, tabName):
+        """addTabDockWidget - add a tabbed dock widget
+
+        :param QWidget widget: widget to add
+        :param str tabName: name for tab
+        """
+        dock = QtWidgets.QDockWidget(tabName)
+        dock.setObjectName(tabName)
+        dock.setWidget(widget)
+
+        # find dock on which to tab this dock
+        on_dock = self.findChild(QtWidgets.QDockWidget, name='Log')
+        if on_dock is None:  # first Tab, nothing to tab with
+            on_dock = self.findChild(QtWidgets.QDockWidget, name='Tree') or self.tree_dock
+            # see createMainWindow() - not sure why findChild() fails
+            self.splitDockWidget(on_dock, dock, QtConst.Vertical)
+        else:  # tab with Log Tab
+            self.addDockWidget(QtConst.TopDockWidgetArea, dock)
+            self.tabifyDockWidget(on_dock, dock)
+
+        return dock
+    #@+node:tbrown.20161011205829.1: *5* dw.selectTabDockWidget
+    def selectTabDockWidget(self, tabName):
+        """selectTabDockWidget - select a tabbed dock widget
+
+        :param str tabName: name of tab
+        """
+        dock = self.findChild(QtWidgets.QDockWidget, name=tabName)
+        if dock is None:
+            c=self.leo_c
+            widget = qt_text.LeoQTextBrowser(parent=None, c=c, wrapper=self)
+            contents = qt_text.QTextEditWrapper(widget=widget, name='log', c=c)
+            widget.leo_log_wrapper = contents
+            option = QtGui.QTextOption
+            self.wrap = False  # FIXME
+            widget.setWordWrapMode(option.WordWrap if self.wrap else option.NoWrap)
+            widget.setReadOnly(False)
+            dock = self.addTabDockWidget(widget, tabName)
+
+        dock.raise_()
+        return dock
     #@+node:ekr.20110605121601.18167: *5* dw.createSpellTab
     def createSpellTab(self, parent):
         # dw = self
@@ -3109,10 +3139,10 @@ class LeoQtLog(leoFrame.LeoLog):
         self.logDict = {} # Keys are tab names text widgets.  Values are the widgets.
         self.logWidget = None # Set in finishCreate.
         self.menu = None # A menu that pops up on right clicks in the hull or in tabs.
-        self.tabWidget = tw = c.frame.top.leo_ui.tabWidget
-            # The Qt.QTabWidget that holds all the tabs.
-        # Fixes bug 917814: Switching Log Pane tabs is done incompletely.
         if not g.qtdock:
+            self.tabWidget = tw = c.frame.top.leo_ui.tabWidget
+            # The Qt.QTabWidget that holds all the tabs.
+            # Fixes bug 917814: Switching Log Pane tabs is done incompletely.
             tw.currentChanged.connect(self.onCurrentChanged)
         self.wrap = bool(c.config.getBool('log_pane_wraps'))
         if 0: # Not needed to make onActivateEvent work.
@@ -3120,7 +3150,8 @@ class LeoQtLog(leoFrame.LeoLog):
             theFilter = qt_events.LeoQtEventFilter(c, w=tw, tag='tabWidget')
             tw.installEventFilter(theFilter)
         # 2013/11/15: Partial fix for bug 1251755: Log-pane refinements
-        tw.setMovable(True)
+        if not g.qtdock:
+            tw.setMovable(True)
     #@+node:ekr.20110605121601.18315: *4* LeoQtLog.finishCreate
     def finishCreate(self):
         '''Finish creating the LeoQtLog class.'''
@@ -3239,9 +3270,12 @@ class LeoQtLog(leoFrame.LeoLog):
             color = leoColor.getColor(color, 'black')
         else:
             color = leoColor.getColor('black')
-        self.selectTab(tabName or 'Log')
-        # Must be done after the call to selectTab.
-        w = self.logCtrl.widget # w is a QTextBrowser
+        if g.qtdock:
+            w = c.frame.top.selectTabDockWidget("Log").widget()
+        else:
+            self.selectTab(tabName or 'Log')
+            # Must be done after the call to selectTab.
+            w = self.logCtrl.widget # w is a QTextBrowser
         if trace:
             print('LeoQtLog.put: %r' % (s))
         if w:
@@ -3284,9 +3318,12 @@ class LeoQtLog(leoFrame.LeoLog):
         # print('LeoQtLog.put: %s' % g.callers())
         if g.app.quitting:
             return
-        if tabName:
-            self.selectTab(tabName)
-        w = self.logCtrl.widget
+        if g.qtdock:
+            w = self.c.frame.top.findChild(QtWidgets.QDockWidget, name="Log").widget()
+        else:
+            if tabName:
+                self.selectTab(tabName)
+            w = self.logCtrl.widget
         if w:
             sb = w.horizontalScrollBar()
             pos = sb.sliderPosition()
@@ -3304,9 +3341,12 @@ class LeoQtLog(leoFrame.LeoLog):
         '''Scroll the log to the end.'''
         if g.app.quitting:
             return
-        if tabName:
-            self.selectTab(tabName)
-        w = self.logCtrl.widget
+        if g.qtdock:
+            w = self.c.frame.top.selectTabDockWidget(tabName).widget()
+        else:
+            if tabName:
+                self.selectTab(tabName)
+            w = self.logCtrl.widget
         if w:
             sb = w.horizontalScrollBar()
             pos = sb.sliderPosition()
@@ -3327,6 +3367,9 @@ class LeoQtLog(leoFrame.LeoLog):
         if widget is None, Create a QTextBrowser,
         suitable for log functionality.
         """
+
+        if g.qtdock:
+            raise Exception("Don't use this")
 
         trace = False and not g.unitTesting
         c = self.c
@@ -3419,6 +3462,9 @@ class LeoQtLog(leoFrame.LeoLog):
 
     def selectTab(self, tabName, createText=True, widget=None, wrap='none'):
         '''Create the tab if necessary and make it active.'''
+
+        if g.qtdock:
+            raise Exception("Don't use this")
 
         if g.qtdock:
             dw = self.c.frame.top
