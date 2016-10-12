@@ -292,7 +292,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
         if g.qtdock:
             widget = QtWidgets.QWidget()
             self.createFindTab(widget, None)
-            self.addTabDockWidget(widget, "Find")
+            self.addTabDockWidget(widget, "Find", scroll_area=True)
             print '404'
         else:
             self.createFindTab(self.findTab, self.findScrollArea)
@@ -530,7 +530,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
         return w
     #@+node:ekr.20110605121601.18165: *4* dw.log tabs
     #@+node:tbrown.20161011201651.1: *5* dw.addTabDockWidget
-    def addTabDockWidget(self, widget, tabName):
+    def addTabDockWidget(self, widget, tabName, scroll_area=False):
         """addTabDockWidget - add a tabbed dock widget
 
         :param QWidget widget: widget to add
@@ -538,6 +538,10 @@ class DynamicWindow(QtWidgets.QMainWindow):
         """
         dock = QtWidgets.QDockWidget(tabName)
         dock.setObjectName(tabName)
+        if scroll_area:
+            inner = widget
+            widget = QtWidgets.QScrollArea()
+            widget.setWidget(inner)
         dock.setWidget(widget)
 
         # find dock on which to tab this dock
