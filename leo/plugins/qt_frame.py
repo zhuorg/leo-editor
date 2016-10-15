@@ -168,11 +168,6 @@ class DynamicWindow(QtWidgets.QMainWindow):
             # selecting non-existent Tab creates it, with a "log" text widget
             dw.selectTabDockWidget("Log")
 
-            # Find
-            # widget = QtWidgets.QWidget()
-            # dw.createFindTab(dw, widget)
-            # dw.addTabDockWidget(widget, "Find")
-
             # mini buffer
             miniBufferToolBar = QtWidgets.QToolBar()
             self.addToolBar(QtConst.BottomToolBarArea, miniBufferToolBar)
@@ -290,10 +285,13 @@ class DynamicWindow(QtWidgets.QMainWindow):
     def finishCreateLogPane(self):
         '''It's useful to create this late, because c.config is now valid.'''
         if g.qtdock:
+            # Find Tab
             widget = QtWidgets.QWidget()
             self.createFindTab(widget, None)
             self.addTabDockWidget(widget, "Find", scroll_area=True)
-            print '404'
+            # Spell Tab
+            widget = self.createSpellTab(None)
+            self.addTabDockWidget(widget, "Spell", scroll_area=True)
         else:
             self.createFindTab(self.findTab, self.findScrollArea)
             self.findScrollArea.setWidget(self.findTab)
