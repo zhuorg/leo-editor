@@ -553,7 +553,16 @@ class DynamicWindow(QtWidgets.QMainWindow):
             self.tabifyDockWidget(on_dock, dock)
 
         return dock
-    #@+node:tbrown.20161011205829.1: *5* dw.selectTabDockWidget
+    #@+node:tbrown.20161011205829.1: *5* dw.deleteTabDockWidget
+    def deleteTabDockWidget(self, tabName):
+        """deleteTabDockWidget - delete a tabbed dock widget
+
+        :param str tabName: name of tab
+        """
+        dock = self.findChild(QtWidgets.QDockWidget, name=tabName)
+        if dock is not None:
+            dock.deleteLater()
+    #@+node:tbrown.20161017212920.1: *5* dw.selectTabDockWidget
     def selectTabDockWidget(self, tabName):
         """selectTabDockWidget - select a tabbed dock widget
 
@@ -3437,6 +3446,9 @@ class LeoQtLog(leoFrame.LeoLog):
     #@+node:ekr.20110605121601.18328: *4* LeoQtLog.deleteTab
     def deleteTab(self, tabName, force=False):
         '''Delete the tab if it exists.  Otherwise do *nothing*.'''
+        if g.qtdock:
+            raise Exception("Don't use this")
+
         c = self.c
         w = self.tabWidget
         if force or tabName not in ('Log', 'Find', 'Spell'):

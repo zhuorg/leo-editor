@@ -2524,7 +2524,10 @@ class KeyHandlerClass(object):
                 c.frame.log.deleteTab('Completion')
                 w.setSelectionRange(sel1, sel2, insert=ins)
             else:
-                c.frame.log.deleteTab('Completion')
+                if g.qtdock:
+                    c.frame.top.deleteTabDockWidget('Completion')
+                else:
+                    c.frame.log.deleteTab('Completion')
                     # 2016/04/27
             if k.mb_help:
                 s = k.getLabel()

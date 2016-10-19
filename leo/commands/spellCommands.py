@@ -142,11 +142,14 @@ class SpellCommandsClass(BaseEditCommandsClass):
         c = self.c
         log = c.frame.log
         tabName = 'Spell'
-        if log.frameDict.get(tabName):
-            log.selectTab(tabName)
+        if g.qt_dock:
+            c.frame.top.selectTabDockWidget(tabName)
         else:
-            log.selectTab(tabName)
-            self.handler = SpellTabHandler(c, tabName)
+            if log.frameDict.get(tabName):
+                log.selectTab(tabName)
+            else:
+                log.selectTab(tabName)
+                self.handler = SpellTabHandler(c, tabName)
         # Bug fix: 2013/05/22.
         if not self.handler.loaded:
             log.deleteTab(tabName, force=True)
