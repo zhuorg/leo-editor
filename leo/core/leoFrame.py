@@ -1716,6 +1716,9 @@ class LeoTree(object):
     def sync_vnodes(self, vn):
         pass
 
+    def full_redraw(self, p=None, relativeTo=None):
+        pass
+
     def expandPos(self, p):
         pass
 
