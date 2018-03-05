@@ -27,8 +27,6 @@ class LeoQtTree(leoFrame.LeoTree):
             # Init the base class.
         self.c = c
         # Widget independent status ivars...
-        self.contracting = False
-        self.expanding = False
         self.prev_v = None
         self.redrawing = False
         self.redrawCount = 0 # Count for debugging.
@@ -37,11 +35,6 @@ class LeoQtTree(leoFrame.LeoTree):
         # Debugging...
         self.nodeDrawCount = 0
         self.traceCallersFlag = False # Enable traceCallers method.
-        # Associating items with position and vnodes...
-        self.item2positionDict = {}
-        self.item2vnodeDict = {}
-        self.position2itemDict = {}
-        self.vnode2itemsDict = {} # values are lists of items.
         self.editWidgetsDict = {} # keys are native edit widgets, values are wrappers.
         self.reloadSettings()
         # Components.
@@ -57,25 +50,6 @@ class LeoQtTree(leoFrame.LeoTree):
         self.rootPosition = None # 2018/03/05 for hoist and chapters 
         g.registerHandler('save1', self.clear_visual_icons)
         g.registerHandler('save2', self.reset_visual_icons)
-        if 0: # Drag and drop
-            w.setDragEnabled(True)
-            w.viewport().setAcceptDrops(True)
-            w.showDropIndicator = True
-            w.setAcceptDrops(True)
-            w.setDragDropMode(w.InternalMove)
-            if 1: # Does not work
-
-                def dropMimeData(self, data, action, row, col, parent):
-                    g.trace()
-                # w.dropMimeData = dropMimeData
-
-                def mimeData(self, indexes):
-                    g.trace()
-        # Early inits...
-        try:
-            w.headerItem().setHidden(True)
-        except Exception:
-            pass
         w.setIconSize(QtCore.QSize(160, 16))
     #@+node:ekr.20110605121601.17866: *4* qtree.get_name
     def getName(self):
@@ -135,7 +109,7 @@ class LeoQtTree(leoFrame.LeoTree):
     def traceItem(self, item):
         if item:
             # A QTreeWidgetItem.
-            return 'item %s: %s' % (id(item), self.getItemText(item))
+            return 'item %s: %s' % (id(item), item.text(0))
         else:
             return '<no item>'
 
@@ -208,10 +182,11 @@ class LeoQtTree(leoFrame.LeoTree):
                 item = par.child(i)
                 item.setText(0, v1.h)
                 p1 = p.nthChild(i)
-                seticon(p1, item)
                 data = inds(p1)
                 item.setData(0, 0x100, data)
                 item.setExpanded(p1.isExpanded())
+                visititem(item, p1)
+                seticon(p1, item)
                 addone(item, p1)
         #@+node:vitalije.20180304195157.1: *6* seticon
         def seticon(p, item):
@@ -220,6 +195,12 @@ class LeoQtTree(leoFrame.LeoTree):
             if p:
                 icon = self.getIcon(p)
                 item.setIcon(0, icon)
+        #@+node:vitalije.20180305191846.1: *6* visititem
+        def visititem(item, p):
+            try:
+                g.visit_tree_item(self.c, p, item)
+            except leoPlugins.TryNext:
+                pass
         #@-others
         inds = lambda p: tuple(x[1] for x in p.stack) + (p.childIndex(), p.gnx)
         if p is relativeTo:
@@ -231,8 +212,9 @@ class LeoQtTree(leoFrame.LeoTree):
                 p1 = leoNodes.Position(v, i, stack0)
                 item.setText(0, v.h)
                 item.setData(0, 0x100, inds(p1))
-                seticon(p1, item)
                 item.setExpanded(p1.isExpanded())
+                visititem(item, p1)
+                seticon(p1, item)
                 addone(item, p1)
         else:
             # syncing one item
@@ -240,6 +222,7 @@ class LeoQtTree(leoFrame.LeoTree):
             assert item
             item.setText(0, p.h)
             item.setData(0, 0x100, (p.childIndex(), p.gnx))
+            visititem(item, p)
             seticon(p, item)
             addone(item, p)
         tw.blockSignals(False)
@@ -395,21 +378,18 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20110605121601.17887: *4*  qtree.Click Box
     #@+node:ekr.20110605121601.17888: *5* qtree.onClickBoxClick
     def onClickBoxClick(self, event, p=None):
-        if self.busy(): return
         c = self.c
         g.doHook("boxclick1", c=c, p=p, event=event)
         g.doHook("boxclick2", c=c, p=p, event=event)
         c.outerUpdate()
     #@+node:ekr.20110605121601.17889: *5* qtree.onClickBoxRightClick
     def onClickBoxRightClick(self, event, p=None):
-        if self.busy(): return
         c = self.c
         g.doHook("boxrclick1", c=c, p=p, event=event)
         g.doHook("boxrclick2", c=c, p=p, event=event)
         c.outerUpdate()
     #@+node:ekr.20110605121601.17890: *5* qtree.onPlusBoxRightClick
     def onPlusBoxRightClick(self, event, p=None):
-        if self.busy(): return
         c = self.c
         g.doHook('rclick-popup', c=c, p=p, event=event, context_menu='plusbox')
         c.outerUpdate()
@@ -417,7 +397,6 @@ class LeoQtTree(leoFrame.LeoTree):
     # For Qt, there seems to be no way to trigger these events.
     #@+node:ekr.20110605121601.17892: *5* qtree.onIconBoxClick
     def onIconBoxClick(self, event, p=None):
-        if self.busy(): return
         c = self.c
         g.doHook("iconclick1", c=c, p=p, event=event)
         g.doHook("iconclick2", c=c, p=p, event=event)
@@ -425,14 +404,12 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20110605121601.17893: *5* qtree.onIconBoxRightClick
     def onIconBoxRightClick(self, event, p=None):
         """Handle a right click in any outline widget."""
-        if self.busy(): return
         c = self.c
         g.doHook("iconrclick1", c=c, p=p, event=event)
         g.doHook("iconrclick2", c=c, p=p, event=event)
         c.outerUpdate()
     #@+node:ekr.20110605121601.17894: *5* qtree.onIconBoxDoubleClick
     def onIconBoxDoubleClick(self, event, p=None):
-        if self.busy(): return
         c = self.c
         if not p: p = c.p
         if not g.doHook("icondclick1", c=c, p=p, event=event):
@@ -442,12 +419,8 @@ class LeoQtTree(leoFrame.LeoTree):
         c.outerUpdate()
     #@+node:ekr.20110605121601.17886: *4* qtree.busy
     def busy(self):
-        '''Return True (actually, a debugging string) if any lockout is set.'''
-        trace = False
-        table = ('contracting','expanding','redrawing','selecting')
-        kinds = ','.join([z for z in table if getattr(self, z)])
-        if kinds and trace: g.trace(kinds)
-        return kinds # Return the string for debugging
+        '''not necessary any more.'''
+        return False
     #@+node:ekr.20110605121601.18437: *4* qtree.onContextMenu
     def onContextMenu(self, point):
         c = self.c
@@ -502,12 +475,10 @@ class LeoQtTree(leoFrame.LeoTree):
             #@+<< truncate s if it has multiple lines >>
             #@+node:ekr.20120409185504.10028: *5* << truncate s if it has multiple lines >>
             # Remove trailing newlines before warning of truncation.
-            while s and s[-1] == '\n':
-                s = s[: -1]
+            s = s.rstrip()
             # Warn if there are multiple lines.
-            i = s.find('\n')
-            if i > -1:
-                s = s[: i]
+            if '\n' in s:
+                s = s.split('\n', 1)[0]
                 if s != oldHead:
                     g.warning("truncating headline to one line")
             limit = 1000
@@ -542,7 +513,6 @@ class LeoQtTree(leoFrame.LeoTree):
         #print(item.data(0, 0x100))
         #return
         trace = False and not g.unitTesting
-        if self.busy(): return
         c = self.c
         p = self.item2position(item)
         if p:
@@ -677,27 +647,12 @@ class LeoQtTree(leoFrame.LeoTree):
 
     def setFocus(self):
         g.app.gui.set_focus(self.c, self.treeWidget)
-    #@+node:ekr.20110605121601.18409: *3* qtree.Icons
-    #@+node:ekr.20110605121601.18410: *4* qtree.drawIcon
-    def drawIcon(self, p):
-        '''Redraw the icon at p.'''
-        w = self.treeWidget
-        itemOrTree = self.position2item(p) or w
-        item = QtWidgets.QTreeWidgetItem(itemOrTree)
-        icon = self.getIcon(p)
-        self.setItemIcon(item, icon)
-    #@+node:ekr.20110605121601.17946: *4* qtree.drawItemIcon
-    def drawItemIcon(self, p, item):
-        '''Set the item's icon to p's icon.'''
-        icon = self.getIcon(p)
-        if icon:
-            self.setItemIcon(item, icon)
-    #@+node:ekr.20110605121601.18411: *4* qtree.getIcon & helper
+    #@+node:ekr.20110605121601.18411: *3* qtree.getIcon & helper
     def getIcon(self, p):
         '''Return the proper icon for position p.'''
         p.v.iconVal = val = p.v.computeIcon()
         return self.getCompositeIconImage(p, val)
-    #@+node:ekr.20110605121601.18412: *5* qtree.getCompositeIconImage
+    #@+node:ekr.20110605121601.18412: *4* qtree.getCompositeIconImage
     def getCompositeIconImage(self, p, val):
         '''Get the icon at position p.'''
         trace = False and not g.unitTesting
@@ -744,72 +699,11 @@ class LeoQtTree(leoFrame.LeoTree):
         g.app.gui.iconimages[hash] = icon
         if trace: g.trace('new %s' % (icon))
         return icon
-    #@+node:ekr.20110605121601.17947: *4* qtree.getIconImage
-    def getIconImage(self, p):
-        # User icons are not supported in the base class.
-        if g.app.gui.isNullGui:
-            return None
-        else:
-            return self.getStatusIconImage(p)
-    #@+node:ekr.20110605121601.17948: *4* qtree.getStatusIconImage
-    def getStatusIconImage(self, p):
-        val = p.v.computeIcon()
-        r = g.app.gui.getIconImage(
-            "box%02d.png" % val)
-        # g.trace(r)
-        return r
-    #@+node:ekr.20110605121601.17949: *4* qtree.getVnodeIcon
-    def getVnodeIcon(self, p):
-        '''Return the proper icon for position p.'''
-        return self.getIcon(p)
-    #@+node:ekr.20110605121601.17950: *4* qtree.setItemIcon
-    def setItemIcon(self, item, icon):
-        trace = False and not g.unitTesting
-        valid = item and self.isValidItem(item)
-        if icon and valid:
-            # Important: do not set lockouts here.
-            # This will generate changed events,
-            # but there is no itemChanged event handler.
-            self.setItemIconHelper(item, icon)
-        elif trace:
-            # Apparently, icon can be None due to recent icon changes.
-            if icon:
-                g.trace('** item %s, valid: %s, icon: %s' % (
-                    item and id(item) or '<no item>', valid, icon),
-                    g.callers(4))
-    #@+node:ekr.20110605121601.18413: *4* qtree.setItemIconHelper
-    def setItemIconHelper(self, item, icon):
-        # Generates an item-changed event.
-        # g.trace(id(icon))
-        if item:
-            item.setIcon(0, icon)
-    #@+node:ekr.20110605121601.17951: *4* qtree.updateIcon
-    def updateIcon(self, p, force=False):
-        '''Update p's icon.'''
-        if not p: return
-        val = p.v.computeIcon()
-        # The force arg is needed:
-        # Leo's core may have updated p.v.iconVal.
-        if p.v.iconVal == val and not force:
-            return
-        icon = self.getIcon(p) # sets p.v.iconVal
-        # Update all cloned items.
-        items = self.vnode2items(p.v)
-        for item in items:
-            self.setItemIcon(item, icon)
-    #@+node:ekr.20110605121601.17952: *4* qtree.updateVisibleIcons
-    def updateVisibleIcons(self, p):
-        '''Update the icon for p and the icons
-        for all visible descendants of p.'''
-        self.updateIcon(p, force=True)
-        if p.hasChildren() and p.isExpanded():
-            for child in p.children():
-                self.updateVisibleIcons(child)
     #@+node:ekr.20110605121601.18414: *3* qtree.Items
-    #@+node:ekr.20110605121601.17943: *4*  qtree.item dict getters
+    #@+node:vitalije.20180305192504.1: *4* qtree.item2headline
     def item2headline(self, item):
         return self.item2vnode(item).h
-
+    #@+node:vitalije.20180305192525.1: *4* qtree.item2position
     def item2position(self, item):
         inds = item.data(0, 0x100)
         i = inds[0]
@@ -819,18 +713,16 @@ class LeoQtTree(leoFrame.LeoTree):
             p.moveToNthChild(i)
         assert p.gnx == inds[-1], repr((inds, p.stack, p.h, g.callers(5)))
         return p
-
+    #@+node:vitalije.20180305192537.1: *4* qtree.item2vnode
     def item2vnode(self, item):
         gnx = item.data(0, 0x100)[-1]
         return self.c.fileCommands.gnxDict[gnx]
-
-
+    #@+node:vitalije.20180305192541.1: *4* qtree.vnode2items
     def vnode2items(self, v):
         return tuple(self.position2item(x, self.rootPosition) for x in v.positions())
-
+    #@+node:vitalije.20180305192545.1: *4* qtree.isValidItem
     def isValidItem(self, item):
         return bool(self.item2position(item))
-
     #@+node:vitalije.20180305084130.1: *4* qtree.position2item
     def position2item(self, p, relativeTo=None):
         '''Returns item corresponding to thw position p.
@@ -848,27 +740,45 @@ class LeoQtTree(leoFrame.LeoTree):
             if not item:
                 return None
         return item.child(p.childIndex())
-    #@+node:ekr.20110605121601.18415: *4* qtree.childIndexOfItem
-    def childIndexOfItem(self, item):
-        parent = item and item.parent()
-        if parent:
-            n = parent.indexOfChild(item)
-        else:
+    #@+node:ekr.20110605121601.18418: *4* qtree.connectEditorWidget & helper
+    def connectEditorWidget(self, e, item):
+        if not e:
+            return g.trace('can not happen: no e')
+        # Hook up the widget.
+        wrapper = self.getWrapper(e, item)
+
+        def editingFinishedCallback(e=e, item=item, self=self, wrapper=wrapper):
+            # g.trace(wrapper,g.callers(5))
+            c = self.c
             w = self.treeWidget
-            n = w.indexOfTopLevelItem(item)
-        return n
-    #@+node:ekr.20110605121601.18416: *4* qtree.childItems
-    def childItems(self, parent_item):
-        '''Return the list of child items of the parent item,
-        or the top-level items if parent_item is None.'''
-        if parent_item:
-            n = parent_item.childCount()
-            items = [parent_item.child(z) for z in range(n)]
-        else:
-            w = self.treeWidget
-            n = w.topLevelItemCount()
-            items = [w.topLevelItem(z) for z in range(n)]
-        return items
+            self.onHeadChanged(p=c.p, e=e)
+            w.setCurrentItem(item)
+
+        e.editingFinished.connect(editingFinishedCallback)
+        return wrapper # 2011/02/12
+    #@+node:vitalije.20180305190620.1: *4* qtree.contractPos & expandPos
+    def contractPos(self, p):
+        item = self.position2item(p, self.rootPosition)
+        if item:
+            self.treeWidget.blockSignals(True)
+            item.setExpanded(False)
+            self.treeWidget.blockSignals(False)
+
+    def expandPos(self, p):
+        item = self.position2item(p, self.rootPosition)
+        if item:
+            self.treeWidget.blockSignals(True)
+            item.setExpanded(True)
+            self.treeWidget.blockSignals(False)
+    #@+node:ekr.20110605121601.18423: *4* qtree.getCurrentItem
+    def getCurrentItem(self):
+        w = self.treeWidget
+        return w.currentItem()
+    #@+node:ekr.20110605121601.18426: *4* qtree.getSelectedItems
+    def getSelectedItems(self):
+        w = self.treeWidget
+        return w.selectedItems()
+    #@+node:vitalije.20180305192859.1: *3* qtree Editor
     #@+node:ekr.20110605121601.18417: *4* qtree.closeEditorHelper
     def closeEditorHelper(self, e, item):
         'End editing of the underlying QLineEdit widget for the headline.' ''
@@ -887,44 +797,6 @@ class LeoQtTree(leoFrame.LeoTree):
                 else:
                     # Recover silently even if there is a problem.
                     pass
-    #@+node:ekr.20110605121601.18418: *4* qtree.connectEditorWidget & helper
-    def connectEditorWidget(self, e, item):
-        if not e:
-            return g.trace('can not happen: no e')
-        # Hook up the widget.
-        wrapper = self.getWrapper(e, item)
-
-        def editingFinishedCallback(e=e, item=item, self=self, wrapper=wrapper):
-            # g.trace(wrapper,g.callers(5))
-            c = self.c
-            w = self.treeWidget
-            self.onHeadChanged(p=c.p, e=e)
-            w.setCurrentItem(item)
-
-        e.editingFinished.connect(editingFinishedCallback)
-        return wrapper # 2011/02/12
-    #@+node:ekr.20110605121601.18419: *4* qtree.contractItem & expandItem
-    def contractItem(self, item):
-        # g.trace(g.callers(4))
-        self.treeWidget.collapseItem(item)
-
-    def expandItem(self, item):
-        # g.trace(g.callers(4))
-        self.treeWidget.expandItem(item)
-
-    def contractPos(self, p):
-        item = self.position2item(p, self.rootPosition)
-        if item:
-            self.treeWidget.blockSignals(True)
-            item.setExpanded(False)
-            self.treeWidget.blockSignals(False)
-
-    def expandPos(self, p):
-        item = self.position2item(p, self.rootPosition)
-        if item:
-            self.treeWidget.blockSignals(True)
-            item.setExpanded(True)
-            self.treeWidget.blockSignals(False)
     #@+node:ekr.20110605121601.18420: *4* qtree.createTreeEditorForItem
     def createTreeEditorForItem(self, item):
         trace = False and not g.unitTesting
@@ -940,20 +812,6 @@ class LeoQtTree(leoFrame.LeoTree):
         if trace: g.trace(e, wrapper)
         self.sizeTreeEditor(self.c, e)
         return e, wrapper
-    #@+node:ekr.20110605121601.18421: *4* qtree.createTreeItem
-    def createTreeItem(self, p, parent_item):
-        trace = False and not g.unitTesting
-        w = self.treeWidget
-        itemOrTree = parent_item or w
-        item = QtWidgets.QTreeWidgetItem(itemOrTree)
-        item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
-        if trace: g.trace(id(item), p.h, g.callers(4))
-        try:
-            g.visit_tree_item(self.c, p, item)
-        except leoPlugins.TryNext:
-            pass
-        #print "item",item
-        return item
     #@+node:ekr.20110605121601.18422: *4* qtree.editLabelHelper
     def editLabelHelper(self, item, selectAll=False, selection=None):
         '''
@@ -997,24 +855,6 @@ class LeoQtTree(leoFrame.LeoTree):
                 else:
                     g.trace('not a text widget!', wrapper)
         return e, wrapper
-    #@+node:ekr.20110605121601.18423: *4* qtree.getCurrentItem
-    def getCurrentItem(self):
-        w = self.treeWidget
-        return w.currentItem()
-    #@+node:ekr.20110605121601.18424: *4* qtree.getItemText
-    def getItemText(self, item):
-        '''Return the text of the item.'''
-        if item:
-            return g.u(item.text(0))
-        else:
-            return '<no item>'
-    #@+node:ekr.20110605121601.18425: *4* qtree.getParentItem
-    def getParentItem(self, item):
-        return item and item.parent()
-    #@+node:ekr.20110605121601.18426: *4* qtree.getSelectedItems
-    def getSelectedItems(self):
-        w = self.treeWidget
-        return w.selectedItems()
     #@+node:ekr.20110605121601.18427: *4* qtree.getTreeEditorForItem
     def getTreeEditorForItem(self, item):
         '''Return the edit widget if it exists.
@@ -1046,36 +886,6 @@ class LeoQtTree(leoFrame.LeoTree):
         else:
             g.trace('no e')
             return None
-    #@+node:ekr.20110605121601.18429: *4* qtree.nthChildItem
-    def nthChildItem(self, n, parent_item):
-        children = self.childItems(parent_item)
-        if n < len(children):
-            item = children[n]
-        else:
-            # This is **not* an error.
-            # It simply means that we need to redraw the tree.
-            item = None
-        return item
-    #@+node:ekr.20110605121601.18430: *4* qtree.scrollToItem
-    def scrollToItem(self, item):
-        w = self.treeWidget
-        # g.trace(self.traceItem(item))
-        hPos, vPos = self.getScroll()
-        w.scrollToItem(item, w.EnsureVisible)
-            # Fix #265: Erratic scrolling bug.
-            # w.PositionAtCenter causes unwanted scrolling.
-        self.setHScroll(0)
-            # Necessary
-    #@+node:ekr.20110605121601.18431: *4* qtree.setCurrentItemHelper
-    def setCurrentItemHelper(self, item):
-        w = self.treeWidget
-        w.setCurrentItem(item)
-    #@+node:ekr.20110605121601.18432: *4* qtree.setItemText
-    def setItemText(self, item, s):
-        if item:
-            item.setText(0, s)
-            if self.use_declutter:
-                item._real_text = s
     #@+node:tbrown.20160406221505.1: *4* qtree.sizeTreeEditor
     @staticmethod
     def sizeTreeEditor(c, editor):
@@ -1087,6 +897,16 @@ class LeoQtTree(leoFrame.LeoTree):
         # limit width to available space
         editor.resize(space - used, editor.size().height())
     #@+node:ekr.20110605121601.18433: *3* qtree.Scroll bars
+    #@+node:ekr.20110605121601.18430: *4* qtree.scrollToItem
+    def scrollToItem(self, item):
+        w = self.treeWidget
+        # g.trace(self.traceItem(item))
+        hPos, vPos = self.getScroll()
+        w.scrollToItem(item, w.EnsureVisible)
+            # Fix #265: Erratic scrolling bug.
+            # w.PositionAtCenter causes unwanted scrolling.
+        self.setHScroll(0)
+            # Necessary
     #@+node:ekr.20110605121601.18434: *4* qtree.getSCroll
     def getScroll(self):
         '''Return the hPos,vPos for the tree's scrollbars.'''
@@ -1159,44 +979,9 @@ class LeoQtTree(leoFrame.LeoTree):
         tw.setCurrentItem(item, 0, QtCore.QItemSelectionModel.SelectionFlags(3))
         tw.blockSignals(False)
         return
-
-
-
-        trace = False and not g.unitTesting
-        c = self.c
-        if c.enableRedrawFlag:
-            self.selecting = False
-            if self.busy():
-                self.error('afterSelectHint busy!: %s' % self.busy())
-            if not p:
-                return self.error('no p')
-            if p != c.p:
-                if trace: self.error(
-                    '(afterSelectHint) p != c.p\np:   %s\nc.p: %s\n' % (
-                    repr(p), repr(c.currentPosition())))
-                p = c.p
-            # if trace: g.trace(c.p.h,g.callers())
-            # We don't redraw during unit testing: an important speedup.
-            if c.expandAllAncestors(p) and not g.unitTesting:
-                if trace: g.trace('***self.full_redraw')
-                #self.full_redraw(p)
-            else:
-                if trace: g.trace('*** c.outerUpdate')
-                c.outerUpdate() # Bring the tree up to date.
-                self.setItemForCurrentPosition(scroll=False)
-        else:
-            self.selecting = False
-            c.requestLaterRedraw = True
     #@+node:ekr.20110605121601.17907: *4* qtree.beforeSelectHint
     def beforeSelectHint(self, p, old_p):
         return
-        trace = False and not g.unitTesting
-        if self.busy(): return
-        c = self.c
-        if trace: g.trace(p and p.h, c.p.h)
-        # Disable onTextChanged.
-        self.selecting = True
-        self.prev_v = c.p.v
     #@+node:ekr.20110605121601.17908: *4* qtree.edit_widget
     def edit_widget(self, p):
         """Returns the edit widget for position p."""
@@ -1246,12 +1031,6 @@ class LeoQtTree(leoFrame.LeoTree):
             # A nice hack: just set the focus request.
             c.requestedFocusWidget = e
         return e, wrapper
-    #@+node:ekr.20110605121601.17910: *4* qtree.editPosition (no longer used)
-    # def editPosition(self):
-        # c = self.c
-        # p = c.currentPosition()
-        # ew = self.edit_widget(p)
-        # return p if ew else None
     #@+node:ekr.20110605121601.17911: *4* qtree.endEditLabel
     def endEditLabel(self):
         '''Override LeoTree.endEditLabel.
@@ -1282,49 +1061,9 @@ class LeoQtTree(leoFrame.LeoTree):
             item = self.position2item(p, self.rootPosition)
             if item:
                 if trace: g.trace('item', s)
-                self.setItemText(item, s)
+                item.setText(0, s)
             else:
                 if trace: g.trace('*** failed. no item for %s' % p.h)
-    #@+node:ekr.20110605121601.17913: *4* qtree.setItemForCurrentPosition
-    def setItemForCurrentPosition(self, scroll=True):
-        '''Select the item for c.p'''
-        trace = False and not g.unitTesting
-        verbose = True
-        c = self.c; p = c.currentPosition()
-        if self.busy():
-            if trace and verbose: g.trace('** busy')
-            return None
-        if not p:
-            if trace and verbose: g.trace('** no p')
-            return None
-        item = self.position2item(p, self.rootPosition)
-        if not item:
-            # This is not necessarily an error.
-            # We often attempt to select an item before redrawing it.
-            if trace and verbose:
-                g.trace('** no item for', p)
-                g.trace(g.callers())
-            return None
-        item2 = self.getCurrentItem()
-        if item == item2:
-            if trace and verbose: g.trace('no change', self.traceItem(item), p.h)
-            if scroll:
-                self.scrollToItem(item)
-        else:
-            try:
-                self.selecting = True
-                # This generates gui events, so we must use a lockout.
-                if trace and verbose: g.trace('setCurrentItem', self.traceItem(item), p.h)
-                self.setCurrentItemHelper(item)
-                    # Just calls self.setCurrentItem(item)
-                if scroll:
-                    if trace: g.trace(self.traceItem(item))
-                    self.scrollToItem(item)
-            finally:
-                self.selecting = False
-        # if trace: g.trace('item',repr(item))
-        if not item: g.trace('*** no item')
-        return item
     #@-others
 #@-others
 #@@language python

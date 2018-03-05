@@ -1230,6 +1230,7 @@ class Undoer(object):
             u.redoHelper()
         else:
             g.trace('no redo helper for %s %s' % (u.kind, u.undoType))
+            u.update_tree()
         c.checkOutline()
         # Redraw and recolor.
         c.frame.body.updateEditors() # New in Leo 4.4.8.
@@ -1456,6 +1457,7 @@ class Undoer(object):
         u = self; c = u.c
         parent_v = u.p._parentVnode()
         parent_v.children = u.newChildren
+        c.frame.tree.sync_vnodes([parent_v])
         p = c.setPositionAfterSort(u.sortChildren)
         c.setCurrentPosition(p)
     #@+node:ekr.20050318085432.8: *4* u.redoTree
@@ -1515,6 +1517,7 @@ class Undoer(object):
             u.undoHelper()
         else:
             g.trace('no undo helper for %s %s' % (u.kind, u.undoType))
+            u.update_tree()
         c.checkOutline()
         # Redraw and recolor.
         c.frame.body.updateEditors() # New in Leo 4.4.8.
@@ -1541,6 +1544,13 @@ class Undoer(object):
         u.bead -= 1
         u.setUndoTypes()
     #@+node:ekr.20110519074734.6093: *3* u.undo helpers
+    #@+node:vitalije.20180305182127.1: *4* update_tree
+    def update_tree(self):
+        c = self.c
+        if c.hoistStack:
+            c.frame.tree.full_redraw(c.hoistStack[-1].p)
+        else:
+            c.frame.tree.full_redraw()
     #@+node:ekr.20050424170219.1: *4* u.undoClearRecentFiles
     def undoClearRecentFiles(self):
         u = self; c = u.c
@@ -1553,6 +1563,7 @@ class Undoer(object):
         next = u.p.next()
         assert next.h == 'Clones of marked nodes', (u.p, next.h)
         next.doDelete()
+        u.update_tree()
         u.p.setAllAncestorAtFileNodesDirty()
         u.c.selectPosition(u.p)
     #@+node:ekr.20160502175653.1: *4* u.undoCopyMarkedNodes
@@ -1561,6 +1572,7 @@ class Undoer(object):
         next = u.p.next()
         assert next.h == 'Copies of marked nodes', (u.p.h, next.h)
         next.doDelete()
+        u.update_tree()
         u.p.setAllAncestorAtFileNodesDirty()
         u.c.selectPosition(u.p)
     #@+node:ekr.20050412083057.1: *4* u.undoCloneNode
@@ -1584,6 +1596,7 @@ class Undoer(object):
             else:
                 parent_v = c.hiddenRootNode
             p.v._addLink(p._childIndex, parent_v)
+        u.update_tree()
         u.p.setAllAncestorAtFileNodesDirty()
         c.selectPosition(u.p)
     #@+node:ekr.20050412084055: *4* u.undoDeleteNode
@@ -1596,6 +1609,7 @@ class Undoer(object):
         else:
             oldRoot = c.rootPosition()
             u.p._linkAsRoot(oldRoot)
+        u.update_tree()
         u.p.setAllAncestorAtFileNodesDirty()
         c.selectPosition(u.p)
     #@+node:ekr.20080425060424.10: *4* u.undoDemote
@@ -1612,6 +1626,7 @@ class Undoer(object):
         for sib in u.followingSibs:
             sib.parents.remove(u.p.v)
             sib.parents.append(parent_v)
+        u.update_tree()
         c.setCurrentPosition(u.p)
     #@+node:ekr.20050318085713: *4* u.undoGroup
     def undoGroup(self):
@@ -1639,6 +1654,7 @@ class Undoer(object):
                     z.undoHelper(); count += 1
                 else:
                     g.trace('oops: no undo helper for %s %s' % (u.undoType, p.v))
+                    u.update_tree()
         u.groupCount -= 1
         u.updateMarks('old') # Bug fix: Leo 4.4.6.
         for v in dirtyVnodeList:
@@ -1677,6 +1693,7 @@ class Undoer(object):
                 else:
                     v.setBodyString(bunch.body)
                     v.setHeadString(bunch.head)
+            u.update_tree()
     #@+node:ekr.20050526124906: *4* u.undoMark
     def undoMark(self):
         u = self; c = u.c
@@ -1708,6 +1725,7 @@ class Undoer(object):
         u.updateMarks('old')
         for v in u.dirtyVnodeList:
             v.setDirty()
+        u.update_tree()
         c.selectPosition(u.p)
     #@+node:ekr.20050318085713.1: *4* u.undoNodeContents
     def undoNodeContents(self):
@@ -1751,6 +1769,7 @@ class Undoer(object):
         for child in u.children:
             child.parents.remove(parent_v)
             child.parents.append(u.p.v)
+        u.update_tree()
         c.setCurrentPosition(u.p)
     #@+node:ekr.20031218072017.1493: *4* u.undoRedoText
     def undoRedoText(self, p,
@@ -1811,6 +1830,7 @@ class Undoer(object):
             u.beads[u.bead] = bunch
         # Replace data in tree with old data.
         u.restoreTree(old_data)
+        u.update_tree()
         c.setBodyString(p, p.b)
         return p # Nothing really changes.
     #@+node:ekr.20080425060424.5: *4* u.undoSort
@@ -1818,6 +1838,7 @@ class Undoer(object):
         u = self; c = u.c
         parent_v = u.p._parentVnode()
         parent_v.children = u.oldChildren
+        c.frame.tree.sync_vnodes([parent_v])
         p = c.setPositionAfterSort(u.sortChildren)
         c.setCurrentPosition(p)
     #@+node:ekr.20050318085713.2: *4* u.undoTree
@@ -1825,6 +1846,7 @@ class Undoer(object):
         '''Redo replacement of an entire tree.'''
         u = self; c = u.c
         u.p = self.undoRedoTree(u.p, u.newTree, u.oldTree)
+        u.update_tree()
         c.selectPosition(u.p) # Does full recolor.
         if u.oldSel:
             i, j = u.oldSel
