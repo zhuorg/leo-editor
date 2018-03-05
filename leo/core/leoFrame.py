@@ -1712,6 +1712,15 @@ class LeoTree(object):
             delta_t = time.time() - t1
             if delta_t > 0.1:
                 print('%20s: %2.3f sec' % ('tree-select:status', delta_t))
+    #@+node:vitalije.20180305132100.1: *3* LeoTree.May be defined in subclasses
+    def sync_vnodes(self, vn):
+        pass
+
+    def expandPos(self, p):
+        pass
+
+    def contractPos(self, p):
+        pass
     #@+node:ekr.20031218072017.3718: *3* oops
     def oops(self):
         g.pr("LeoTree oops:", g.callers(4), "should be overridden in subclass")

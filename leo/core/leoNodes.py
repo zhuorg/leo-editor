@@ -2352,6 +2352,25 @@ class VNodeBase(object):
     #@+node:ekr.20031218072017.3377: *5* v.status
     def status(self):
         return self.statusBits
+    #@+node:vitalije.20180304130043.1: *4* v.positions
+    def positions(self):
+        '''returns iterator of all positions of this vnode inside tree'''
+        acc = []
+        def ups(v):
+            if len(v.parents):
+                acc.insert(0, None)
+                for pv in v.parents:
+                    acc[0] = (v, pv.children.index(v))
+                    for x in ups(pv):
+                        yield x
+                acc.pop(0)
+            else:
+                yield acc
+
+        for pv in self.parents:
+            i = pv.children.index(self)
+            for x in ups(pv):
+                yield Position(self, i, x)
     #@+node:ekr.20031218072017.3384: *3* v.Setters
     #@+node:ekr.20090830051712.6151: *4*  v.Dirty bits
     #@+node:ekr.20031218072017.3390: *5* v.clearDirty

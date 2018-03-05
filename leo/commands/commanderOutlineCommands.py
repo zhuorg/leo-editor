@@ -166,18 +166,21 @@ def contractAllOtherNodes(self, event=None):
 def contractIfNotCurrent(c, p, leaveOpen):
     if p == leaveOpen or not p.isAncestorOf(leaveOpen):
         p.contract()
+        c.frame.tree.contractPos(p)
     for child in p.children():
         if child != leaveOpen and child.isAncestorOf(leaveOpen):
             contractIfNotCurrent(c, child, leaveOpen)
         else:
             for p2 in child.self_and_subtree():
                 p2.contract()
+                c.frame.tree.contractPos(p2)
 #@+node:ekr.20031218072017.2901: *3* c_oc.contractNode
 @g.commander_command('contract-node')
 def contractNode(self, event=None):
     '''Contract the presently selected node.'''
     c = self; p = c.p
     p.contract()
+    c.frame.tree.contractPos(p)
     if p.isCloned():
         c.redraw() # A full redraw is necessary to handle clones.
     else:
@@ -227,6 +230,7 @@ def contractParent(self, event=None):
     parent = p.parent()
     if not parent: return
     parent.contract()
+    c.frame.tree.contractPos(parent)
     c.redraw_after_contract(p=parent)
 #@+node:ekr.20031218072017.2903: *3* c_oc.expandAllHeadlines
 @g.commander_command('expand-all')
@@ -316,6 +320,7 @@ def expandNode(self, event=None):
     trace = False and not g.unitTesting
     c = self; p = c.p
     p.expand()
+    c.frame.tree.expandPos(p)
     if p.isCloned():
         if trace: g.trace('***redraw')
         c.redraw() # Bug fix: 2009/10/03.
@@ -659,6 +664,11 @@ def dehoist(self, event=None):
     p = bunch.p
     if bunch.expanded: p.expand()
     else: p.contract()
+    if c.hoistStack:
+        p1 = c.hoistStack[-1].p
+    else:
+        p1 = None
+    c.frame.tree.full_redraw(p1)
     c.setCurrentPosition(p)
     c.redraw()
     c.frame.clearStatusLine()
@@ -671,6 +681,7 @@ def clearAllHoists(self, event=None):
     '''Undo a previous hoist of an outline.'''
     c = self
     c.hoistStack = []
+    c.frame.tree.full_redraw()
     c.frame.putStatusLine("Hoists cleared")
     g.doHook('hoist-changed', c=c)
 #@+node:ekr.20120308061112.9867: *3* c_oc.hoist
@@ -690,7 +701,8 @@ def hoist(self, event=None):
     bunch = g.Bunch(p=p.copy(), expanded=p.isExpanded())
     c.hoistStack.append(bunch)
     p.expand()
-    c.redraw(p)
+    c.frame.tree.full_redraw(p)
+    c.redraw(p.firstChild())
     c.frame.clearStatusLine()
     c.frame.putStatusLine("Hoist: " + p.h)
     c.undoer.afterHoist(p, 'Hoist')
@@ -799,7 +811,9 @@ def deleteOutline(self, event=None, op_name="Delete Node"):
     if not newNode: return
     undoData = u.beforeDeleteNode(p)
     dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
+    v = p._parentVnode()
     p.doDelete(newNode)
+    c.frame.tree.sync_vnodes([v])
     c.setChanged(True)
     u.afterDeleteNode(newNode, op_name, undoData, dirtyVnodeList=dirtyVnodeList)
     c.redraw(newNode)
@@ -857,8 +871,11 @@ def insertHeadlineHelper(c,
             p = current.insertAsLastChild()
         else:
             p = current.insertAsNthChild(0)
+        vupd = [current.v]
     else:
+        vupd = [current._parentVnode()]
         p = current.insertAfter()
+    c.frame.tree.sync_vnodes(vupd)
     g.doHook('create-node', c=c, p=p)
     p.setDirty(setDescendentsDirty=False)
     dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
@@ -879,7 +896,9 @@ def insertHeadlineBefore(self, event=None):
         return
     c.endEditing()
     undoData = u.beforeInsertNode(current)
+    vupd = [current._parentVnode()]
     p = current.insertBefore()
+    c.frame.tree.sync_vnodes(vupd)
     g.doHook('create-node', c=c, p=p)
     p.setDirty(setDescendentsDirty=False)
     dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
@@ -1186,6 +1205,7 @@ def demote(self, event=None):
     dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
     c.setChanged(True)
     u.afterDemote(p, followingSibs, dirtyVnodeList)
+    c.frame.tree.sync_vnodes([parent_v])
     c.redraw(p, setFocus=True)
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1768: *3* c_oc.moveOutlineDown
@@ -1217,22 +1237,29 @@ def moveOutlineDown(self, event=None):
     undoData = u.beforeMoveNode(p)
     #@+<< Move p down & set moved if successful >>
     #@+node:ekr.20031218072017.1769: *4* << Move p down & set moved if successful >>
+    vupd = []
     if next.hasChildren() and next.isExpanded():
         # Attempt to move p to the first child of next.
         moved = c.checkMoveWithParentWithWarning(p, next, True)
         if moved:
             dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
+            vupd = [p._parentVnode(), next._parentVnode()]
             p.moveToNthChildOf(next, 0)
     else:
         # Attempt to move p after next.
         moved = c.checkMoveWithParentWithWarning(p, next.parent(), True)
         if moved:
             dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
+            vupd = [p._parentVnode()]
             p.moveAfter(next)
+    if vupd:
+        c.frame.tree.sync_vnodes(vupd)
     # Patch by nh2: 0004-Add-bool-collapse_nodes_after_move-option.patch
     if c.collapse_nodes_after_move and moved and c.sparse_move and parent and not parent.isAncestorOf(p):
         # New in Leo 4.4.2: contract the old parent if it is no longer the parent of p.
         parent.contract()
+        c.frame.tree.contractPos(parent)
+
     #@-<< Move p down & set moved if successful >>
     if moved:
         if inAtIgnoreRange and not p.inAtIgnoreRange():
@@ -1275,6 +1302,7 @@ def moveOutlineLeft(self, event=None):
     # Patch by nh2: 0004-Add-bool-collapse_nodes_after_move-option.patch
     if c.collapse_nodes_after_move and c.sparse_move: # New in Leo 4.4.2
         parent.contract()
+    c.frame.tree.sync_vnodes([parent.v, p._parentVnode()])
     c.redraw(p, setFocus=True)
     c.recolor() # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1771: *3* c_oc.moveOutlineRight
@@ -1298,7 +1326,11 @@ def moveOutlineRight(self, event=None):
     undoData = u.beforeMoveNode(p)
     dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
     n = back.numberOfChildren()
+
+    vupd = [p._parentVnode(), back._parentVnode()]
     p.moveToNthChildOf(back, n)
+    c.frame.tree.sync_vnodes(vupd)
+    
     # Moving an outline right can never bring it outside the range of @ignore.
     dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty()
     dirtyVnodeList.extend(dirtyVnodeList2)
@@ -1336,6 +1368,7 @@ def moveOutlineUp(self, event=None):
         g.trace("back2.hasChildren", back2 and back2.hasChildren())
         g.trace("back2.isExpanded", back2 and back2.isExpanded())
     parent = p.parent()
+    vupd = []
     if not back2:
         if c.hoistStack: # hoist or chapter.
             limit, limitIsVisible = c.visLimit()
@@ -1346,23 +1379,30 @@ def moveOutlineUp(self, event=None):
             else:
                 # g.trace('chapter first child')
                 moved = True
+                vupd = [p._parentVnode(), limit.v]
                 p.moveToFirstChildOf(limit)
         else:
             # p will be the new root node
             p.moveToRoot(oldRoot=c.rootPosition())
             moved = True
+            vupd = [c.hiddenRootNode]
     elif back2.hasChildren() and back2.isExpanded():
         if c.checkMoveWithParentWithWarning(p, back2, True):
             moved = True
+            vupd = [back2._parentVnode(), p._parentVnode()]
             p.moveToNthChildOf(back2, 0)
     else:
         if c.checkMoveWithParentWithWarning(p, back2.parent(), True):
             moved = True
+            vupd = [p._parentVnode(), back2._parentVnode()]
             p.moveAfter(back2)
     # Patch by nh2: 0004-Add-bool-collapse_nodes_after_move-option.patch
+    if vupd:
+        c.frame.tree.sync_vnodes(vupd)
     if c.collapse_nodes_after_move and moved and c.sparse_move and parent and not parent.isAncestorOf(p):
         # New in Leo 4.4.2: contract the old parent if it is no longer the parent of p.
         parent.contract()
+        c.frame.tree.contractPos(parent)
     #@-<< Move p up >>
     if moved:
         if inAtIgnoreRange and not p.inAtIgnoreRange():
@@ -1399,6 +1439,7 @@ def promote(self, event=None, undoFlag=True, redrawFlag=True):
     if redrawFlag:
         c.redraw(p, setFocus=True)
         c.updateSyntaxColorer(p) # Moving can change syntax coloring.
+    c.frame.tree.sync_vnodes([p._parentVnode()])
 #@+node:ekr.20071213185710: *3* c_oc.toggleSparseMove
 @g.commander_command('toggle-sparse-move')
 def toggleSparseMove(self, event=None):

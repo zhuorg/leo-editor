@@ -643,6 +643,7 @@ class FileCommands(object):
         if trace and verbose:
             g.trace('**** dumping outline...')
             c.dumpOutline()
+        c.frame.tree.sync_vnodes([current.v])
         c.selectPosition(p)
         self.initReadIvars()
         return p

@@ -2618,6 +2618,7 @@ class Commands(object):
                 c.setCurrentPosition(p)
             else:
                 p = c.currentPosition()
+            c.frame.tree.contractPos(p)
             if p.isCloned():
                 c.redraw(p=p, setFocus=setFocus)
             else:
@@ -2634,6 +2635,7 @@ class Commands(object):
                 c.setCurrentPosition(p)
             else:
                 p = c.currentPosition()
+            c.frame.tree.expandPos(p)
             if p.isCloned():
                 c.redraw(p=p, setFocus=setFocus)
             else:
@@ -2762,6 +2764,7 @@ class Commands(object):
         c = self
         for p in c.all_positions():
             p.contract()
+            c.frame.tree.contractPos(p)
         # Select the topmost ancestor of the presently selected node.
         p = c.p
         while p and p.hasParent():
@@ -2771,15 +2774,19 @@ class Commands(object):
         c.expansionLevel = 1 # Reset expansion level.
     #@+node:ekr.20031218072017.2910: *5* c.contractSubtree
     def contractSubtree(self, p):
+        c =  self
         for p in p.subtree():
             p.contract()
+            c.frame.tree.contractPos(p)
     #@+node:ekr.20031218072017.2911: *5* c.expandSubtree
-    def expandSubtree(self, v):
+    def expandSubtree(self, p):
         c = self
-        last = v.lastNode()
-        while v and v != last:
-            v.expand()
-            v = v.threadNext()
+
+        last = p.lastNode()
+        while p and p != last:
+            p.expand()
+            c.frame.tree.expandPos(p)
+            p = p.threadNext()
         c.redraw()
     #@+node:ekr.20031218072017.2912: *5* c.expandToLevel
     def expandToLevel(self, level):
@@ -2791,9 +2798,11 @@ class Commands(object):
         for p in c.p.self_and_subtree():
             if p.level() - n + 1 < level:
                 p.expand()
+                c.frame.tree.expandPos(p)
                 max_level = max(max_level, p.level() - n + 1)
             else:
                 p.contract()
+                c.frame.tree.contractPos(p)
         c.expansionNode = c.p.copy()
         c.expansionLevel = max_level + 1
         if c.expansionLevel != old_expansion_level:

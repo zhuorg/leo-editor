@@ -450,6 +450,7 @@ class Chapter(object):
                 p.h = 'New Headline'
                 if trace: g.trace('inserted child of @chapter node', p.h)
         c.hoistStack.append(g.Bunch(p=root.copy(), expanded=True))
+        c.frame.tree.full_redraw(root)
         # Careful: c.selectPosition would pop the hoist stack.
         if trace: g.trace('done:', self)
         c.setCurrentPosition(p)
@@ -528,8 +529,10 @@ class Chapter(object):
             p = c.hoistStack[-1].p
             if trace: g.trace('re-hoist', p.h, c.positionExists(p))
             # Careful: c.selectPosition would pop the hoist stack.
-            c.setCurrentPosition(p)
+            c.frame.tree.full_redraw(p)
+            c.setCurrentPosition(c.p)
         else:
+            c.frame.tree.full_redraw()
             if trace: g.trace('empty hoist-stack')
             p = root or c.p
             c.setCurrentPosition(p)
