@@ -369,6 +369,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw.resize(691, 635)
         dw.setDockNestingEnabled(False)
         dw.setDockOptions(
+            QtWidgets.QMainWindow.AllowNestedDocks |
             QtWidgets.QMainWindow.AllowTabbedDocks |
             QtWidgets.QMainWindow.AnimatedDocks)
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
