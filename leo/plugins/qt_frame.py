@@ -369,9 +369,14 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw.resize(691, 635)
         dw.setDockNestingEnabled(False)
         dw.setDockOptions(
-            QtWidgets.QMainWindow.AllowNestedDocks |
-            QtWidgets.QMainWindow.AllowTabbedDocks |
-            QtWidgets.QMainWindow.AnimatedDocks)
+            QtWidgets.QMainWindow.AllowNestedDocks
+            | QtWidgets.QMainWindow.AllowTabbedDocks
+            # GroupedDragging added in Qt 5.6, could be a runtime toggle
+            | getattr(QtWidgets.QMainWindow, 'GroupedDragging', 0)
+            # AnimatedDocks make placing nested docks harder
+            # | QtWidgets.QMainWindow.AnimatedDocks
+        )
+        dw.setTabPosition(QtCore.Qt.AllDockWidgetAreas, QtWidgets.QTabWidget.North)
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
     #@+node:ekr.20110605121601.18153: *5* dw.createButton
     def createButton(self, parent, name, label):

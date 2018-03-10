@@ -40,3 +40,14 @@ Devs, please add your descriptions here.
 
 - A long-lived branch a long-lived branch containing prototype code related to client/server/javascript/vue.js code.
 - There are no plans to merge or delete this branch at this time.
+
+## qdock-layout
+
+ - a new attempt at using QDockWidgets to replace NestedSplitter / free_layout.
+ - this supercedes the qt_docks branch, which I'll leave alive for now, although
+   this may replace it leading to the deletion of qt_docks
+ - new idea is to simply skip all the hard parts loading widgets into new locations
+   in QDockWidgets at startup, and instead move them in to QDockWidgets post startup
+ - still plenty of work to do in persisting layouts and compatibility across Qt 4
+   and 5, I suspect QDockWidgets have richer functionality / introspection in 5.
+
