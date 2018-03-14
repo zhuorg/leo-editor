@@ -1,5 +1,5 @@
 # import json
-from pprint import pprint
+import json
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets
 QtConst = QtCore.Qt
@@ -52,9 +52,12 @@ def dockify(event=None):
 
     tw = c.frame.log.tabWidget
     while tw.count() > 1:
-        w = QtWidgets.QDockWidget(tw.tabText(1), mw)
-        w.setWidget(tw.widget(1))
-        mw.tabifyDockWidget(log_dock, w)
+        dw = QtWidgets.QDockWidget(tw.tabText(1), mw)
+        w = tw.widget(1)
+        if not hasattr(w, '_ns_id'):
+            w._ns_id = '_leo_tab:%s' % tw.tabText(1)
+        dw.setWidget(w)
+        mw.tabifyDockWidget(log_dock, dw)
 def to_json(c):
     """to_json - introspect dock layout
 
@@ -63,33 +66,38 @@ def to_json(c):
     Returns:
         dict: 'json' rep. of layout
     """
-    ans = {'area': {}, 'widget': {}, 'tab': {}}
+
+    _id = lambda x: x.widget()._ns_id
+
+    ans = {'area': {}, 'widget': {}, 'tab_group': {}}
     widgets = c.frame.top.findChildren(QtWidgets.QDockWidget)
-    tab_known = set()
-    tab_set = 0
+    tab_known = set()  # widgets with known tab status
+    tab_group = 0
     for w in widgets:
         area = c.frame.top.dockWidgetArea(w)
-        ans['area'].setdefault(area, []).append(w)
-        # maybe already added by tabbed_with code
-        ans['widget'].setdefault(w, {})['area'] = area
-        d = ans['widget'][w]
+        ans['area'].setdefault(area, []).append(_id(w))
+        # dict for w, maybe already added by tabbed_with code
+        d = ans['widget'].setdefault(_id(w), {})
+        d['area'] = area
         # https://stackoverflow.com/a/22238571/1072212
+        # test for tabs being visible
         d['visible'] = not w.visibleRegion().isEmpty()
-        if w not in tab_known:
+        if w not in tab_known:  # see if widget is in a tab group
             tabbed_with = c.frame.top.tabifiedDockWidgets(w)
             if tabbed_with:
                 assert w not in tabbed_with
-                tabbed_with[0:0] = [w]
-                tab_set += 1
-                ans['tab'][tab_set] = tabbed_with
-                for tw in tabbed_with:
+                tabbed_with.append(w)  # include widget in group, this seems to
+                                       # preserve tab order, but feels fragile
+                tab_group += 1
+                ans['tab_group'][tab_group] = [_id(i) for i in tabbed_with]
+                for tw in tabbed_with:  # assign group ID to all members
                     tab_known.add(tw)
-                    ans['widget'].setdefault(tw, {})['tab'] = tab_set
+                    ans['widget'].setdefault(_id(tw), {})['tab_group'] = tab_group
             else:
-                ans['widget'][w]['tab'] = None
+                d['tab_group'] = None
         for i in 'x', 'y', 'width', 'height':
             d[i] = getattr(w, i)()
-        d['_ns_id'] = getattr(w.widget(), '_ns_id', None) if w.widget() else None
+        d['_ns_id'] = _id(w)
     return ans
 
 
@@ -100,7 +108,12 @@ def dock_json(event=None):
     Args:
         event: Leo command event
     """
-    g.log(pprint(to_json(event['c'])))
+    json.dump(
+        to_json(event['c']),
+        open(g.os_path_join(g.computeHomeDir(), 'dock.json'), 'w'),
+        indent=4,
+        sort_keys=True
+    )
 @g.command('dock-toggle-titles')
 def toggle_titles(event):
 
