@@ -136,112 +136,6 @@ def load_json_plot(event):
         )
         plt.text(x+width/2, -y-height/2, ns_id)
     plt.show()
-def bbox(widgets):
-    """bbox - get max extent of dict of widgets
-
-    Args:
-        widgets ({name:{attr}}): widgets dict
-    Returns:
-        tuple: xmin, ymin, xmax, ymax
-    """
-    x = []
-    y = []
-    for w in [i for i in widgets.values() if i['visible']]:
-        x.append(w['x'])
-        x.append(w['x']+w['width'])
-        y.append(-w['y'])
-        y.append(-w['y']-w['height'])
-    return min(x), min(y), max(x), max(y)
-
-def in_bbox(widget, bbox):
-    """in_bbox - determine if the widget's in a bbox
-
-    Args:
-        widget ({attr}): widget attributes
-        bbox (tuple): xmin, ymin, xmax, ymax
-    Returns:
-        bool: widget is in bbox
-    """
-    xctr = widget['x']+widget['width']/2
-    yctr = -widget['y']-widget['height']/2
-    return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
-
-def area_span(widget, bbox):
-    """area_span - find max. proportion of area width/height spanned
-    by widget
-
-    Args:
-        widget ({attr}): widget attributes
-        bbox (tuple): xmin, ymin, xmax, ymax
-    Returns:
-        tuple: (float, bool) max. proportion, is width
-    """
-    xprop = widget['width'] / float(bbox[2] - bbox[0])
-    yprop = widget['height'] / float(bbox[3] - bbox[1])
-    if xprop > yprop:
-        return xprop, True
-    else:
-        return yprop, False
-
-g.bbox, g.in_bbox, g.area_span = bbox, in_bbox, area_span
-
-@g.command('dock-load-json')
-def load_json(event):
-    """load_json - load layout from JSON file
-
-    Args:
-        event: Leo command event
-    """
-    bbox, in_bbox, area_span = g.bbox, g.in_bbox, g.area_span
-
-    d = json.load(open(g.os_path_join(g.computeHomeDir(), 'dock.json')))
-
-    todo = [(list(d['widget'].values()), bbox(d['widget']))]
-    # g.log(todo)
-    # g.log(in_bbox(todo[0][0].popitem()[1], todo[0][1]))
-
-    while todo:
-        widgets, bbox = todo.pop(0)
-        ordered = sorted(
-            widgets,
-            key=lambda x: area_span(x, bbox),
-            reverse=True
-        )
-        first = ordered[0]
-        if area_span(first, bbox)[1]:  # width spanning
-            g.log('width')
-            below = (bbox[0], bbox[1], bbox[2], -first['y']-first['height'])
-            above = (bbox[0], -first['y'], bbox[2], bbox[3])
-            in_below = [i for i in widgets if i['visible'] and in_bbox(i, below)]
-            in_above = [i for i in widgets if i['visible'] and in_bbox(i, above)]
-            # g.log(below, in_below)
-            # g.log(above, in_above)
-            # g.log(len([i for i in widgets if i['visible']]),
-            #     len(in_below), len(in_above))
-            assert len(in_below)+len(in_above)+1 == len(
-                [i for i in widgets if i['visible']])
-            g.log('place %s' % first['_ns_id'])
-            if in_below:
-                todo.append((in_below, below))
-            if in_above:
-                todo.append((in_above, above))
-        else:
-            g.log('height')
-            left = (bbox[0], bbox[1], first['x'], bbox[3])
-            right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
-            in_left = [i for i in widgets if i['visible'] and in_bbox(i, left)]
-            in_right = [i for i in widgets if i['visible'] and in_bbox(i, right)]
-            # g.log(left, in_left)
-            # g.log(right, in_right)
-            # g.log(len([i for i in widgets if i['visible']]),
-            #     len(in_left), len(in_right))
-            assert len(in_left)+len(in_right)+1 == len(
-                [i for i in widgets if i['visible']])
-            g.log('place %s' % first['_ns_id'])
-            if in_left:
-                todo.append((in_left, left))
-            if in_right:
-                todo.append((in_right, right))
 @g.command('dock-toggle-titles')
 def toggle_titles(event):
 
@@ -257,3 +151,175 @@ def toggle_titles(event):
     # apply to all QDockWidgets
     for child in mw.findChildren(QtWidgets.QDockWidget):
         child.setTitleBarWidget(widget_factory())
+
+@g.command('dock-load-json')
+def load_json(event):
+    dm = DockManager(event['c'])
+    dm.load_json()
+class DockManager(object):
+    """DockManager - manage QDockWidget layouts"""
+
+    def __init__(self, c):
+        """bind to Leo context
+
+    Args:
+        c (context): Leo outline
+        """
+        self.c = c
+
+
+    @staticmethod
+    def bbox(widgets):
+        """bbox - get max extent of dict of widgets
+
+        Args:
+            widgets ({name:{attr}}): widgets dict
+        Returns:
+            tuple: xmin, ymin, xmax, ymax
+        """
+        x = []
+        y = []
+        for w in [i for i in widgets if i['visible']]:
+            x.append(w['x'])
+            x.append(w['x']+w['width'])
+            y.append(-w['y'])
+            y.append(-w['y']-w['height'])
+        return min(x), min(y), max(x), max(y)
+
+    @staticmethod
+    def in_bbox(widget, bbox):
+        """in_bbox - determine if the widget's in a bbox
+
+        Args:
+            widget ({attr}): widget attributes
+            bbox (tuple): xmin, ymin, xmax, ymax
+        Returns:
+            bool: widget is in bbox
+        """
+        xctr = widget['x']+widget['width']/2
+        yctr = -widget['y']-widget['height']/2
+        return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
+
+    @staticmethod
+    def area_span(widget, bbox):
+        """area_span - find max. proportion of area width/height spanned
+        by widget
+
+        Args:
+            widget ({attr}): widget attributes
+            bbox (tuple): xmin, ymin, xmax, ymax
+        Returns:
+            tuple: (float, bool) max. proportion, is width
+        """
+        xprop = widget['width'] / float(bbox[2] - bbox[0])
+        yprop = widget['height'] / float(bbox[3] - bbox[1])
+        if xprop > yprop:
+            return xprop, True
+        else:
+            return yprop, False
+
+    def find_dock(self, ns_id):
+        """find_dock - find a dock widget
+
+        Args:
+            ns_id (str): the ID for the widget
+        Returns:
+            QWidget: the widget
+        """
+        for child in self.c.frame.top.findChildren(QtWidgets.QDockWidget):
+            if child.widget()._ns_id == ns_id:
+                return child
+        g.log("Didn't find "+ns_id, color='warning')
+    def load_json(self):
+        """load_json - load layout from JSON file
+
+        Args:
+            event: Leo command event
+        """
+        c = self.c
+        # make sure nothing's tabbed
+        self.keep = []
+        for w in c.frame.top.findChildren(QtWidgets.QDockWidget):
+            self.keep.append(w)
+            # c.frame.top.removeDockWidget(w)
+            c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, w)
+            print(w.widget()._ns_id)
+            assert w.parent() == c.frame.top
+
+        d = json.load(open(g.os_path_join(g.computeHomeDir(), 'dock.json')))
+
+        widgets = list(d['widget'].values())
+        todo = [(widgets, self.bbox(widgets), None)]
+        # g.log(todo)
+        # g.log(in_bbox(todo[0][0].popitem()[1], todo[0][1]))
+
+        max_place = 2
+        placed = 0
+        while todo:
+            widgets, bbox, ref = todo.pop(0)
+            ordered = sorted(
+                widgets,
+                key=lambda x: self.area_span(x, bbox),
+                reverse=True
+            )
+            first = ordered[0]
+            if self.area_span(first, bbox)[1]:  # width spanning
+                # g.log('width')
+                below = (bbox[0], bbox[1], bbox[2], -first['y']-first['height'])
+                above = (bbox[0], -first['y'], bbox[2], bbox[3])
+                in_below = [i for i in widgets if i['visible'] and self.in_bbox(i, below)]
+                in_above = [i for i in widgets if i['visible'] and self.in_bbox(i, above)]
+                # g.log(below, in_below)
+                # g.log(above, in_above)
+                # g.log(len([i for i in widgets if i['visible']]),
+                #     len(in_below), len(in_above))
+                assert len(in_below)+len(in_above)+1 == len(
+                    [i for i in widgets if i['visible']])
+                # g.log('place %s' % first['_ns_id'])
+                if ref:
+                    ref_w = self.find_dock(ref)
+                    nxt_w = self.find_dock(first['_ns_id'])
+                    c.frame.top.splitDockWidget(ref_w, nxt_w, QtConst.Horizontal)
+                    if d['widget'][ref]['y'] < first['y']:
+                        print("Swap V")
+                        c.frame.top.splitDockWidget(nxt_w, ref_w, QtConst.Horizontal)
+                    placed += 1
+                    if placed == max_place:
+                        return
+                else:
+                    c.frame.top.addDockWidget(
+                        QtConst.TopDockWidgetArea, self.find_dock(first['_ns_id']))
+                if in_below:
+                    todo.append((in_below, below, first['_ns_id']))
+                if in_above:
+                    todo.append((in_above, above, first['_ns_id']))
+            else:
+                # g.log('height')
+                left = (bbox[0], bbox[1], first['x'], bbox[3])
+                right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
+                in_left = [i for i in widgets if i['visible'] and self.in_bbox(i, left)]
+                in_right = [i for i in widgets if i['visible'] and self.in_bbox(i, right)]
+                # g.log(left, in_left)
+                # g.log(right, in_right)
+                # g.log(len([i for i in widgets if i['visible']]),
+                #     len(in_left), len(in_right))
+                assert len(in_left)+len(in_right)+1 == len(
+                    [i for i in widgets if i['visible']])
+                # g.log('place %s' % first['_ns_id'])
+                if ref:
+                    ref_w = self.find_dock(ref)
+                    nxt_w = self.find_dock(first['_ns_id'])
+                    if nxt_w.x() < ref_w.x():
+                        ref_w, nxt_w = nxt_w, ref_w
+                    c.frame.top.splitDockWidget(ref_w, nxt_w, QtConst.Vertical)
+                    placed += 1
+                    if placed == max_place:
+                        return
+                else:
+                    c.frame.top.addDockWidget(
+                        QtConst.TopDockWidgetArea, self.find_dock(first['_ns_id']))
+                if in_left:
+                    todo.append((in_left, left, first['_ns_id']))
+                if in_right:
+                    todo.append((in_right, right, first['_ns_id']))
+
