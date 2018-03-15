@@ -229,6 +229,20 @@ class DockManager(object):
             if child.widget()._ns_id == ns_id:
                 return child
         g.log("Didn't find "+ns_id, color='warning')
+    @staticmethod
+    def swap_dock(a, b):
+        """swap_dock - swap contents / titles of a pair of dock widgets
+
+        Args:
+            a (QDockWidget): widget a
+            b (QDockWidget): widget b
+        """
+        w = a.widget()
+        a_txt = a.windowTitle()
+        a.setWidget(b.widget())
+        a.setWindowTitle(b.windowTitle())
+        b.setWidget(w)
+        b.setWindowTitle(a_txt)
     def load_json(self):
         """load_json - load layout from JSON file
 
@@ -259,7 +273,7 @@ class DockManager(object):
             QtConst.Horizontal: 'horiz',
         }
 
-        max_place = 2
+        max_place = 200
         placed = 0
         while todo:
             widgets, bbox, ref, align = todo.pop(0)
@@ -289,11 +303,11 @@ class DockManager(object):
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
                             print("Swap V, width")
-                            ref_w, nxt_w = nxt_w, ref_w
+                            self.swap_dock(ref_w, nxt_w)
                     else:
                         if d['widget'][ref]['x'] > first['x']:
                             print("Swap H, width")
-                            ref_w, nxt_w = nxt_w, ref_w
+                            self.swap_dock(ref_w, nxt_w)
 
                     print("%s %s %s" % (ref_w.widget()._ns_id, nxt_w.widget()._ns_id, orient[align]))
                     c.frame.top.splitDockWidget(ref_w, nxt_w, align)
@@ -326,11 +340,11 @@ class DockManager(object):
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
                             print("Swap V, height")
-                            ref_w, nxt_w = nxt_w, ref_w
+                            self.swap_dock(ref_w, nxt_w)
                     else:
                         if d['widget'][ref]['x'] > first['x']:
                             print("Swap H, height")
-                            ref_w, nxt_w = nxt_w, ref_w
+                            self.swap_dock(ref_w, nxt_w)
 
                     print("%s %s %s" % (ref_w.widget()._ns_id, nxt_w.widget()._ns_id, orient[align]))
                     c.frame.top.splitDockWidget(ref_w, nxt_w, align)
