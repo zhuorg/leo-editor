@@ -170,10 +170,10 @@ class DockManager(object):
 
     @staticmethod
     def bbox(widgets):
-        """bbox - get max extent of dict of widgets
+        """bbox - get max extent of list of widgets
 
         Args:
-            widgets ({name:{attr}}): widgets dict
+            widgets ([{attr}]): list of dicts of widget's attributes
         Returns:
             tuple: xmin, ymin, xmax, ymax
         """
@@ -185,7 +185,6 @@ class DockManager(object):
             y.append(-w['y'])
             y.append(-w['y']-w['height'])
         return min(x), min(y), max(x), max(y)
-
     @staticmethod
     def in_bbox(widget, bbox):
         """in_bbox - determine if the widget's in a bbox
@@ -236,27 +235,34 @@ class DockManager(object):
         Args:
             event: Leo command event
         """
+
+        print("="*50)
         c = self.c
-        # make sure nothing's tabbed
-        self.keep = []
-        for w in c.frame.top.findChildren(QtWidgets.QDockWidget):
-            self.keep.append(w)
-            # c.frame.top.removeDockWidget(w)
-            c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, w)
-            print(w.widget()._ns_id)
-            assert w.parent() == c.frame.top
 
         d = json.load(open(g.os_path_join(g.computeHomeDir(), 'dock.json')))
 
+        # make sure nothing's tabbed
+        for w in c.frame.top.findChildren(QtWidgets.QDockWidget):
+            if not d['widget'][w.widget()._ns_id]['visible']:
+                print("Remove %s" % w.widget()._ns_id)
+                c.frame.top.removeDockWidget(w)
+            else:
+                c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, w)
+                print(w.widget()._ns_id)
+                assert w.parent() == c.frame.top
+
         widgets = list(d['widget'].values())
-        todo = [(widgets, self.bbox(widgets), None)]
-        # g.log(todo)
-        # g.log(in_bbox(todo[0][0].popitem()[1], todo[0][1]))
+        todo = [(widgets, self.bbox(widgets), None, None)]
+
+        orient = {
+            QtConst.Vertical: 'vert',
+            QtConst.Horizontal: 'horiz',
+        }
 
         max_place = 2
         placed = 0
         while todo:
-            widgets, bbox, ref = todo.pop(0)
+            widgets, bbox, ref, align = todo.pop(0)
             ordered = sorted(
                 widgets,
                 key=lambda x: self.area_span(x, bbox),
@@ -264,62 +270,76 @@ class DockManager(object):
             )
             first = ordered[0]
             if self.area_span(first, bbox)[1]:  # width spanning
-                # g.log('width')
+                print('width')
                 below = (bbox[0], bbox[1], bbox[2], -first['y']-first['height'])
                 above = (bbox[0], -first['y'], bbox[2], bbox[3])
                 in_below = [i for i in widgets if i['visible'] and self.in_bbox(i, below)]
                 in_above = [i for i in widgets if i['visible'] and self.in_bbox(i, above)]
-                # g.log(below, in_below)
-                # g.log(above, in_above)
-                # g.log(len([i for i in widgets if i['visible']]),
-                #     len(in_below), len(in_above))
+                # print(below, in_below)
+                # print(above, in_above)
+
                 assert len(in_below)+len(in_above)+1 == len(
                     [i for i in widgets if i['visible']])
-                # g.log('place %s' % first['_ns_id'])
+                print('place %s' % first['_ns_id'])
                 if ref:
                     ref_w = self.find_dock(ref)
                     nxt_w = self.find_dock(first['_ns_id'])
-                    c.frame.top.splitDockWidget(ref_w, nxt_w, QtConst.Horizontal)
-                    if d['widget'][ref]['y'] < first['y']:
-                        print("Swap V")
-                        c.frame.top.splitDockWidget(nxt_w, ref_w, QtConst.Horizontal)
+
+                    print("%s %s %s" % (d['widget'][ref]['y'], first['y'], orient[align]))
+                    if align == QtConst.Vertical:
+                        if d['widget'][ref]['y'] > first['y']:
+                            print("Swap V, width")
+                            ref_w, nxt_w = nxt_w, ref_w
+                    else:
+                        if d['widget'][ref]['x'] > first['x']:
+                            print("Swap H, width")
+                            ref_w, nxt_w = nxt_w, ref_w
+
+                    print("%s %s %s" % (ref_w.widget()._ns_id, nxt_w.widget()._ns_id, orient[align]))
+                    c.frame.top.splitDockWidget(ref_w, nxt_w, align)
                     placed += 1
                     if placed == max_place:
                         return
-                else:
-                    c.frame.top.addDockWidget(
-                        QtConst.TopDockWidgetArea, self.find_dock(first['_ns_id']))
+
                 if in_below:
-                    todo.append((in_below, below, first['_ns_id']))
+                    todo.append((in_below, below, first['_ns_id'], QtConst.Vertical))
                 if in_above:
-                    todo.append((in_above, above, first['_ns_id']))
-            else:
-                # g.log('height')
+                    todo.append((in_above, above, first['_ns_id'], QtConst.Vertical))
+            else:  # height spanning
+                print('height')
                 left = (bbox[0], bbox[1], first['x'], bbox[3])
                 right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
                 in_left = [i for i in widgets if i['visible'] and self.in_bbox(i, left)]
                 in_right = [i for i in widgets if i['visible'] and self.in_bbox(i, right)]
-                # g.log(left, in_left)
-                # g.log(right, in_right)
-                # g.log(len([i for i in widgets if i['visible']]),
-                #     len(in_left), len(in_right))
+                # print(left, in_left)
+                # print(right, in_right)
+                print(len([i for i in widgets if i['visible']]),
+                    len(in_left), len(in_right))
                 assert len(in_left)+len(in_right)+1 == len(
                     [i for i in widgets if i['visible']])
-                # g.log('place %s' % first['_ns_id'])
+                print('place %s' % first['_ns_id'])
                 if ref:
                     ref_w = self.find_dock(ref)
                     nxt_w = self.find_dock(first['_ns_id'])
-                    if nxt_w.x() < ref_w.x():
-                        ref_w, nxt_w = nxt_w, ref_w
-                    c.frame.top.splitDockWidget(ref_w, nxt_w, QtConst.Vertical)
+
+                    print("%s %s %s" % (d['widget'][ref]['y'], first['y'], orient[align]))
+                    if align == QtConst.Vertical:
+                        if d['widget'][ref]['y'] > first['y']:
+                            print("Swap V, height")
+                            ref_w, nxt_w = nxt_w, ref_w
+                    else:
+                        if d['widget'][ref]['x'] > first['x']:
+                            print("Swap H, height")
+                            ref_w, nxt_w = nxt_w, ref_w
+
+                    print("%s %s %s" % (ref_w.widget()._ns_id, nxt_w.widget()._ns_id, orient[align]))
+                    c.frame.top.splitDockWidget(ref_w, nxt_w, align)
                     placed += 1
                     if placed == max_place:
                         return
-                else:
-                    c.frame.top.addDockWidget(
-                        QtConst.TopDockWidgetArea, self.find_dock(first['_ns_id']))
+
                 if in_left:
-                    todo.append((in_left, left, first['_ns_id']))
+                    todo.append((in_left, left, first['_ns_id'], QtConst.Horizontal))
                 if in_right:
-                    todo.append((in_right, right, first['_ns_id']))
+                    todo.append((in_right, right, first['_ns_id'], QtConst.Horizontal))
 
