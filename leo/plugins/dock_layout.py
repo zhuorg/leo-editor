@@ -1,4 +1,47 @@
-# import json
+"""
+dock_layout - use QDockWidgets to layout Leo panes.
+
+## Implementation notes
+
+dock_layout puts all Leo panes into QDockWidgets. All docks are placed
+in a single dock area, and the QMainWindow's main widget is not used.
+Nested docking is enabled, allowing almost any layout to be created. The
+Minibuffer is moved to the toolbar.
+
+Qt provides save/restoreState and save/restoreGeometry methods on
+QMainWindow. I'm not really sure how they work, simple trials haven't
+shown them working as expected. I'm not sure how they could possible
+restore the complex state Leo might want restored, where a pane could
+hold anything from an image to an authenticated connection to a remote
+service. However they work, they generate opaque binary blobs. Docs. are
+not extensive.
+
+So dock_layout uses it's own persistence mechanism.  All docks are top
+level children of the QMainWindow, despite their hierarchical arrangement.
+However it's necessary to create them in a particular order to recreate a
+particular layout.  to_json() save alls the rectangles of visible docks,
+and tabbing grouping of non-visible docks, without hierarchy.  load_json()
+reconstructs the hierarchy, and hence the order in which docks must be
+created during restoration of a layout, as follows:
+
+ - a list of all docks with rectangles
+ - find the maximum bounding box (bbox) of all docks
+ - for each dock, find the proportion, 0-1, of the full bbox spanned by the
+   dock, both width and height, note the greater of the two, and its
+   orientation.  E.g. (0.7, horiz), or (1.0, vert).
+ - There will always be at least one dock that spans the whole bbox (proportion
+   1.0), you can't arrange docks so that that's not true.
+ - There may be more than one, that's ok
+ - Pick one of the docks that spans the whole bbox.  It will split the bbox
+   into 1-3 pieces:
+       - 1 - this dock is the last widget left to place
+       - 2 - this dock spans the top/bottom/left/right edge of the bbox
+       - 3 - this dock spans the middle of the bbox horizontally or
+             vertically.
+ - So processing this dock creates 0-2 new bbox regions to process, place
+   on a todo list.
+
+"""
 import json
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets
@@ -252,10 +295,7 @@ class DockManager(object):
 
         # make sure nothing's tabbed
         for w in c.frame.top.findChildren(QtWidgets.QDockWidget):
-            if not d['widget'][w.widget()._ns_id]['visible']:
-                c.frame.top.removeDockWidget(w)
-            else:
-                c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, w)
+            c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, w)
 
         widgets = list(d['widget'].values())
         todo = [(widgets, self.bbox(widgets), None, None)]
@@ -315,6 +355,30 @@ class DockManager(object):
                     todo.append((in_left, left, first['_ns_id'], QtConst.Horizontal))
                 if in_right:
                     todo.append((in_right, right, first['_ns_id'], QtConst.Horizontal))
+
+        # for each tab group, find the visible tab, and and place other
+        # docks on it
+        for tg in d['tab_group'].values():
+            # find the visible tab, which is already placed
+            for viz_n, viz in enumerate(tg):
+                if d['widget'][viz]['visible']:
+                    break
+            else:
+                g.log("Can't find visible tab for "+str(tg))
+                continue
+            viz_w = self.find_dock(viz)
+            # make a list of tabs, left to right
+            ordered = [viz_w]
+            for tab in tg:  # add other tabs to group
+                if tab == viz:
+                    continue
+                tab_w = self.find_dock(tab)
+                c.frame.top.tabifyDockWidget(viz_w, tab_w)
+                ordered.append(tab_w)
+            for n in range(len(tg)):  # reorder tabs to match list
+                src = self.find_dock(tg[n])
+                self.swap_dock(src, ordered[n])
+            self.find_dock(viz).raise_()  # raise viz. tab
 
         if hasattr(c.frame.top, 'resizeDocks'):
             widgets = sorted(
