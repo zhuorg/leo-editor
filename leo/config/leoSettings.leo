@@ -102,7 +102,7 @@
 <v t="ekr.20041120155431.2"><vh>\@type type-name: script: script-name</vh></v>
 </v>
 <v t="ekr.20061011082224"><vh>About myLeoSettings.leo</vh></v>
-<v t="ekr.20041119034357.1" a="E"><vh>@settings</vh>
+<v t="ekr.20041119034357.1"><vh>@settings</vh>
 <v t="ekr.20180306144001.1"><vh> Color definitions</vh>
 <v t="ekr.20140912072521.19153"><vh>@color LeoGreen = #00AA00</vh></v>
 <v t="ekr.20140912072521.19154"><vh>@color LeoYellow = #ffffec</vh></v>
@@ -1592,7 +1592,14 @@
 <v t="ekr.20141112072219.2"><vh>@item focus-to-&amp;spell-tab</vh></v>
 <v t="ekr.20131213135427.22160"><vh>@item focus-to-&amp;tree</vh></v>
 </v>
-<v t="ekr.20170509104949.1"><vh>@menu &amp;Layout</vh>
+<v t="tbrown.20180331143733.1"><vh>@menu &amp;Layout / tools</vh>
+<v t="tbrown.20180331143904.1"><vh>@item dock-dockify</vh></v>
+<v t="tbrown.20180331144008.1"><vh>@item dock-add-pane</vh></v>
+<v t="tbrown.20180331143932.1"><vh>@item dock-load-layout</vh></v>
+<v t="tbrown.20180331143948.1"><vh>@item dock-save-layout</vh></v>
+<v t="tbrown.20180331143824.1"><vh>@item dock-toggle-titles</vh></v>
+</v>
+<v t="ekr.20170509104949.1"><vh>@menu Layout (OLD)</vh>
 <v t="tbrown.20160130095933.1"><vh>@item free-layout-context-menu</vh></v>
 <v t="tbrown.20160130095933.2"><vh>@item free-layout-load</vh></v>
 <v t="tbrown.20160130095933.3"><vh>@item free-layout-restore</vh></v>
@@ -2206,7 +2213,7 @@
 <v t="ekr.20090724102842.2492"><vh>@int qt_max_colorized_chars = 0</vh></v>
 </v>
 </v>
-<v t="ekr.20110611092035.16463" a="E"><vh>Tree operation</vh>
+<v t="ekr.20110611092035.16463"><vh>Tree operation</vh>
 <v t="nh910.20110621123823.3423"><vh>@bool collapse_nodes_after_move = True</vh></v>
 <v t="ekr.20060930085532"><vh>@bool collapse_nodes_during_finds = True</vh></v>
 <v t="ekr.20080315083057.7"><vh>@bool collapse_nodes_while_spelling = True</vh></v>
@@ -12409,6 +12416,14 @@ AltControlShift hoist
 #     WITH: /
 
 </t>
+<t tx="tbrown.20180331143733.1"></t>
+<t tx="tbrown.20180331143824.1">Toggle titles</t>
+<t tx="tbrown.20180331143904.1">Dockify (temp. entry)</t>
+<t tx="tbrown.20180331143932.1">Load layout
+</t>
+<t tx="tbrown.20180331143948.1">Save layout
+</t>
+<t tx="tbrown.20180331144008.1">Add tool</t>
 <t tx="ville.20090701225947.3902"># Open current node in external editor. 'v' is mnemonic for 'vi', because vi users request this most
 # cm-external-editor = Alt-v</t>
 <t tx="ville.20091008201813.3909">Qt ui uses a different (simpler) setup for creating context menus,

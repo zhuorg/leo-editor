@@ -43,6 +43,8 @@ created during restoration of a layout, as follows:
 
 """
 import json
+import os
+
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets
 QtConst = QtCore.Qt
@@ -59,13 +61,18 @@ def init():
         return False
     g.registerHandler('after-create-leo-frame',onCreate)
     g.plugin_signon(__name__)
+    create_commands()
     return True
 def onCreate (tag, key):
     c = key.get('c')
     DockManager(c)
-@g.command('dock-dockify')
-def dockify(event):
-    event['c']._dock_manager.dockify()
+def create_commands():
+    """create_commands - add commands"""
+    cmds = ['dockify', 'load_json', 'load_layout', 'save_layout', 'toggle_titles']
+    for cmd_name in cmds:
+        def cmd(event, cmd_name=cmd_name):
+            getattr(event['c']._dock_manager, cmd_name)()
+        g.command("dock-%s" % cmd_name.replace('_', '-'))(cmd)
 @g.command('dock-json')
 def dock_json(event=None):
     """dock_json - introspect dock layout
@@ -79,13 +86,6 @@ def dock_json(event=None):
         indent=4,
         sort_keys=True
     )
-@g.command('dock-toggle-titles')
-def toggle_titles(event):
-    event['c']._dock_manager.toggle_titles()
-
-@g.command('dock-load-json')
-def load_json(event):
-    event['c']._dock_manager.load_json()
 class DockManager(object):
     """DockManager - manage QDockWidget layouts"""
 
@@ -98,37 +98,6 @@ class DockManager(object):
         self.c = c
         c._dock_manager = self
 
-
-    @staticmethod
-    def bbox(widgets):
-        """bbox - get max extent of list of widgets
-
-        Args:
-            widgets ([{attr}]): list of dicts of widget's attributes
-        Returns:
-            tuple: xmin, ymin, xmax, ymax
-        """
-        x = []
-        y = []
-        for w in [i for i in widgets if i['visible']]:
-            x.append(w['x'])
-            x.append(w['x']+w['width'])
-            y.append(-w['y'])
-            y.append(-w['y']-w['height'])
-        return min(x), min(y), max(x), max(y)
-    @staticmethod
-    def in_bbox(widget, bbox):
-        """in_bbox - determine if the widget's in a bbox
-
-        Args:
-            widget ({attr}): widget attributes
-            bbox (tuple): xmin, ymin, xmax, ymax
-        Returns:
-            bool: widget is in bbox
-        """
-        xctr = widget['x']+widget['width']/2
-        yctr = -widget['y']-widget['height']/2
-        return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
 
     @staticmethod
     def area_span(widget, bbox):
@@ -148,13 +117,25 @@ class DockManager(object):
         else:
             return yprop, False
 
-    def dockify(self):
-        """
-        dockify - Move UI elements into docks
+    @staticmethod
+    def bbox(widgets):
+        """bbox - get max extent of list of widgets
 
         Args:
-            event: Leo command event
+            widgets ([{attr}]): list of dicts of widget's attributes
+        Returns:
+            tuple: xmin, ymin, xmax, ymax
         """
+        x = []
+        y = []
+        for w in [i for i in widgets if i['visible']]:
+            x.append(w['x'])
+            x.append(w['x']+w['width'])
+            y.append(-w['y'])
+            y.append(-w['y']-w['height'])
+        return min(x), min(y), max(x), max(y)
+    def dockify(self):
+        """dockify - Move UI elements into docks"""
         c = self.c
         mw = c.frame.top
         childs = []
@@ -207,84 +188,28 @@ class DockManager(object):
                 return child
         g.log("Didn't find "+ns_id, color='warning')
     @staticmethod
-    def swap_dock(a, b):
-        """swap_dock - swap contents / titles of a pair of dock widgets
+    def in_bbox(widget, bbox):
+        """in_bbox - determine if the widget's in a bbox
 
         Args:
-            a (QDockWidget): widget a
-            b (QDockWidget): widget b
-        """
-        w = a.widget()
-        a_txt = a.windowTitle()
-        a.setWidget(b.widget())
-        a.setWindowTitle(b.windowTitle())
-        b.setWidget(w)
-        b.setWindowTitle(a_txt)
-    def to_json(self):
-        """to_json - introspect dock layout
-
+            widget ({attr}): widget attributes
+            bbox (tuple): xmin, ymin, xmax, ymax
         Returns:
-            dict: 'json' rep. of layout
+            bool: widget is in bbox
         """
+        xctr = widget['x']+widget['width']/2
+        yctr = -widget['y']-widget['height']/2
+        return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
 
-        c = self.c
-        _id = lambda x: x.widget()._ns_id
-
-        ans = {'area': {}, 'widget': {}, 'tab_group': {}}
-        widgets = c.frame.top.findChildren(QtWidgets.QDockWidget)
-        tab_known = set()  # widgets with known tab status
-        tab_group = 0
-        for w in widgets:
-            area = c.frame.top.dockWidgetArea(w)
-            ans['area'].setdefault(area, []).append(_id(w))
-            # dict for w, maybe already added by tabbed_with code
-            d = ans['widget'].setdefault(_id(w), {})
-            d['area'] = area
-            # https://stackoverflow.com/a/22238571/1072212
-            # test for tabs being visible
-            d['visible'] = not w.visibleRegion().isEmpty()
-            if w not in tab_known:  # see if widget is in a tab group
-                tabbed_with = c.frame.top.tabifiedDockWidgets(w)
-                if tabbed_with:
-                    assert w not in tabbed_with
-                    tabbed_with.append(w)  # include widget in group, this seems to
-                                           # preserve tab order, but feels fragile
-                    tab_group += 1
-                    ans['tab_group'][tab_group] = [_id(i) for i in tabbed_with]
-                    for tw in tabbed_with:  # assign group ID to all members
-                        tab_known.add(tw)
-                        ans['widget'].setdefault(_id(tw), {})['tab_group'] = tab_group
-                else:
-                    d['tab_group'] = None
-            for i in 'x', 'y', 'width', 'height':
-                d[i] = getattr(w, i)()
-            d['_ns_id'] = _id(w)
-        return ans
-
-
-    def toggle_titles(self):
-        c = self.c
-        mw = c.frame.top
-        # find the first QDockWidget and see if titles are hidden
-        if mw.findChild(QtWidgets.QDockWidget).titleBarWidget() is None:
-            # default, not hidden, so hide with blank widget
-            widget_factory = lambda: QtWidgets.QWidget()
-        else:
-            # hidden, so revert to default, not hidden
-            widget_factory = lambda: None
-        # apply to all QDockWidgets
-        for child in mw.findChildren(QtWidgets.QDockWidget):
-            child.setTitleBarWidget(widget_factory())
-
-    def load_json(self):
+    def load_json(self, file):
         """load_json - load layout from JSON file
 
         Args:
-            event: Leo command event
+            file: JSON file to load
         """
 
         c = self.c
-        d = json.load(open(g.os_path_join(g.computeHomeDir(), 'dock.json')))
+        d = json.load(open(file))
 
         # make sure nothing's tabbed
         for w in c.frame.top.findChildren(QtWidgets.QDockWidget):
@@ -384,3 +309,97 @@ class DockManager(object):
             c.frame.top.resizeDocks(docks, heights, QtConst.Vertical)
             widths = [i['width'] for i in widgets if i['visible']]
             c.frame.top.resizeDocks(docks, widths, QtConst.Horizontal)
+    def load_layout(self):
+        """load_layout - load a layout"""
+        layouts = g.os_path_finalize_join(g.computeHomeDir(), '.leo', 'layouts')
+        if not g.os_path_exists(layouts):
+            os.makedirs(layouts)
+        file = g.app.gui.runOpenFileDialog(self.c, "Pick a layout",
+            [("Layout files", '*.json'), ("All files", '*')], startpath=layouts)
+        if file:
+            self.load_json(file)
+    def save_layout(self):
+        """save_layout - save a layout"""
+        # FIXME: startpath option here?  cwd doesn't work
+        layouts = g.os_path_finalize_join(g.computeHomeDir(), '.leo', 'layouts')
+        if not g.os_path_exists(layouts):
+            os.makedirs(layouts)
+        old_cwd = os.getcwd()
+        os.chdir(layouts)
+        file = g.app.gui.runSaveFileDialog(self.c, title="Save a layout",
+            filetypes=[("Layout files", '*.json'), ("All files", '*')],
+            initialfile=layouts)
+        os.chdir(old_cwd)
+        if file:
+            with open(file, 'w') as out:
+                json.dump(self.to_json(), out)
+    @staticmethod
+    def swap_dock(a, b):
+        """swap_dock - swap contents / titles of a pair of dock widgets
+
+        Args:
+            a (QDockWidget): widget a
+            b (QDockWidget): widget b
+        """
+        w = a.widget()
+        a_txt = a.windowTitle()
+        a.setWidget(b.widget())
+        a.setWindowTitle(b.windowTitle())
+        b.setWidget(w)
+        b.setWindowTitle(a_txt)
+    def to_json(self):
+        """to_json - introspect dock layout
+
+        Returns:
+            dict: 'json' rep. of layout
+        """
+
+        c = self.c
+        _id = lambda x: x.widget()._ns_id
+
+        ans = {'area': {}, 'widget': {}, 'tab_group': {}}
+        widgets = c.frame.top.findChildren(QtWidgets.QDockWidget)
+        tab_known = set()  # widgets with known tab status
+        tab_group = 0
+        for w in widgets:
+            area = c.frame.top.dockWidgetArea(w)
+            ans['area'].setdefault(area, []).append(_id(w))
+            # dict for w, maybe already added by tabbed_with code
+            d = ans['widget'].setdefault(_id(w), {})
+            d['area'] = area
+            # https://stackoverflow.com/a/22238571/1072212
+            # test for tabs being visible
+            d['visible'] = not w.visibleRegion().isEmpty()
+            if w not in tab_known:  # see if widget is in a tab group
+                tabbed_with = c.frame.top.tabifiedDockWidgets(w)
+                if tabbed_with:
+                    assert w not in tabbed_with
+                    tabbed_with.append(w)  # include widget in group, this seems to
+                                           # preserve tab order, but feels fragile
+                    tab_group += 1
+                    ans['tab_group'][tab_group] = [_id(i) for i in tabbed_with]
+                    for tw in tabbed_with:  # assign group ID to all members
+                        tab_known.add(tw)
+                        ans['widget'].setdefault(_id(tw), {})['tab_group'] = tab_group
+                else:
+                    d['tab_group'] = None
+            for i in 'x', 'y', 'width', 'height':
+                d[i] = getattr(w, i)()
+            d['_ns_id'] = _id(w)
+        return ans
+
+
+    def toggle_titles(self):
+        c = self.c
+        mw = c.frame.top
+        # find the first QDockWidget and see if titles are hidden
+        if mw.findChild(QtWidgets.QDockWidget).titleBarWidget() is None:
+            # default, not hidden, so hide with blank widget
+            widget_factory = lambda: QtWidgets.QWidget()
+        else:
+            # hidden, so revert to default, not hidden
+            widget_factory = lambda: None
+        # apply to all QDockWidgets
+        for child in mw.findChildren(QtWidgets.QDockWidget):
+            child.setTitleBarWidget(widget_factory())
+
