@@ -49,11 +49,11 @@ class Commands(object):
     #@+node:ekr.20031218072017.2811: *3*  c.Birth & death
     #@+node:ekr.20031218072017.2812: *4* c.__init__ & helpers
     def __init__(self, fileName, relativeFileName=None, gui=None, previousSettings=None):
-        trace = (False or g.trace_startup) and not g.unitTesting
+        trace = False and not g.unitTesting
         tag = 'Commands.__init__ %s' % (g.shortFileName(fileName))
-        if trace and g.trace_startup: g.es_debug('(Commands)', g.shortFileName(fileName))
+        if trace: g.trace('(Commands)', g.shortFileName(fileName))
         c = self
-        if trace and not g.trace_startup:
+        if trace:
             t1 = time.time()
         # Official ivars.
         self._currentPosition = None
@@ -76,11 +76,11 @@ class Commands(object):
         c.initObjects(self.gui)
         assert c.frame
         assert c.frame.c
-        if trace and not g.trace_startup:
+        if trace:
             g.printDiffTime('%s: after controllers created' % (tag), t1)
         # Complete the init!
         c.finishCreate()
-        if trace and not g.trace_startup:
+        if trace:
             g.printDiffTime('%s: after c.finishCreate' % (tag), t1)
     #@+node:ekr.20120217070122.10475: *5* c.computeWindowTitle
     def computeWindowTitle(self, fileName):
@@ -219,6 +219,7 @@ class Commands(object):
         self.convertCommands = None
         self.debugCommands = None
         self.editFileCommands = None
+        self.evalController = None
         self.gotoCommands = None
         self.helpCommands = None
         self.keyHandler = self.k = None
@@ -238,9 +239,9 @@ class Commands(object):
     #@@nobeautify
 
     def initObjects(self, gui):
-        trace = (False or g.trace_startup) and not g.unitTesting
+        trace = False
         c = self
-        if trace: g.es_debug(c.shortFileName(), g.app.gui)
+        if trace: g.trace(c.shortFileName(), g.app.gui)
         gnx = 'hidden-root-vnode-gnx'
         assert not hasattr(c, 'fileCommands'), c.fileCommands
 
@@ -547,7 +548,7 @@ class Commands(object):
     #@+node:ekr.20090213065933.6: *4* c.initConfigSettings
     def initConfigSettings(self):
         '''Init all cached commander config settings.'''
-        trace = (False or g.trace_startup) and not g.unitTesting
+        trace = False and not g.unitTesting
         c = self
         if trace: g.es_debug(c.configInited, c.shortFileName())
         getBool = c.config.getBool
@@ -879,7 +880,10 @@ class Commands(object):
     # Compatibility with scripts
 
     def fileName(self):
-        return self.mFileName
+        s = self.mFileName
+        if g.isWindows:
+            s = s.replace('\\','/')
+        return s
 
     def relativeFileName(self):
         return self.mRelativeFileName or self.mFileName
@@ -1840,6 +1844,7 @@ class Commands(object):
         '''Scan aList for @path directives.
         Return a reasonable default if no @path directive is found.'''
         trace = False and not g.unitTesting
+            # This is called at idle time, so it's not very useful.
         verbose = True
         c = self
         c.scanAtPathDirectivesCount += 1 # An important statistic.
@@ -3344,6 +3349,7 @@ class Commands(object):
         return dirtyVnodeList
     #@+node:ekr.20130823083943.12559: *3* c.recursiveImport
     def recursiveImport(self, dir_, kind,
+        add_path=True,
         recursive=True,
         safe_at_file=True,
         theTypes=None,
@@ -3357,6 +3363,7 @@ class Commands(object):
         Parameters::
             dir_              The root directory or file to import.
             kind              One of ('@clean','@edit','@file','@nosent').
+            add_path=True     True: add a full @path directive to @<file> nodes.
             recursive=True    True: recurse into subdirectories.
             safe_at_file=True True: produce @@file nodes instead of @file nodes.
             theTypes=None     A list of file extensions to import.
@@ -3376,6 +3383,7 @@ class Commands(object):
             try:
                 import leo.core.leoImport as leoImport
                 cc = leoImport.RecursiveImportController(c, kind,
+                    add_path=add_path,
                     recursive=recursive,
                     safe_at_file=safe_at_file,
                     theTypes=['.py'] if not theTypes else theTypes,
@@ -3653,7 +3661,7 @@ class Commands(object):
         # solid foundation. Moreover, the new algorithm should be considerably
         # faster than the old: there is no need to sort positions.
         #@-<< theory of operation >>
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         c = self
         # Verify all positions *before* altering the tree.
         aList2 = []

@@ -11,7 +11,7 @@ if isPython3:
     import pickle
 else:
     import cPickle as pickle
-import glob
+# import glob
 import fnmatch
 import hashlib
 import os
@@ -248,7 +248,7 @@ class Cacher(object):
 
         Issue a (rare) warning if two different files are involved.
         '''
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         always_warn = True # True always warn about changed nodes.
         c = self.c
         h, b, gnx, grandChildren = child_tuple
@@ -353,7 +353,7 @@ class Cacher(object):
         Read the file from the cache if possible.
         Return (s,ok,key)
         '''
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         showHits = False
         showLines = False
         showList = False
@@ -427,7 +427,7 @@ class Cacher(object):
     #@+node:ekr.20100208071151.5903: *4* cacher.writeFile
     def writeFile(self, p, fileKey):
         '''Update the cache after reading the file.'''
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         # Check g.enableDB before giving internal error.
         if not g.enableDB:
             if trace: g.trace('cache disabled')
@@ -677,7 +677,7 @@ class PickleShareDB(object):
     #@+node:ekr.20100208223942.5981: *3* items
     def items(self):
         return [z for z in self]
-    #@+node:ekr.20100208223942.5982: *3* keys & helpers
+    #@+node:ekr.20100208223942.5982: *3* keys & helpers (PickleShareDB)
     # Called by clear, and during unit testing.
 
     def keys(self, globpat=None):
@@ -686,7 +686,8 @@ class PickleShareDB(object):
         if globpat is None:
             files = self._walkfiles(self.root)
         else:
-            files = [z for z in glob.glob(join(self.root, globpat))]
+            # Do not call g.glob_glob here.
+            files = [z for z in join(self.root, globpat)]
         result = [self._normalized(p) for p in files if isfile(p)]
         if trace: g.trace('(PickleShareDB)', len(result), result)
         return result

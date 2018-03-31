@@ -4,6 +4,7 @@
 #@@first
 '''File commands that used to be defined in leoCommands.py'''
 import leo.core.leoGlobals as g
+import os
 import time
 #@+others
 #@+node:ekr.20170221033738.1: ** c_file.reloadSettings & helper
@@ -145,13 +146,22 @@ g.command_alias('importTabFiles', importAnyFile)
 @g.commander_command('new')
 def new(self, event=None, gui=None):
     '''Create a new Leo window.'''
+    import leo.core.leoApp as leoApp
     lm = g.app.loadManager
+    old_c = self
     # Clean out the update queue so it won't interfere with the new window.
     self.outerUpdate()
     # Send all log messages to the new frame.
     g.app.setLog(None)
     g.app.lockLog()
-    c = g.app.newCommander(fileName=None, gui=gui)
+    # Retain all previous settings. Very important for theme code.
+    c = g.app.newCommander(
+        fileName=None,
+        gui=gui,
+        previousSettings=leoApp.PreviousSettings(
+            settingsDict=lm.globalSettingsDict,
+            shortcutsDict=lm.globalShortcutsDict,
+        ))    
     frame = c.frame
     g.app.unlockLog()
     frame.setInitialWindowGeometry()
@@ -163,7 +173,7 @@ def new(self, event=None, gui=None):
     lm.createMenu(c)
     lm.finishOpen(c)
     g.app.writeWaitingLog(c)
-    g.doHook("new", old_c=self, c=c, new_c=c)
+    g.doHook("new", old_c=old_c, c=c, new_c=c)
     c.setLog()
     c.setChanged(False) # Fix #387
     c.redraw()
@@ -934,6 +944,34 @@ def tangle(self, event=None):
     '''
     c = self
     c.tangleCommands.tangle()
+#@+node:ekr.20180312043352.1: ** Themes
+#@+node:ekr.20180312043352.2: *3* c_file.open_theme_file
+@g.commander_command('open-theme-file')
+def open_theme_file(self, event):
+    '''Open a theme file and apply the theme.'''
+    c = event and event.get('c')
+    if not c: return
+    themes_dir = g.os_path_finalize_join(g.app.loadDir, '..', 'themes')
+    fn = g.app.gui.runOpenFileDialog(c,
+        title="Open Theme File",
+        filetypes=[
+             g.fileFilters("LEOFILES"),
+            ("All files", "*"),
+        ],
+        defaultextension=g.defaultLeoFileExtension(c),
+        startpath=themes_dir,
+    )
+    if not fn:
+        return
+    leo_dir = g.os_path_finalize_join(g.app.loadDir, '..', '..')
+    os.chdir(leo_dir)
+    command = 'leo "%s"' % fn
+    os.system(command)
+    # os.system("start cmd /c %s" % command)
+        # /c terminates after the command.
+        # /k leaves window open.
+        # /d specifis starting directory.
+    os.chdir(leo_dir)
 #@+node:ekr.20031218072017.2845: ** Untangle
 #@+node:ekr.20031218072017.2846: *3* c_file.untangleAll
 @g.commander_command('untangle-all')

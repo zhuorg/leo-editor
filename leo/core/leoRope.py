@@ -5,7 +5,7 @@
 #@+<< leoRope imports >>
 #@+node:ekr.20140525065558.15807: ** << leoRope imports >>
 import leo.core.leoGlobals as g
-import glob
+# import glob
 import imp
 import rope.base.project
 import rope.base.simplify
@@ -23,10 +23,10 @@ class RopeController(object):
     def __init__(self, c):
         self.c = c
         self.proj = rope.base.project.Project(g.app.loadDir)
-    #@+node:ekr.20140525065558.15806: *3* modules
+    #@+node:ekr.20140525065558.15806: *3* modules (RopeController)
     def modules(self):
         '''Return full path names of all Leo modules.'''
-        aList = glob.glob(g.os_path_join(g.app.loadDir, '*.py'))
+        aList = g.glob_glob(g.os_path_join(g.app.loadDir, '*.py'))
         return sorted(aList)
     #@+node:ekr.20140525065558.15808: *3* path
     def path(self, fn):

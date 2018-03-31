@@ -1030,7 +1030,6 @@ class GlobalConfigManager(object):
         ("color_directives_in_plain_text", "bool", True),
         ("underline_undefined_section_names", "bool", True),
         # Window options...
-        ("allow_clone_drags", "bool", True),
         ("body_pane_wraps", "bool", True),
         ("body_text_font_family", "family", "Courier"),
         ("body_text_font_size", "size", defaultBodyFontSize),
@@ -1110,8 +1109,8 @@ class GlobalConfigManager(object):
     #@+node:ekr.20041117083202: *3* gcm.Birth...
     #@+node:ekr.20041117062717.2: *4* gcm.ctor
     def __init__(self):
-        trace = (False or g.trace_startup) and not g.unitTesting
-        if trace: g.es_debug('(g.app.config)')
+        trace = False and not g.unitTesting
+        if trace: g.trace('(g.app.config)')
         # Set later.  To keep pylint happy.
         if 0: # No longer needed, now that setIvarsFromSettings always sets gcm ivars.
             self.at_root_bodies_start_in_doc_mode = True
@@ -1196,11 +1195,15 @@ class GlobalConfigManager(object):
     def setIvarsFromSettings(self, c):
         '''Init g.app.config ivars or c's ivars from settings.
 
-        - Called from readSettingsFiles with c = None to init g.app.config ivars.
-        - Called from c.__init__ to init corresponding commmander ivars.'''
+        - Called from c.initSettings with c = None to init g.app.config ivars.
+        - Called from c.initSettings to init corresponding commmander ivars.'''
         trace = False and not g.unitTesting
         verbose = True
-        if not self.inited: return
+        if g.app.loadedThemes:
+            if trace: g.trace('===== Return')
+            return
+        if not self.inited:
+            return
         # Ignore temporary commanders created by readSettingsFiles.
         if trace and verbose: g.trace('*' * 10)
         if trace: g.trace(
@@ -1356,7 +1359,7 @@ class GlobalConfigManager(object):
         data = self.get(setting, "data")
         # New in Leo 4.12.1: add two keyword arguments, with legacy defaults.
         if data and strip_comments:
-            data = [z for z in data if not z.startswith('#')]
+            data = [z for z in data if not z.strip().startswith('#')]
         if data and strip_data:
             data = [z.strip() for z in data if z.strip()]
         return data
@@ -1514,19 +1517,17 @@ class LocalConfigManager(object):
     #@+node:ekr.20120215072959.12472: *3* c.config.Birth
     #@+node:ekr.20041118104831.2: *4* c.config.ctor
     def __init__(self, c, previousSettings=None):
-        trace = (False or g.trace_startup) and not g.unitTesting
+        trace = False and not g.unitTesting
         if trace: g.es_debug('(c.config)', c and c.shortFileName())
         self.c = c
-        # The shortcuts and settings dicts, set in c.__init__
-        # for local files.
+        lm = g.app.loadManager
+        # c.__init__ and helpers set the shortcuts and settings dicts for local files.
         if previousSettings:
-            # g.trace('(c.config.ctor)',previousSettings)
             self.settingsDict = previousSettings.settingsDict
             self.shortcutsDict = previousSettings.shortcutsDict
             assert g.isTypedDict(self.settingsDict)
             assert g.isTypedDictOfLists(self.shortcutsDict)
         else:
-            lm = g.app.loadManager
             self.settingsDict = d1 = lm.globalSettingsDict
             self.shortcutsDict = d2 = lm.globalShortcutsDict
             assert d1 is None or g.isTypedDict(d1), d1
@@ -1724,7 +1725,7 @@ class LocalConfigManager(object):
         # New in Leo 4.11: parser.doData strips only comments now.
         # New in Leo 4.12: parser.doData strips *nothing*.
         if data and strip_comments:
-            data = [z for z in data if not z.startswith('#')]
+            data = [z for z in data if not z.strip().startswith('#')]
         if data and strip_data:
             data = [z.strip() for z in data if z.strip()]
         return data

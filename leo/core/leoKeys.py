@@ -8,7 +8,7 @@
 #@+node:ekr.20061031131434.1: ** << imports >> (leoKeys)
 import leo.core.leoGlobals as g
 import leo.external.codewise as codewise
-import glob
+# import glob
 import inspect
 import os
 import re
@@ -1035,9 +1035,9 @@ class FileNameChooser(object):
             if trace: g.trace('existing directory', path)
             if g.os_path_isdir(path):
                 if path.endswith(os.sep):
-                    aList = glob.glob(path + '*')
+                    aList = g.glob_glob(path + '*')
                 else:
-                    aList = glob.glob(path + sep + '*')
+                    aList = g.glob_glob(path + sep + '*')
                 tabList = [z + sep if g.os_path_isdir(z) else z for z in aList]
             else:
                 # An existing file.
@@ -1046,7 +1046,7 @@ class FileNameChooser(object):
             if trace: g.trace('does not exist', path)
             if path and path.endswith(sep):
                 path = path[: -1]
-            aList = glob.glob(path + '*')
+            aList = g.glob_glob(path + '*')
             tabList = [z + sep if g.os_path_isdir(z) else z for z in aList]
         if fnc.filterExt:
             for ext in fnc.filterExt:
@@ -1683,8 +1683,8 @@ class KeyHandlerClass(object):
     #@+node:ekr.20061031131434.76: *4* k.__init__& helpers
     def __init__(self, c):
         '''Create a key handler for c.'''
-        trace = (False or g.trace_startup) and not g.unitTesting
-        if trace: g.es_debug('(k)')
+        trace = False and not g.unitTesting
+        if trace: g.trace('(k)')
         self.c = c
         self.dispatchEvent = None
         self.fnc = None
@@ -2079,8 +2079,8 @@ class KeyHandlerClass(object):
         Complete the construction of the keyHandler class.
         c.commandsDict has been created when this is called.
         '''
-        trace = (False or g.trace_startup) and not g.unitTesting
-        if trace: g.es_debug('(k)', self.c)
+        trace = False and not g.unitTesting
+        if trace: g.trace('(k)', self.c)
         c, k = self.c, self
         k.w = c.frame.miniBufferWidget
             # Will be None for NullGui.

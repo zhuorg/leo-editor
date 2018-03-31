@@ -344,7 +344,7 @@
 <v t="ekr.20170212105226.11"><vh>Slide 1: Leo's main window</vh></v>
 </v>
 </v>
-<v t="ekr.20161120074501.1"><vh>@button make-md-heads</vh>
+<v t="ekr.20161120074501.1"><vh>@@@button make-md-heads</vh>
 <v t="ekr.20161120075731.1"><vh>markup</vh></v>
 </v>
 <v t="ekr.20161204055040.1"><vh>@button make-md-toc</vh>
@@ -538,12 +538,12 @@
 <v t="ekr.20050830115714.30"><vh>How do I submit a plugin?</vh></v>
 </v>
 <v t="ekr.20170906090516.1"><vh>Developing Leo's own code</vh>
+<v t="ekr.20110531155858.20559"><vh>How does EKR (Leo's developer) use Leo?</vh></v>
 <v t="ekr.20170804153108.2"><vh>How can I use dev nodes to develop and test Leo's own code?</vh></v>
 <v t="ekr.20160309092522.1"><vh>What is the Stupendous Aha and why does it matter?</vh></v>
 </v>
 <v t="ekr.20050830115714.1"><vh>Learning to use Leo</vh>
 <v t="ekr.20161207052511.1"><vh>How can I learn Leo, or python, or anything</vh></v>
-<v t="ekr.20110531155858.20559"><vh>How does EKR (Leo's developer) use Leo?</vh></v>
 <v t="ekr.20141108064630.8"><vh>How does EKR use clones?</vh></v>
 <v t="ekr.20120229094652.15152"><vh>How does Leo handle clone conflicts?</vh></v>
 <v t="ekr.20050830115714.2"><vh>What's the best way to learn to use Leo?</vh></v>
@@ -7249,7 +7249,6 @@ Scripts can get or change the context of the body as follows::
     i = w.getInsertPoint()              # Return the location of the cursor.
     s = w.getSelectedText()             # Return the selected text, if any.
     i,j = w.getSelectionRange (sort=True) # Return the range of selected text.
-    w.replace(i,j,s)                    # Replace the text from i to j by s.
     w.setAllText(s)                     # Set the entire body text to s.
     w.setSelectionRange(i,j,insert=None) # Select the text.
 
@@ -11528,9 +11527,16 @@ Overview:
 
 - Develop in an outline containing all of Leo's source files. Close this outline rarely: this keeps the code I am using stable while I'm hacking the code.
 
-- Test in a *separate* .leo file, say test.leo. In fact, I often test in a private file, ekr.leo, so that test.leo doesn't get continually updated on git with trivial changes.
+- Test in a *separate, private* .leo file, say ~/test.leo.
 
-These two points are covered in a bit more detail in `This FAQ entry`_.
+On Windows I use the following *common* @button node, defined in the @buttons tree in myLeoSettings.leo::
+
+    @button load-test @key=F5
+    
+    import os
+    os.system("start  cmd /c t")
+    
+Now F5 runs t.bat in a separate console. Leo remains responsive. t.bat opens the test file. t.bat ends with the Windows "exit" command, so the console closes when I close Leo.
 
 Additional tips:
 
@@ -16288,7 +16294,7 @@ A Brief Summary of Leo
 .. _`Leonine`: leonine-world.html
 .. _`Clones`: tutorial-pim.html
 .. _`Python API`: tutorial-scripting.html
-.. _`outline-oriented directives`: tutorial-programming.html
+.. _`outline-oriented directives`: tutorial-basics.html#markup
 .. _`Next`: testimonials.html
 
     "Word outlines are very useful. But Leo makes Word look like a clunky toy."---Joe Orr
@@ -18606,7 +18612,7 @@ There has been some discussion of @auto v. @clean. Preference is obviously a mat
 
 The ability to work on projects with people who don't have leo is obvious; one perhaps slightly less obvious benefit of no sentinels is that I suspect that the likelihood that someone will clone a git repository is reduced when that repository's code is riddled with leo sentinels (unless the potential cloner is a leo loyalist). The one downside to no sentinels--there is no evidence that leo is being used but I think that raises the broader question of marketing leo, which I certainly believe will be aided significantly by being able to take advantage of leo without sentinels in external files.
 </t>
-<t tx="ekr.20150313053238.45">.. _`import script`: tutorial-scripting.html#import-scripts
+<t tx="ekr.20150313053238.45">.. _`recursive import script`: scripting-miscellany.html#recursive-import-script
 .. _git: http://git-scm.com/
 
 @clean is the long-sought breakthrough that just might allow Leo to "go viral". For the very first time, Leo can be used in *all* situations without compromise.  There is no longer any need to make excuses for sentinel lines, or argue whether people should accept them.  Sentinels are simply gone.
@@ -18617,7 +18623,7 @@ When I study other people's code I do the following:
 
 - Create a git repo of the directory to be studied, adding all the source files and doing an initial commit.
  
-- Use an `import script`_ to create the desired @clean nodes.
+- Use an `recursive import script`_ to create the desired @clean nodes.
 
 - Explicitly save all the imported files using Ctrl-Shift-W (write-at-file-nodes).
 
@@ -21560,7 +21566,10 @@ These .md files are intended to be viewed on [GitHub](https://github.com/leo-edi
 
 [This page](https://github.com/leo-editor/leo-editor/blob/master/leo/doc/importers.md) contains the cheat sheet for the GitHub flavor of markdown.
 </t>
-<t tx="ekr.20161120074501.1">'''Create markdown headers throughout the nearest .md outline.'''
+<t tx="ekr.20161120074501.1">##### No longer needed
+##### The markdown writer converts headlines to markdown sections,
+##### ignoring headlines that start with !
+'''Create markdown headers throughout the nearest .md outline.'''
 g.cls()
 import re
 @others
@@ -25425,11 +25434,13 @@ import leo.plugins.demo as demo
     </t>
 <t tx="ekr.20180125112540.1">@language python
 
+# Get all *closed* issues for 5.7.
 g.getGitIssues(
     c = c,
     include_body=False,
     label_list = ['Bug','Enhancements'],
     milestone = '5.7',
+    state = 'closed',
 )
 </t>
 <t tx="ekr.20180125112749.1">@language python
@@ -25788,7 +25799,7 @@ Python's `pip`_ tool will download *and* install Leo and all of Leo's dependenci
 
     pip install leo
 
-**Python 2 with Anaconda**
+**Python 2 with Anaconda**::
 
     conda install pyqt
     pip install leo
@@ -25796,7 +25807,7 @@ Python's `pip`_ tool will download *and* install Leo and all of Leo's dependenci
 **Python 2 without Anaconda**
 
 * Install `PyQt`_
-* Install Leo:
+* Install Leo::
 
     pip install leo
 </t>

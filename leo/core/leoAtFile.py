@@ -462,7 +462,7 @@ class AtFile(object):
         fromString=None, atShadow=False, force=False
     ):
         """Read an @thin or @file tree."""
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         at, c = self, self.c
         fileName = at.initFileName(fromString, importFileName, root)
         sfn = g.shortFileName(fileName)
@@ -520,7 +520,7 @@ class AtFile(object):
                     g.trace('cache miss', sfn)
                 else:
                     g.trace('caching disabled', sfn)
-            g.es_print("reading:", root.h)
+            g.es_print("reading:", g.os_path_normslashes(root.h))
         if isFileLike:
             if g.unitTesting:
                 if 0: print("converting @file format in", root.h)
@@ -790,7 +790,7 @@ class AtFile(object):
     #@+node:ekr.20070909100252: *5* at.readOneAtAutoNode
     def readOneAtAutoNode(self, fileName, p):
         '''Read an @auto file into p. Return the *new* position.'''
-        trace = (False or g.app.debug) and not g.unitTesting
+        trace = False and not g.unitTesting
         at, c, ic = self, self.c, self.c.importCommands
         oldChanged = c.isChanged()
         at.default_directory = g.setDefaultDirectory(c, p, importing=True)
@@ -5088,7 +5088,7 @@ class AtFile(object):
         Scan p and p's ancestors looking for directives,
         setting corresponding AtFile ivars.
         '''
-        trace = False and not g.unitTesting # and p.h.startswith('@auto')
+        trace = False and not g.unitTesting
         at, c = self, self.c
         g.app.atPathInBodyWarning = None
         #@+<< set ivars >>
@@ -5119,8 +5119,6 @@ class AtFile(object):
         for key, default, func in table:
             val = func(aList)
             d[key] = default if val is None else val
-        if issuePathWarning and g.app.atPathInBodyWarning:
-            g.error('warning: ignoring @path directive in', g.app.atPathInBodyWarning)
         # Post process.
         lineending = d.get('lineending')
         lang_dict = d.get('lang-dict')

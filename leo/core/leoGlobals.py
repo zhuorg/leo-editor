@@ -13,15 +13,15 @@ Important: This module imports no other Leo module.
 # pylint: disable=deprecated-method
 import sys
 isPython3 = sys.version_info >= (3, 0, 0)
+isMac = sys.platform.startswith('darwin')
+isWindows = sys.platform.startswith('win')
 #@+<< global switches >>
 #@+node:ekr.20120212060348.10374: **  << global switches >> (leoGlobals.py)
 in_bridge = False
     # Set to True in leoBridge.py just before importing leo.core.leoApp.
     # This tells leoApp to load a null Gui.
-trace_startup = False
-    # --debug option sets this flag.
-    # These traces use print instead of g.trace so that
-    # the traces can add class info to the method name.
+trace_themes = False
+    # Trace initialization of themes.
 trace_gnxDict = False
     # True: trace assignments to fc.gnxDict & related.
 # Debugging options...
@@ -59,19 +59,20 @@ except ImportError:
     import __builtin__ as builtins # Python 2.
 import codecs
 try:
+    import filecmp
+except ImportError: # does not exist in jython.
+    filecmp = None
+if isPython3:
+    from functools import reduce
+try:
     import gc
 except ImportError:
     gc = None
 try:
-    import filecmp
-except ImportError: # does not exist in jython.
-    filecmp = None
-try:
     import gettext
 except ImportError: # does not exist in jython.
     gettext = None
-if isPython3:
-    from functools import reduce
+import glob
 if isPython3:
     import io
     StringIO = io.StringIO
@@ -1675,6 +1676,18 @@ class TypedDict(object):
         if default is None and self.isList:
             default = []
         return self.d.get(key, default)
+        
+    # New in Leo 5.7.1
+    def get_setting(self, key):
+        key = key.replace('-','').replace('_','')
+        gs = self.get(key)
+        val = gs and gs.val
+        return val
+        
+    # New in Leo 5.7.1
+    def get_string_setting(self, key):
+        val = self.get_setting(key)
+        return g.toUnicode(val) if val and g.isString(val) else None
 
     def keys(self):
         return self.d.keys()
@@ -1740,7 +1753,7 @@ def alert(message, c=None):
     if not g.unitTesting:
         g.es(message)
         g.app.gui.alert(c, message)
-#@+node:ekr.20051023083258: *4* g.callers & _callerName
+#@+node:ekr.20051023083258: *4* g.callers & g.caller & _callerName
 def callers(n=4, count=0, excludeCaller=True, verbose=False):
     '''
     Return a list containing the callers of the function that called g.callerList.
@@ -1796,6 +1809,10 @@ def _callerName(n, verbose=False):
     except Exception:
         es_exception()
         return '' # "<no caller name>"
+#@+node:ekr.20180328170441.1: *5* g.caller
+def caller(i=1):
+    '''Return the caller name i levels up the stack.'''
+    return g.callers(i+1).split(',')[0]
 #@+node:ekr.20031218072017.3109: *4* g.dump
 def dump(s):
     out = ""
@@ -1958,7 +1975,7 @@ def listToString(obj, indent='', tag=None):
     s = ''.join(result)
     return '%s...\n%s\n' % (tag, s) if tag else s
 #@+node:ekr.20050819064157: *4* g.objToSTring & g.toString
-def objToString(obj, indent='', tag=None):
+def objToString(obj, indent='', printCaller=False, tag=None):
     '''Pretty print any Python object to a string.'''
     if isinstance(obj, dict):
         s = dictToString(obj, indent=indent)
@@ -1970,7 +1987,13 @@ def objToString(obj, indent='', tag=None):
         # s = obj
     else:
         s = repr(obj)
-    return '%s...\n%s\n' % (tag, s) if tag else s
+    if printCaller and tag:
+        prefix = '%s: %s' % (g.caller(), tag)
+    elif printCaller or tag:
+        prefix = g.caller() if printCaller else tag
+    else:
+        prefix = None
+    return '%s...\n%s\n' % (prefix, s) if prefix else s
 
 toString = objToString
 #@+node:ekr.20140401054342.16844: *4* g.run_pylint
@@ -2030,9 +2053,9 @@ def sleep(n):
     from time import sleep
     sleep(n) #sleeps for 5 seconds
 #@+node:ekr.20171023140544.1: *4* g.printObj & aliases
-def printObj(obj, indent='', tag=None):
+def printObj(obj, indent='', printCaller=False, tag=None):
     '''Pretty print any Python object using g.pr.'''
-    g.pr(objToString(obj, indent=indent, tag=tag))
+    g.pr(objToString(obj, indent=indent, printCaller=printCaller, tag=tag))
 
 printDict = printObj
 printList = printObj
@@ -2605,6 +2628,7 @@ def get_directives_dict(p, root=None):
     following the first occurrence of each recognized directive
     """
     trace = False and not g.unitTesting
+        # This is called at idle time, so it's not very useful.
     verbose = False
     if trace and verbose: g.trace('*' * 20, p.h)
     if root: root_node = root[0]
@@ -2632,14 +2656,8 @@ def get_directives_dict(p, root=None):
             if word in ('root-doc', 'root-code'):
                 d['root'] = val # in addition to optioned version
             d[word] = val
-            # Warn about @path in the body text of @<file> nodes.
-            if (kind == 'body' and
-                word == 'path' and
-                p.isAnyAtFileNode()
-            ):
-                g.app.atPathInBodyWarning = p.h
-                d['@path_in_body'] = p.h
-                if trace: g.trace('@path in body', p.h)
+            # New in Leo 5.7.1: @path is allowed in body text.
+            # This is very useful when doing recursive imports.
     if root:
         anIter = g_noweb_root.finditer(p.b)
         for m in anIter:
@@ -3540,13 +3558,9 @@ def setGlobalOpenDir(fileName):
 #@+node:ekr.20031218072017.3125: *3* g.shortFileName & shortFilename
 def shortFileName(fileName, n=None):
     '''Return the base name of a path.'''
-    # pylint: disable=invalid-unary-operand-type
-    if not fileName:
-        return ''
-    elif n is None or n < 1:
-        return g.os_path_basename(fileName)
-    else:
-        return '/'.join(fileName.replace('\\', '/').split('/')[-n:])
+    if n is not None:
+        g.trace('"n" keyword argument is no longer used')
+    return g.os_path_basename(fileName) if fileName else ''
 
 shortFilename = shortFileName
 #@+node:ekr.20150610125813.1: *3* g.splitLongFileName
@@ -3807,8 +3821,11 @@ def recursiveUNLFind(unlList, c, depth=0, p=None, maxdepth=0, maxp=None,
     heads = [i.h for i in nds]
     # work out order in which to try nodes
     order = []
-    target = unlList[depth]
     nth_sib = nth_same = nth_line_no = nth_col_no = None
+    try:
+        target = unlList[depth]
+    except IndexError:
+        target = ''
     try:
         target = pos_pattern.sub('', unlList[depth])
         nth_sib, nth_same, nth_line_no, nth_col_no = recursiveUNLParts(unlList[depth])
@@ -4425,7 +4442,7 @@ def execGitCommand(command, directory):
     git_dir = g.os_path_finalize_join(directory, '.git')
     if not g.os_path_exists(git_dir):
         g.trace('not found:', git_dir)
-        return
+        return []
     if '\n' in command:
         g.trace('removing newline from', command)
         command = command.replace('\n','')
@@ -4439,16 +4456,37 @@ def execGitCommand(command, directory):
     out, err = p.communicate()
     lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
     return lines
+#@+node:ekr.20180325025502.1: *3* g.backupGitIssues
+def backupGitIssues(c, base_url=None):
+    '''Get a list of issues from Leo's GitHub site.'''
+    import time
+
+    if base_url is None:
+        base_url = 'https://api.github.com/repos/leo-editor/leo-editor/issues'
+    
+    root = c.lastTopLevel().insertAfter()
+    root.h = 'Backup of issues: %s' % time.strftime("%Y/%m/%d")
+    GitIssueController().backup_issues(base_url, c, root)
+    root.expand()
+    c.selectPosition(root)
+    c.redraw()
+    g.trace('done')
+   
 #@+node:ekr.20180126043905.1: *3* g.getGitIssues
-def getGitIssues(c, label_list, milestone, base_url=None, include_body=False):
+def getGitIssues(c,
+    base_url=None,
+    label_list=None,
+    include_body=False,
+    milestone=None,
+    state=None, # in (None, 'closed', 'open')
+):
     '''Get a list of issues from Leo's GitHub site.'''
     if base_url is None:
         base_url = 'https://api.github.com/repos/leo-editor/leo-editor/issues'
     if isinstance(label_list, (list, tuple)):
         root = c.lastTopLevel().insertAfter()
-        root.h = 'Issues for ' + milestone
-        GitIssueController().get_issues(
-            base_url, include_body, label_list, milestone, root)
+        root.h = 'Issues for ' + milestone if milestone else 'Backup'
+        GitIssueController().backup_issues(base_url, c, root)
         root.expand()
         c.selectPosition(root)
         c.redraw()
@@ -4457,18 +4495,67 @@ def getGitIssues(c, label_list, milestone, base_url=None, include_body=False):
         g.trace('label_list must be a list or tuple', repr(label_list))
 #@+node:ekr.20180126044602.1: *4* class GitIssueController
 class GitIssueController(object):
-    '''A class encapsulating the retrieval of GitHub issues.'''
+    '''
+    A class encapsulating the retrieval of GitHub issues.
+    
+    The GitHub api: https://developer.github.com/v3/issues/
+    '''
     #@+others
+    #@+node:ekr.20180325023336.1: *5* git.backup_issues
+    def backup_issues(self, base_url, c, root, state=None):
+        
+        self.base_url = base_url
+        self.root = root
+        self.include_body = True
+        self.milestone = None
+        if state is None:
+            for state in ('closed', 'open'):
+                organizer = root.insertAsLastChild()
+                organizer.h = '%s issues...' % state
+                self.get_all_issues(organizer, state)
+        elif state in ('closed', 'open'):
+            self.get_all_issues(root, state)
+        else:
+            g.es_print('state must be in (None, "open", "closed")')
+    #@+node:ekr.20180325024334.1: *5* git.get_all_issues
+    def get_all_issues(self, root, state, limit=100):
+        '''Get all issues for the base url.'''
+        trace = False
+        import requests
+        label = None
+        assert state in ('open', 'closed')
+        page_url = self.base_url + '?&state=%s&page=%s'
+        page, total = 1, 0
+        while True:
+            url =  page_url % (state, page)
+            r = requests.get(url)
+            try:
+                done, n = self.get_one_page(label, page, r, root)
+                if trace and page == 1:
+                    self.print_header(r)
+            except AttributeError:
+                g.trace('Possible rate limit')
+                self.print_header(r)
+                g.es_exception()
+                break
+            total += n
+            if done:
+                break
+            page += 1
+            if page > limit:
+                g.trace('too many pages')
+                break
     #@+node:ekr.20180126044850.1: *5* git.get_issues
-    def get_issues(self, base_url, include_body, label_list, milestone, root):
+    def get_issues(self, base_url, include_body, label_list, milestone, root, state):
         '''Create a list of issues for each label in label_list.'''
         self.base_url = base_url
         self.include_body = include_body
         self.milestone = milestone
         self.root = root
+        self.state = state # in (None, 'closed', 'open')
         for label in label_list:
             self.get_one_issue(label)
-    #@+node:ekr.20180126043719.3: *5* git.get_issue
+    #@+node:ekr.20180126043719.3: *5* git.get_one_issue
     def get_one_issue(self, label, limit=20):
         '''Create a list of issues with the given label.'''
         import requests
@@ -4498,16 +4585,19 @@ class GitIssueController(object):
     def get_one_page(self, label, page, r, root):
         
         trace = True
-        aList = [
-            z for z in r.json()
-                if z.get('milestone') is not None and
-                    self.milestone==z.get('milestone').get('title')
-        ]
+        if self.milestone:
+            aList = [
+                z for z in r.json()
+                    if z.get('milestone') is not None and
+                        self.milestone==z.get('milestone').get('title')
+            ]
+        else:
+            aList = [z for z in r.json()]
         for d in aList:
             n, title = d.get('number'), d.get('title')
             p = root.insertAsNthChild(0)
             p.h = '#%s: %s' % (n, title)
-            p.b = 'https://github.com/leo-editor/leo-editor/issues/%s' % n
+            p.b = '%s/%s\n' % (self.base_url, n)
             if self.include_body:
                 p.b += d.get('body').strip()
         link = r.headers.get('Link')
@@ -5954,7 +6044,12 @@ def pr(*args, **keys):
         s += g.u('\n') if g.isPython3 else '\n'
     # Python's print statement *can* handle unicode, but
     # sitecustomize.py must have sys.setdefaultencoding('utf-8')
-    stdout.write(s)
+    try:
+        # 783: print-* commands fail under pythonw.
+        # https://github.com/leo-editor/leo-editor/issues/783.
+        stdout.write(s)
+    except Exception:
+        pass
 #@+node:ekr.20060221083356: *3* g.prettyPrintType
 def prettyPrintType(obj):
     # pylint: disable=no-member
@@ -6004,8 +6099,8 @@ def printGlobals(message=None):
     if message:
         leader = "-" * 10
         g.pr(leader, ' ', message, ' ', leader)
-    for glob in globs:
-        g.pr(glob)
+    for name in globs:
+        g.pr(name)
 #@+node:ekr.20031218072017.3115: *3* g.printLeoModules
 def printLeoModules(message=None):
     # Create the list.
@@ -6125,8 +6220,6 @@ def actualColor(color):
     '''Return the actual color corresponding to the requested color.'''
     trace = False and not g.unitTesting
     c = g.app.log and g.app.log.c
-    if g.app.debug:
-        return color
     # Careful: c.config may not yet exist.
     if not c or not c.config:
         return color
@@ -6345,6 +6438,13 @@ def windows():
 #@+node:ekr.20031218072017.2145: ** g.os_path_ Wrappers
 #@+at Note: all these methods return Unicode strings. It is up to the user to
 # convert to an encoded string as needed, say when opening a file.
+#@+node:ekr.20180314120442.1: *3* g.glob_glob
+def glob_glob (pattern):
+    '''Return the regularized glob.glob(pattern)'''
+    aList = glob.glob(pattern)
+    if g.isWindows:
+        aList = [z.replace('\\','/') for z in aList]
+    return aList
 #@+node:ekr.20031218072017.2146: *3* g.os_path_abspath
 def os_path_abspath(path):
     """Convert a path to an absolute path."""
@@ -6352,6 +6452,8 @@ def os_path_abspath(path):
     path = path.replace('\x00','') # Fix Pytyon 3 bug on Windows 10.
     path = os.path.abspath(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2147: *3* g.os_path_basename
 def os_path_basename(path):
@@ -6359,6 +6461,8 @@ def os_path_basename(path):
     path = g.toUnicodeFileEncoding(path)
     path = os.path.basename(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2148: *3* g.os_path_dirname
 def os_path_dirname(path):
@@ -6366,6 +6470,8 @@ def os_path_dirname(path):
     path = g.toUnicodeFileEncoding(path)
     path = os.path.dirname(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2149: *3* g.os_path_exists
 def os_path_exists(path):
@@ -6411,6 +6517,8 @@ def os_path_expandExpression(s, **keys):
             aList.append(s[previ:])
             break
     val = ''.join(aList)
+    if g.isWindows:
+        val = val.replace('\\','/')
     if trace: g.trace(' returns', val)
     return val
 #@+node:ekr.20180120140558.1: *4* g.replace_path_expression
@@ -6432,6 +6540,8 @@ def os_path_expanduser(path):
     """wrap os.path.expanduser"""
     path = g.toUnicodeFileEncoding(path)
     result = os.path.normpath(os.path.expanduser(path))
+    if g.isWindows:
+        path = path.replace('\\','/')
     return result
 #@+node:ekr.20080921060401.14: *3* g.os_path_finalize
 def os_path_finalize(path, **keys):
@@ -6448,6 +6558,8 @@ def os_path_finalize(path, **keys):
     path = path.replace('\x00','') # Fix Pytyon 3 bug on Windows 10.
     path = os.path.abspath(path)
     path = os.path.normpath(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     # calling os.path.realpath here would cause problems in some situations.
     return path
 #@+node:ekr.20140917154740.19483: *3* g.os_path_finalize_join
@@ -6457,8 +6569,11 @@ def os_path_finalize_join(*args, **keys):
     if c:
         args = [g.os_path_expandExpression(z, **keys)
             for z in args if z]
-    return os.path.normpath(os.path.abspath(
+    path = os.path.normpath(os.path.abspath(
         g.os_path_join(*args, **keys))) # Handles expanduser
+    if g.isWindows:
+        path = path.replace('\\','/')
+    return path
 #@+node:ekr.20031218072017.2150: *3* g.os_path_getmtime
 def os_path_getmtime(path):
     """Return the modification time of path."""
@@ -6522,6 +6637,8 @@ def os_path_join(*args, **keys):
     # May not be needed on some Pythons.
     path = g.toUnicodeFileEncoding(path)
     path = path.replace('\x00','') # Fix Pytyon 3 bug on Windows 10.
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2156: *3* g.os_path_normcase
 def os_path_normcase(path):
@@ -6529,6 +6646,8 @@ def os_path_normcase(path):
     path = g.toUnicodeFileEncoding(path)
     path = os.path.normcase(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2157: *3* g.os_path_normpath
 def os_path_normpath(path):
@@ -6536,7 +6655,16 @@ def os_path_normpath(path):
     path = g.toUnicodeFileEncoding(path)
     path = os.path.normpath(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
+#@+node:ekr.20180314081254.1: *3* g.os_path_normslashes
+def os_path_normslashes(path):
+    if g.isWindows and path:
+        path = path.replace('\\','/')
+    return path
+    
+    
 #@+node:ekr.20080605064555.2: *3* g.os_path_realpath
 def os_path_realpath(path):
     '''Return the canonical path of the specified filename, eliminating any
@@ -6546,6 +6674,8 @@ def os_path_realpath(path):
     path = g.toUnicodeFileEncoding(path)
     path = os.path.realpath(path)
     path = g.toUnicodeFileEncoding(path)
+    if g.isWindows:
+        path = path.replace('\\','/')
     return path
 #@+node:ekr.20031218072017.2158: *3* g.os_path_split
 def os_path_split(path):

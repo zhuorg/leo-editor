@@ -76,23 +76,6 @@ class EditCommandsClass(BaseEditCommandsClass):
     def doNothing(self, event):
         '''A placeholder command, useful for testing bindings.'''
         pass
-    #@+node:ekr.20150514063305.213: *3* ec.evalExpression
-    @cmd('eval-expression')
-    def evalExpression(self, event):
-        '''Evaluate a Python Expression entered in the minibuffer.'''
-        k = self.c.k
-        k.setLabelBlue('Eval: ')
-        k.get1Arg(event, handler=self.evalExpression1)
-
-    def evalExpression1(self, event):
-        k = self.c.k
-        k.clearState()
-        try:
-            e = k.arg
-            result = str(eval(e, {}, {}))
-            k.setLabelGrey('Eval: %s -> %s' % (e, result))
-        except Exception:
-            k.setLabelGrey('Invalid Expression: %s' % e)
     #@+node:ekr.20150514063305.278: *3* ec.insertFileName
     @cmd('insert-file-name')
     def insertFileName(self, event=None):
@@ -510,58 +493,6 @@ class EditCommandsClass(BaseEditCommandsClass):
             w.insert(i, line2)
         w.setInsertPoint(i + c1)
         self.endCommand(changed=True, setLabel=True)
-    #@+node:ekr.20150514063305.210: *3* ec: esc methods for Python evaluation
-    #@+node:ekr.20150514063305.211: *4* ec.watchEscape
-    @cmd('escape')
-    def watchEscape(self, event):
-        '''Enter watch escape mode.'''
-        k = self.c.k
-        char = event.char if event else ''
-        if not k.inState():
-            k.setState('escape', 'start', handler=self.watchEscape)
-            k.setLabelBlue('Esc ')
-        elif k.getStateKind() == 'escape':
-            state = k.getState('escape')
-            # hi1 = k.keysymHistory [0]
-            # hi2 = k.keysymHistory [1]
-            data1 = g.app.lossage[0]
-            data2 = g.app.lossage[1]
-            ch1, stroke1 = data1
-            ch2, stroke2 = data2
-            if state == 'esc esc' and char == ':':
-                self.evalExpression(event)
-            elif state == 'evaluate':
-                self.escEvaluate(event)
-            # elif hi1 == hi2 == 'Escape':
-            elif stroke1 == 'Escape' and stroke2 == 'Escape':
-                k.setState('escape', 'esc esc')
-                k.setLabel('Esc Esc -')
-            elif char not in ('Shift_L', 'Shift_R'):
-                k.keyboardQuit()
-    #@+node:ekr.20150514063305.212: *4* ec.escEvaluate (Revise)
-    def escEvaluate(self, event):
-        k = self.c.k
-        w = self.editWidget(event)
-        if not w:
-            return
-        char = event.char if event else ''
-        if k.getLabel() == 'Eval:':
-            k.setLabel('')
-        if char in ('\n', 'Return'):
-            expression = k.getLabel()
-            try:
-                ok = False
-                result = eval(expression, {}, {})
-                result = str(result)
-                i = w.getInsertPoint()
-                w.insert(i, result)
-                ok = True
-            finally:
-                k.keyboardQuit()
-                if not ok:
-                    k.setStatusLabel('Error: Invalid Expression')
-        else:
-            k.updateLabel(event)
     #@+node:ekr.20150514063305.214: *3* ec: fill column and centering
     #@+at
     # 
@@ -874,10 +805,10 @@ class EditCommandsClass(BaseEditCommandsClass):
     # - Tree control recomputes height of each line.
     #@+node:ekr.20150514063305.230: *4* ec. Helpers
     #@+node:ekr.20150514063305.231: *5* ec.appendImageDictToList
-    def appendImageDictToList(self, aList, iconDir, path, xoffset, **kargs):
+    def appendImageDictToList(self, aList, path, xoffset, **kargs):
         c = self.c
-        path = c.os_path_finalize_join(iconDir, path)
-        relPath = g.makePathRelativeTo(path, iconDir)
+        relPath = path  # for finding icon on load in different environment
+        path = g.app.gui.getImageFinder(path)
         # pylint: disable=unpacking-non-sequence
         image, image_height = g.app.gui.getTreeImage(c, path)
         if not image:
@@ -1031,7 +962,7 @@ class EditCommandsClass(BaseEditCommandsClass):
         aList = []
         xoffset = 2
         for path in paths:
-            xoffset = self.appendImageDictToList(aList, iconDir, path, xoffset)
+            xoffset = self.appendImageDictToList(aList, path, xoffset)
         aList2 = self.getIconList(p)
         aList2.extend(aList)
         self.setIconList(p, aList2)
@@ -1041,11 +972,9 @@ class EditCommandsClass(BaseEditCommandsClass):
     def insertIconFromFile(self, path, p=None, pos=None, **kargs):
         c = self.c
         if not p: p = c.p
-        iconDir = c.os_path_finalize_join(g.app.loadDir, "..", "Icons")
-        os.chdir(iconDir)
         aList = []
         xoffset = 2
-        xoffset = self.appendImageDictToList(aList, iconDir, path, xoffset, **kargs)
+        xoffset = self.appendImageDictToList(aList, path, xoffset, **kargs)
         aList2 = self.getIconList(p)
         if pos is None: pos = len(aList2)
         aList2.insert(pos, aList[0])

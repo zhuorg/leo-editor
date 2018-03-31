@@ -102,7 +102,7 @@
 <v t="ekr.20041120155431.2"><vh>\@type type-name: script: script-name</vh></v>
 </v>
 <v t="ekr.20061011082224"><vh>About myLeoSettings.leo</vh></v>
-<v t="ekr.20041119034357.1"><vh>@settings</vh>
+<v t="ekr.20041119034357.1" a="E"><vh>@settings</vh>
 <v t="ekr.20180306144001.1"><vh> Color definitions</vh>
 <v t="ekr.20140912072521.19153"><vh>@color LeoGreen = #00AA00</vh></v>
 <v t="ekr.20140912072521.19154"><vh>@color LeoYellow = #ffffec</vh></v>
@@ -283,6 +283,7 @@
 <v t="ekr.20140915194122.23418"><vh>@color splitter-handle-bg = @LightSteelBlue1</vh></v>
 <v t="ekr.20140912075503.19275"><vh>@color splitter-border-fg = white</vh></v>
 <v t="ekr.20140912075503.19276"><vh>@color splitter-border-style = solid</vh></v>
+<v t="ekr.20180317172528.1"><vh>@color splitter-hover-bg = @LightSteelBlue1</vh></v>
 </v>
 <v t="ekr.20140912075503.19345"><vh>Status area colors</vh>
 <v t="ekr.20140912075503.19346"><vh>@color status-bg = lightgrey</vh></v>
@@ -320,13 +321,13 @@
 <v t="tbrown.20131122094200.2512"><vh>@string font-size-body = @body-font-size</vh></v>
 </v>
 <v t="ekr.20140915194122.23441"><vh>Dialog fonts</vh>
-<v t="ekr.20140912075503.19341"><vh>@string dialog-font-family = None</vh></v>
-<v t="ekr.20140912075503.19342"><vh>@string dialog-font-size = None</vh></v>
-<v t="ekr.20140912075503.19343"><vh>@string dialog-font-weight = None </vh></v>
-<v t="ekr.20140912075503.19344"><vh>@string dialog-font-style = None</vh></v>
+<v t="ekr.20140912075503.19341"><vh>@string dialog-font-family = @font-family</vh></v>
+<v t="ekr.20140912075503.19342"><vh>@string dialog-font-size = @font-size</vh></v>
+<v t="ekr.20140912075503.19343"><vh>@string dialog-font-weight = @font-weight </vh></v>
+<v t="ekr.20140912075503.19344"><vh>@string dialog-font-style = @font-style</vh></v>
 </v>
 <v t="ekr.20140912075503.19277"><vh>Find Panel Fonts</vh>
-<v t="ekr.20140915194122.23424"><vh>@string checkbox-font-family = None</vh></v>
+<v t="ekr.20140915194122.23424"><vh>@string checkbox-font-family = @font-family</vh></v>
 <v t="ekr.20140915194122.23422"><vh>@string checkbox-font-size = @medium-font-size</vh></v>
 <v t="ekr.20140912075503.19279"><vh>@string find-font-family = @font-family</vh></v>
 <v t="ekr.20140912075503.19280"><vh>@string find-font-size = @medium-font-size</vh></v>
@@ -375,7 +376,7 @@
 </v>
 </v>
 <v t="ekr.20140915194122.23443"><vh>Status area fonts</vh>
-<v t="ekr.20140912075503.19350"><vh>@string status-font-family = None</vh></v>
+<v t="ekr.20140912075503.19350"><vh>@string status-font-family = @font-family</vh></v>
 <v t="ekr.20140912075503.19351"><vh>@string status-font-size = @small-font-size</vh></v>
 <v t="ekr.20140912075503.19352"><vh>@string status-font-weight = @font-weight</vh></v>
 <v t="ekr.20140912075503.19353"><vh>@string status-font-style = @font-style</vh></v>
@@ -420,9 +421,9 @@
 <v t="ekr.20140912075503.19355"><vh>bookmarks.py plugin</vh>
 <v t="ekr.20140915194122.24259"><vh>bookmarks base</vh>
 <v t="tbrown.20140101093550.25136"><vh>@color bookmarks_base_color = @text-foreground</vh></v>
-<v t="ekr.20140912075503.19358"><vh>@string bookmarks_base_border = none</vh></v>
-<v t="tbrown.20140101093550.25140"><vh>@string bookmarks_base_decoration = none</vh></v>
-<v t="ekr.20140915194122.24263"><vh>@string bookmarks_base_family = none</vh></v>
+<v t="ekr.20140912075503.19358"><vh>@string bookmarks_base_border = "none"</vh></v>
+<v t="tbrown.20140101093550.25140"><vh>@string bookmarks_base_decoration = "none"</vh></v>
+<v t="ekr.20140915194122.24263"><vh>@string bookmarks_base_family = @font-family</vh></v>
 <v t="ekr.20140912075503.19356"><vh>@string bookmarks_base_margin = 0</vh></v>
 <v t="ekr.20140912075503.19357"><vh>@string bookmarks_base_padding = 1</vh></v>
 <v t="tbrown.20140101093550.25165"><vh>@string bookmarks_base_size = @bookmarks_font_size</vh></v>
@@ -432,16 +433,16 @@
 <v t="ekr.20140915194122.24260"><vh>bookmarks children</vh>
 <v t="tbrown.20140101093550.25162"><vh>@color bookmarks_children_color = @text-foreground</vh></v>
 <v t="tbrown.20140101093550.25164"><vh>@string bookmarks_children_decoration = underline</vh></v>
-<v t="ekr.20140915194122.24264"><vh>@string bookmarks_children_family = none</vh></v>
+<v t="ekr.20140915194122.24264"><vh>@string bookmarks_children_family = @font-family</vh></v>
 <v t="tbrown.20140101093550.25171"><vh>@string bookmarks_children_size = ignore</vh></v>
 <v t="ekr.20140915194122.24266"><vh>@string bookmarks_children_style = ignore</vh></v>
 <v t="tbrown.20140101093550.25163"><vh>@string bookmarks_children_weight = ignore</vh></v>
 </v>
 <v t="ekr.20140915194122.24261"><vh>bookmarks current</vh>
 <v t="tbrown.20140101093550.25146"><vh>@color bookmarks_current_color = blue</vh></v>
-<v t="tbrown.20140101093550.25148"><vh>@string bookmarks_current_decoration = ignore</vh></v>
-<v t="tbrown.20140101093550.25167"><vh>@string bookmarks_current_size = ignore</vh></v>
-<v t="ekr.20140915194122.24267"><vh>@string bookmarks_current_style = ignore</vh></v>
+<v t="tbrown.20140101093550.25148"><vh>@string bookmarks_current_decoration = "none"</vh></v>
+<v t="ekr.20180317175351.1"><vh>@string bookmarks_current_size = @bookmarks_font_size</vh></v>
+<v t="ekr.20140915194122.24267"><vh>@string bookmarks_current_style = "none"</vh></v>
 <v t="tbrown.20140101093550.25147"><vh>@string bookmarks_current_weight = bold</vh></v>
 </v>
 <v t="ekr.20140915194122.24262"><vh>bookmarks expanded</vh>
@@ -705,6 +706,7 @@
 <v t="tbnorth.20170111153412.1"><vh>Editing</vh>
 <v t="tbnorth.20170111153417.1"><vh>@int autojustify = 78</vh></v>
 <v t="tbnorth.20170111153430.1"><vh>@bool autojustify-on-at-start = False</vh></v>
+<v t="chris.20180320083521.1"><vh>@bool word-count = False</vh></v>
 </v>
 <v t="ekr.20061003173413"><vh>Files &amp; directories</vh>
 <v t="ekr.20170706103545.1"><vh>@bool report_unchanged_files = True</vh></v>
@@ -1230,6 +1232,7 @@
 <v t="ekr.20131213135427.21950"><vh>Proper names</vh></v>
 </v>
 <v t="ekr.20131213135427.21951"><vh>@menu Settings</vh>
+<v t="ekr.20180320113441.1"><vh>@item open-theme-file</vh></v>
 <v t="ekr.20131213135427.21952"><vh>@item -</vh></v>
 <v t="ekr.20131213135427.21953"><vh>@item open-leo-settings-leo</vh></v>
 <v t="ekr.20131213135427.21954"><vh>@item open-myLeoSettings-leo</vh></v>
@@ -2203,8 +2206,7 @@
 <v t="ekr.20090724102842.2492"><vh>@int qt_max_colorized_chars = 0</vh></v>
 </v>
 </v>
-<v t="ekr.20110611092035.16463"><vh>Tree operation</vh>
-<v t="ekr.20041119050749.3"><vh>@bool allow_clone_drags = False</vh></v>
+<v t="ekr.20110611092035.16463" a="E"><vh>Tree operation</vh>
 <v t="nh910.20110621123823.3423"><vh>@bool collapse_nodes_after_move = True</vh></v>
 <v t="ekr.20060930085532"><vh>@bool collapse_nodes_during_finds = True</vh></v>
 <v t="ekr.20080315083057.7"><vh>@bool collapse_nodes_while_spelling = True</vh></v>
@@ -2220,6 +2222,7 @@
 <v t="ekr.20061007211759"><vh>@bool sparse_move_outline_left = False</vh></v>
 <v t="ekr.20060122105527.7"><vh>@bool stayInTreeAfterSelect = True</vh></v>
 <v t="ekr.20061002115414.1"><vh>@float outline_nav_extend_delay = 2.0</vh></v>
+<v t="chris.20180324074923.1"><vh>@int icon-height = 16</vh></v>
 </v>
 <v t="ekr.20041119034357.15"><vh>Unicode options</vh>
 <v t="ekr.20080212084020"><vh>@string default_at_auto_file_encoding = utf-8</vh></v>
@@ -2360,6 +2363,8 @@ The following integer values are supported:
 4 = Code debugging messages
 </t>
 <t tx="btheado.20131124162237.2493"></t>
+<t tx="chris.20180320083521.1">Enable/Disable word count display in status line.</t>
+<t tx="chris.20180324074923.1"></t>
 <t tx="edward.20081129091117.12">horizontal: body pane to the right
 vertical: body pane on the botton
 </t>
@@ -2765,10 +2770,6 @@ Thu, 30 Jan 2003 16:57:12
 <t tx="ekr.20041119050749.11">True:  use gmt time when inserting time into headlines.
 
 False: use local time.</t>
-<t tx="ekr.20041119050749.3">True:  Allows control-dragging to create clones.
-False: All drags move nodes.
-
-Setting this setting to False allows Leo to be used on Aqua.</t>
 <t tx="ekr.20041119050749.4">True:  Tell whether drags will move nodes or clone nodes.
 False: Don't issue such messages.
 
@@ -5779,7 +5780,13 @@ main()
 </t>
 <t tx="ekr.20111017082630.16086"></t>
 <t tx="ekr.20111024091133.16650"></t>
-<t tx="ekr.20111024091133.16651"></t>
+<t tx="ekr.20111024091133.16651">These @color names map directly to the constants defined in each .py file in the leo/modes folder.
+
+There is a script to generate these .py files directly from the jEdit .xml syntax coloring files.
+
+These names can't be changed.  Leo's colorizing code leoColorizer.py uses these names to init various data structures.  The names are bound (in the modes/*.py files) to arguments to the pattern matches in leoColorizer.py.
+
+Check the .py file in leo/modes for your langauge to see which names are actually used.</t>
 <t tx="ekr.20111024091133.16671"></t>
 <t tx="ekr.20111026083456.16490"></t>
 <t tx="ekr.20111026083456.16491">import glob
@@ -6045,7 +6052,7 @@ in myLeoSettings.leo.  But most users will never need to do this.
 False: start-find commands puts focus in Find panel.</t>
 <t tx="ekr.20131119143342.20108"></t>
 <t tx="ekr.20131213135427.21826"></t>
-<t tx="ekr.20131213135427.21827"></t>
+<t tx="ekr.20131213135427.21827">&amp;Open Theme File</t>
 <t tx="ekr.20131213135427.21828"></t>
 <t tx="ekr.20131213135427.21829">&amp;Open</t>
 <t tx="ekr.20131213135427.21830"></t>
@@ -9801,8 +9808,8 @@ QCheckBox#TipCheckbox {
 
 /* -----
 QPushButton {
-    font-family: @push-button-font-family;
-    font-size:   @push-button-font-size;
+    font-family: at-push-button-font-family;
+    font-size:   at-push-button-font-size;
 }
 ----- */
 
@@ -11753,6 +11760,10 @@ May be overridden by themes.</t>
 <t tx="ekr.20180308050150.7"></t>
 <t tx="ekr.20180308050150.8"></t>
 <t tx="ekr.20180308050150.9"></t>
+<t tx="ekr.20180317172528.1"></t>
+<t tx="ekr.20180317175351.1"></t>
+<t tx="ekr.20180320113441.1">&amp;View Theme
+</t>
 <t tx="jlunz.20150821113251.1">def html_tag():
     """expand &lt;tag&gt; to 
        &lt;tag&gt;\n&lt;/tag&gt; with proper indendation"""
@@ -12031,7 +12042,6 @@ valid values are: normal,bold,100,..,900
 <t tx="tbrown.20140101093550.25163">bold or regular</t>
 <t tx="tbrown.20140101093550.25164">none or underline</t>
 <t tx="tbrown.20140101093550.25165"></t>
-<t tx="tbrown.20140101093550.25167"></t>
 <t tx="tbrown.20140101093550.25169"></t>
 <t tx="tbrown.20140101093550.25171"></t>
 <t tx="tbrown.20140101093550.25173"></t>

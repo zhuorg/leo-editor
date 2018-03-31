@@ -330,6 +330,9 @@
 </v>
 </v>
 </v>
+<v t="ekr.20090529115704.4557"><vh>@test x.makeShadowDirectory</vh>
+<v t="ekr.20090529115704.4558"><vh>deleteShadowDir</vh></v>
+</v>
 </v>
 <v t="ekr.20170504122245.1"><vh>@ignore recent</vh>
 <v t="ekr.20170712045534.1"><vh>#512: Unit tests that fail for others</vh>
@@ -337,9 +340,7 @@
 <v t="ekr.20111121224307.3934"><vh>@test k.handleDefaultChar from log pane</vh></v>
 </v>
 <v t="ekr.20170712045644.1"><vh>Terry's failures</vh>
-<v t="ekr.20090529115704.4557"><vh>@test x.makeShadowDirectory</vh>
-<v t="ekr.20090529115704.4558"><vh>deleteShadowDir</vh></v>
-</v>
+<v t="ekr.20090529115704.4557"></v>
 <v t="ekr.20100131171342.5485"><vh>@test all commands have an event arg</vh></v>
 <v t="ekr.20170712132824.1"><vh>add/delete comments</vh>
 <v t="ekr.20120309155126.3949"><vh>@test add comments with multiple @language directives</vh>
@@ -1223,6 +1224,7 @@
 <v t="ekr.20171112182742.4"><vh>B</vh></v>
 </v>
 <v t="ekr.20080503082625.3"><vh>@test delete node</vh></v>
+<v t="ekr.20180312050443.1"><vh>@test cwd</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -15986,5 +15988,10 @@ EOT;
 ?&gt;
 </t>
 <t tx="ekr.20180214042153.1">False is the legacy value.</t>
+<t tx="ekr.20180312050443.1">import os
+cwd = g.os_path_abspath(os.curdir)
+test_dir = g.os_path_finalize_join(g.app.loadDir, '..', 'test')
+assert cwd == test_dir, (cwd, test_dir)
+</t>
 </tnodes>
 </leo_file>

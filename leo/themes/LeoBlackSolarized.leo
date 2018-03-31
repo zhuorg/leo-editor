@@ -2,18 +2,51 @@
 <!-- Created by Leo: http://leoeditor.com/leo_toc.html -->
 <leo_file xmlns:leo="http://leoeditor.com/namespaces/leo-python-editor/1.1" >
 <leo_header file_format="2" tnodes="0" max_tnode_index="0" clone_windows="0"/>
-<globals body_outline_ratio="0.5" body_secondary_ratio="0.5">
-	<global_window_position top="50" left="50" height="500" width="700"/>
+<globals body_outline_ratio="0.50" body_secondary_ratio="0.50">
+	<global_window_position top="138" left="562" height="861" width="1109"/>
 	<global_log_window_position top="0" left="0" height="0" width="0"/>
 </globals>
 <preferences/>
 <find_panel_settings/>
 <vnodes>
+<v t="ekr.20180309203321.1"><vh>Tests</vh>
+<v t="ekr.20180314052647.1"><vh>Syntax coloring template</vh>
+<v t="ekr.20180314052647.2"><vh>&lt;&lt; defined section &gt;&gt;</vh></v>
+</v>
+<v t="ekr.20180306143127.1"><vh>Syntax coloring test</vh>
+<v t="ekr.20180306143127.2"><vh>&lt;&lt; defined section &gt;&gt;</vh></v>
+</v>
+<v t="ekr.20180306170402.1"><vh>Test g.es(color=*)</vh></v>
+</v>
 <v t="ekr.20180306142738.3"><vh>@settings</vh>
 <v t="ekr.20180306144200.1"><vh>@bool show-tips = False</vh></v>
 <v t="ekr.20180306144227.1"><vh>@bool use-gutter = False</vh></v>
+<v t="ekr.20180306144735.1"><vh>@@string font-size-body = 24px</vh></v>
 <v t="ekr.20180307010409.1"><vh>@theme Leo Black Solarized</vh>
 <v t="ekr.20180307010409.2"><vh>Settings for Leo Solarized Dark theme</vh>
+<v t="ekr.20180309203459.1"><vh>Base colors: these are not solarized colors</vh>
+<v t="ekr.20180309203459.2"><vh>@color dark-base0 = #fdffdd</vh></v>
+<v t="ekr.20180309203459.3"><vh>@color dark-base00 = #657b83</vh></v>
+<v t="ekr.20180309203459.4"><vh>@color dark-base01 = #586e75</vh></v>
+<v t="ekr.20180309203459.5"><vh>@color dark-base02 = #073642</vh></v>
+<v t="ekr.20180309203459.6"><vh>@color dark-base03 = #000005</vh></v>
+<v t="ekr.20180309203459.7"><vh>@color dark-base04 = #000059</vh></v>
+<v t="ekr.20180309203459.8"><vh>@color dark-base05 = #003b00</vh></v>
+<v t="ekr.20180309203459.9"><vh>@color dark-base06 = #3b0000</vh></v>
+<v t="ekr.20180309203459.10"><vh>@color dark-base1 = #93a1a1</vh></v>
+<v t="ekr.20180309203459.11"><vh>@color dark-base2 = #eee8d5</vh></v>
+<v t="ekr.20180309203459.12"><vh>@color dark-base3 = #fdf6e3</vh></v>
+<v t="ekr.20180309203459.13"><vh>@color solarized-black = #000005</vh></v>
+<v t="ekr.20180309203459.14"><vh>@color solarized-blue = #268bd2</vh></v>
+<v t="ekr.20180309203459.15"><vh>@color solarized-cyan = #2aa198</vh></v>
+<v t="ekr.20180309203459.16"><vh>@color solarized-green = #859900</vh></v>
+<v t="ekr.20180309203459.17"><vh>@color solarized-magenta = #d33682</vh></v>
+<v t="ekr.20180309203459.18"><vh>@color solarized-orange = #cb4b16</vh></v>
+<v t="ekr.20180309203459.19"><vh>@color solarized-red = #dc322f</vh></v>
+<v t="ekr.20180309203459.20"><vh>@color solarized-violet = #6c71c4</vh></v>
+<v t="ekr.20180309203459.21"><vh>@color solarized-white = #fdf6e3 </vh></v>
+<v t="ekr.20180309203459.22"><vh>@color solarized-yellow = #b58900</vh></v>
+</v>
 <v t="ekr.20180307010409.3"><vh>Colors: Logical colors</vh>
 <v t="ekr.20180307010409.4"><vh>@color log_black_color = @text-foreground</vh></v>
 <v t="ekr.20180307010409.5"><vh>@color log_blue_color = @solarized-blue</vh></v>
@@ -59,6 +92,13 @@
 <v t="ekr.20180307010409.43"><vh>@color show_invisibles_tab_color = #CCCCCC</vh></v>
 <v t="ekr.20180307010409.44"><vh>@color undefined_section_name_color = red</vh></v>
 <v t="ekr.20180307010409.45"><vh>@color url_color = @solarized-purple</vh></v>
+</v>
+<v t="ekr.20180314165700.1"><vh>Colors: patch (diff)</vh>
+<v t="ekr.20180314165700.2"><vh>@color patch_keyword1_color = @solarized-green</vh></v>
+<v t="ekr.20180314165700.3"><vh>@color patch_keyword2_color = @solarized-red</vh></v>
+<v t="ekr.20180314165700.4"><vh>@color patch_keyword3_color = @solarized-blue</vh></v>
+<v t="ekr.20180314165700.5"><vh>@color patch_literal1_color = @solarized-blue</vh></v>
+<v t="ekr.20180314165700.6"><vh>@color patch_literal2_color = @solarized-blue</vh></v>
 </v>
 </v>
 <v t="ekr.20180307010409.46"><vh>Colors: Text</vh>
@@ -140,7 +180,7 @@
 <v t="ekr.20180307010409.109"><vh>Log</vh></v>
 <v t="ekr.20180307010409.110"><vh>Menus</vh></v>
 <v t="ekr.20180307010409.111"><vh>Minibuffer &amp; label</vh></v>
-<v t="ekr.20180307010409.112"><vh>Plugins</vh></v>
+<v t="ekr.20180309203342.1"><vh>Plugins</vh></v>
 <v t="ekr.20180307010409.113"><vh>Scroll bars</vh></v>
 <v t="ekr.20180307010409.114"><vh>Splitters</vh></v>
 <v t="ekr.20180307010409.115"><vh>Status area</vh></v>
@@ -149,12 +189,7 @@
 <v t="ekr.20180307010409.118"><vh>Widgets: general</vh></v>
 </v>
 </v>
-<v t="ekr.20180306144735.1"><vh>@@string font-size-body = 24px</vh></v>
 </v>
-<v t="ekr.20180306143127.1"><vh>Syntax coloring test</vh>
-<v t="ekr.20180306143127.2"><vh>&lt;&lt; defined section &gt;&gt;</vh></v>
-</v>
-<v t="ekr.20180306170402.1"><vh>Test g.es(color=*)</vh></v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20180306142738.3">@language md</t>
@@ -328,34 +363,6 @@ QLineEdit#lineEdit {
   border: 1px solid @solarized-blue;
 }
 </t>
-<t tx="ekr.20180307010409.112">/* bookmarks plugin styling */
-
-#show_bookmarks QPushButton {
-  margin: 0; padding: 1; border: none;
-  font-size: @bookmarks_base_size;
-  color: @bookmarks_base_color;
-  font-weight: @bookmarks_base_weight;
-  text-decoration: @bookmarks_base_decoration;
-}
-#show_bookmarks QPushButton[style_class='bookmark_children'] {
-  font-size: @bookmarks_children_size;
-  color: @bookmarks_children_color;
-  font-weight: @bookmarks_children_weight;
-  text-decoration: @bookmarks_children_decoration;
-}
-#show_bookmarks QPushButton[style_class='bookmark_expanded'] {
-  font-size: @bookmarks_expanded_size;
-  color: @bookmarks_expanded_color;
-  font-weight: @bookmarks_expanded_weight;
-  text-decoration: @bookmarks_expanded_decoration;
-}
-#show_bookmarks QPushButton[style_class='bookmark_current'] {
-  font-size: @bookmarks_current_size;
-  color: @bookmarks_current_color;
-  font-weight: @bookmarks_current_weight;
-  text-decoration: @bookmarks_current_decoration;
-}
-</t>
 <t tx="ekr.20180307010409.113">QScrollBar::horizontal {
    height: 7px;
 }
@@ -509,7 +516,13 @@ QWidget {
 <t tx="ekr.20180307010409.15"># Not an official solarized color: same as solorarized-base3</t>
 <t tx="ekr.20180307010409.16"></t>
 <t tx="ekr.20180307010409.17" lineYOffset="4b002e">These settings must exist because they are *not* used in the css.</t>
-<t tx="ekr.20180307010409.18"></t>
+<t tx="ekr.20180307010409.18">These @color names map directly to the constants defined in each .py file in the leo/modes folder.
+
+There is a script to generate these .py files directly from the jEdit .xml syntax coloring files.
+
+These names can't be changed.  Leo's colorizing code leoColorizer.py uses these names to init various data structures.  The names are bound (in the modes/*.py files) to arguments to the pattern matches in leoColorizer.py.
+
+Check the .py file in leo/modes for your langauge to see which names are actually used.</t>
 <t tx="ekr.20180307010409.19"></t>
 <t tx="ekr.20180307010409.2" lineYOffset="4b002e"></t>
 <t tx="ekr.20180307010409.20"></t>
@@ -659,5 +672,112 @@ The following settings specify the indicators.  You can use an absolute path, or
 - Your home directory or
 - Leo's leo/Icons directory
 </t>
+<t tx="ekr.20180309203321.1" str_leo_pos="1,3"></t>
+<t tx="ekr.20180309203342.1">/* bookmarks plugin styling */
+
+#show_bookmarks QPushButton {
+  margin: 0; padding: 1; border: none;
+  font-size: @bookmarks_base_size;
+  color: @bookmarks_base_color;
+  font-weight: @bookmarks_base_weight;
+  /* text-decoration: at-bookmarks_base_decoration; */
+}
+#show_bookmarks QPushButton[style_class='bookmark_children'] {
+  /* font-size: at-bookmarks_children_size; */
+  /* font-weight: at-bookmarks_children_weight; */
+  /* text-decoration: at-bookmarks_children_decoration; */
+  color: @bookmarks_children_color;
+}
+#show_bookmarks QPushButton[style_class='bookmark_expanded'] {
+  /* font-size: at-bookmarks_expanded_size; */
+  color: @bookmarks_expanded_color;
+  font-weight: @bookmarks_expanded_weight;
+  text-decoration: @bookmarks_expanded_decoration;
+}
+#show_bookmarks QPushButton[style_class='bookmark_current'] {
+  /* font-size: at-bookmarks_current_size; */
+  /* text-decoration: at-bookmarks_current_decoration; */
+  color: @bookmarks_current_color;
+  font-weight: @bookmarks_current_weight;
+}
+</t>
+<t tx="ekr.20180309203459.1"></t>
+<t tx="ekr.20180309203459.10"></t>
+<t tx="ekr.20180309203459.11"></t>
+<t tx="ekr.20180309203459.12"></t>
+<t tx="ekr.20180309203459.13"># Not an official solarized color.  Same as dark-base-03</t>
+<t tx="ekr.20180309203459.14"></t>
+<t tx="ekr.20180309203459.15"></t>
+<t tx="ekr.20180309203459.16"></t>
+<t tx="ekr.20180309203459.17"></t>
+<t tx="ekr.20180309203459.18"></t>
+<t tx="ekr.20180309203459.19"></t>
+<t tx="ekr.20180309203459.2"></t>
+<t tx="ekr.20180309203459.20"></t>
+<t tx="ekr.20180309203459.21"># Not an official solarized color: same as solorarized-base3</t>
+<t tx="ekr.20180309203459.22"></t>
+<t tx="ekr.20180309203459.3"></t>
+<t tx="ekr.20180309203459.4"></t>
+<t tx="ekr.20180309203459.5"></t>
+<t tx="ekr.20180309203459.6"></t>
+<t tx="ekr.20180309203459.7"></t>
+<t tx="ekr.20180309203459.8"></t>
+<t tx="ekr.20180309203459.9"></t>
+<t tx="ekr.20180314052647.1">@ A doc part.  *All* languages colorize doc parts as follows:
+
+1. The '@' sign itself is colored with @color leokeyword constant.
+
+2. The rest of the doc parts depends on the @bool color-doc-parts-as-rest setting:
+   True:  Colorize the doc part as **markdown**.
+   False: Colorize the doc part using @color docpart.
+   
+Leo colorizes constructs with two kinds of color constants.
+- **Default colors** defined in the node "Colors: defaults".
+  These constants correspond to jEdit names used in leo/modes/*.py.
+  See the "Colors: defaults" node for more details.
+- **Leo-specific colors**, defined in the node "Colors: Leo constructs".
+  
+Most languages use only a subset of these color names.
+Here are all the colors used to color python:
+@c # @color leo_keyword_color
+
+# Comments: @color comment1
+
+def spam():
+    
+    # Reserved words...
+    pass     # Python keywords: @color keyword1
+    abs(1)   # Standard functions: @color keyword2.
+    __file__ # double underscore names: @color keyword3
+    try:
+        frobnicate()
+            # Function calls are not specially colored.
+            # The default is the text foreground color in the body pane.
+    except IOError: # Exception names: @color keyword3
+        pass
+    a = 2    # Operators (the = sign): @color operator_color
+    
+    # Strings...
+    a = 'Regular string' # @color literal1
+    '''Triple single-quoted docstring''' # @color literal2
+    """Triple double-quoted docstring""" # @color literal2
+    
+# All languages use the following names...
+    
+# Urls: http://leoeditor.com/  @color url_color
+&lt;&lt; undefined section &gt;&gt;      # @color undefined_section_name_color
+&lt;&lt; defined section &gt;&gt;
+    # The brackets:            @color section_name_brackets_color
+    # The section name itself: @color section_name_color
+    
+@language python # @color leo_keyword_color
+</t>
+<t tx="ekr.20180314052647.2"></t>
+<t tx="ekr.20180314165700.1"></t>
+<t tx="ekr.20180314165700.2"># +</t>
+<t tx="ekr.20180314165700.3"># -</t>
+<t tx="ekr.20180314165700.4"># @@</t>
+<t tx="ekr.20180314165700.5"># +++</t>
+<t tx="ekr.20180314165700.6"># ---</t>
 </tnodes>
 </leo_file>
