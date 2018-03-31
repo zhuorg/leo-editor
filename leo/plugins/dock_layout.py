@@ -403,3 +403,45 @@ class DockManager(object):
         for child in mw.findChildren(QtWidgets.QDockWidget):
             child.setTitleBarWidget(widget_factory())
 
+class ToolManager(object):
+    """ToolManager - manage tools (panes, widgets)
+
+    Things that provide widgets should do:
+
+        c.user_dict.setdefault('_tool_providers', []).append(provider)
+
+    which avoids dependence of this class being inited.
+
+    provider should be an object with callables as follows:
+
+        provider.tm_provides() - a list of (id_, name) tuples, ids and names of things
+        this provider can provide
+
+        provider.tm_provide(id_, state) - provide a QWidget based on ID, which will be
+        initialized with dict state
+
+        provider.tm_save_state(w) - provide a JSON serialisable dict that saves
+        state for widget w
+
+    Example:
+
+        class LeoEditPane:
+            def tm_provides(): return [('_lep', "Leo Edit Pane")]
+            def tm_provide(id_, state):
+                assert id_ == '_lep'
+                return self.make_editpane(state)
+                # e.g. if 'UNL' in state, select that node
+            def tm_save_state(w):
+                assert w._tm_id == '_lep'
+                return self.save_state(w)
+                # e.g. {'UNL': self.c.vnode2position(w.v).get_UNL()}
+    """
+
+    def __init__(self, c):
+        """bind to c"""
+        self.c = c
+        self.providers = c.user_dict.setdefault('_tool_providers', [])
+        c._tool_manager = self
+
+
+
