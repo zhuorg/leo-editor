@@ -1558,10 +1558,17 @@
 <v t="ekr.20131213135427.22063"><vh>@item &amp;delete-editor</vh></v>
 </v>
 <v t="ekr.20170509104949.1"><vh>@menu &amp;Change Window Layout</vh>
-<v t="tbrown.20160130095933.1"><vh>@item free-layout-context-menu</vh></v>
-<v t="tbrown.20160130095933.2"><vh>@item free-layout-load</vh></v>
-<v t="tbrown.20160130095933.3"><vh>@item free-layout-restore</vh></v>
-<v t="tbrown.20160130095933.4"><vh>@item free-layout-zoom</vh></v>
+<v t="tbrown.20180407150033.1"><vh>@item dock-dockify</vh></v>
+<v t="tbrown.20180407150033.2"><vh>@item dock-add-pane</vh></v>
+<v t="tbrown.20180407150033.3"><vh>@item dock-load-layout</vh></v>
+<v t="tbrown.20180407150033.4"><vh>@item dock-save-layout</vh></v>
+<v t="tbrown.20180407150033.5"><vh>@item dock-toggle-titles</vh></v>
+</v>
+<v t="tbrown.20180407145941.1"><vh>@menu &amp;Change Window Layout (OLD)</vh>
+<v t="tbrown.20180407145941.2"><vh>@item free-layout-context-menu</vh></v>
+<v t="tbrown.20180407145941.3"><vh>@item free-layout-load</vh></v>
+<v t="tbrown.20180407145941.4"><vh>@item free-layout-restore</vh></v>
+<v t="tbrown.20180407145941.5"><vh>@item free-layout-zoom</vh></v>
 </v>
 <v t="ekr.20170509103101.1"><vh>@menu &amp;Expand/Contract Panes</vh>
 <v t="ekr.20131213135427.22323"><vh>@item toggle-&amp;split-direction</vh></v>
@@ -11288,7 +11295,12 @@ Light
 <t tx="ekr.20170509104140.6"></t>
 <t tx="ekr.20170509104140.7"></t>
 <t tx="ekr.20170509104817.1"></t>
-<t tx="ekr.20170509104949.1"></t>
+<t tx="ekr.20170509104949.1">@item dock-dockify
+@item dock-add-pane
+@item dock-load-layout
+@item dock-save-layout
+@item dock-toggle-titles
+</t>
 <t tx="ekr.20170530035032.1"></t>
 <t tx="ekr.20170530035032.2">'''
 The @auto importer for the {|{x=get_language()}|} language.
@@ -12384,10 +12396,6 @@ absence of this setting.</t>
 <t tx="tbrown.20151114110207.1">"Abbreviation" to trigger the selection of the next placeholder,
 i.e. typing ,, will select the next &lt;|placeholder|&gt; text, after
 removing the &lt;| and |&gt;</t>
-<t tx="tbrown.20160130095933.1"></t>
-<t tx="tbrown.20160130095933.2"></t>
-<t tx="tbrown.20160130095933.3"></t>
-<t tx="tbrown.20160130095933.4"></t>
 <t tx="tbrown.20170710093248.1">If true, tailing whitespace (spaces and tabs) will be underlined
 with small dots in `trailing_whitespace_color` (default red).</t>
 <t tx="tbrown.20171128211219.1"># These control the effects of modifiers (Shift, Control, Alt) on left
@@ -12423,6 +12431,16 @@ AltControlShift hoist
 #     WITH: /
 
 </t>
+<t tx="tbrown.20180407145941.1"></t>
+<t tx="tbrown.20180407145941.2"></t>
+<t tx="tbrown.20180407145941.3"></t>
+<t tx="tbrown.20180407145941.4"></t>
+<t tx="tbrown.20180407145941.5"></t>
+<t tx="tbrown.20180407150033.1">Dockify (temp. entry)</t>
+<t tx="tbrown.20180407150033.2">Add tool</t>
+<t tx="tbrown.20180407150033.3">Load layout</t>
+<t tx="tbrown.20180407150033.4">Save layout</t>
+<t tx="tbrown.20180407150033.5">Toggle titles</t>
 <t tx="ville.20090701225947.3902"># Open current node in external editor. 'v' is mnemonic for 'vi', because vi users request this most
 # cm-external-editor = Alt-v</t>
 <t tx="ville.20091008201813.3909">Qt ui uses a different (simpler) setup for creating context menus,
