@@ -3487,9 +3487,10 @@ class RecentFilesManager(object):
     def createRecentFilesMenuItems(self, c):
         rf = self
         menu = c.frame.menu
-        recentFilesMenu = menu.getMenu("Recent Files...")
+        recentFilesMenu = menu.getMenu("Recent Files")
+            # Do NOT change this name!
         if not recentFilesMenu and not g.unitTesting:
-            # g.trace('Recent Files Menu does not exist',g.callers())
+            # g.trace('Recent Files Menu does not exist')
             return
         # Delete all previous entries.
         menu.deleteRecentFilesMenuItems(recentFilesMenu)

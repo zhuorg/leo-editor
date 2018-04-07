@@ -165,8 +165,8 @@ def openLeoSettings(self, event=None):
         g.es('not found: leoSettings.leo')
         return None
 
-@g.commander_command('open-myLeoSettings-leo')
-@g.commander_command('my-leo-settings-leo')
+@g.commander_command('open-my-leo-settings')
+@g.commander_command('my-leo-settings')
 def openMyLeoSettings(self, event=None):
     '''Open myLeoSettings.leo in a new Leo window.'''
     c, lm = self, g.app.loadManager

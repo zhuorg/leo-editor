@@ -52,6 +52,7 @@
 <v t="ekr.20120328150744.1791"><vh>Leo 4.10 final</vh></v>
 <v t="ekr.20131105110107.16636"><vh>Leo 4.11 final</vh></v>
 </v>
+<v t="ekr.20180406011024.1"><vh>Leo 5.0 to 5.6</vh>
 <v t="ekr.20141105082156.2"><vh>Leo 5.0 final</vh></v>
 <v t="ekr.20150415145711.1"><vh>Leo 5.1 final</vh></v>
 <v t="ekr.20160314155002.1"><vh>Leo 5.2-final</vh>
@@ -259,6 +260,45 @@
 <v t="maphew.20171107045903.1"><vh>Leo 5.6.1</vh></v>
 </v>
 <v t="ekr.20180212094405.1"><vh>Leo 5.7 final release notes</vh></v>
+</v>
+<v t="ekr.20180406011011.1"><vh>Leo 5.7.1 release notes</vh>
+<v t="ekr.20180406011011.2"><vh>Bugs</vh>
+<v t="ekr.20180406011011.3"><vh>#780: @tabwidth -2 in @data qt-gui-plugin-style-sheet crashes Leo</vh></v>
+<v t="ekr.20180406011011.4"><vh>#781: ViewRendered Plugin fails on Python 2.7 (Bad Import Statement)</vh></v>
+<v t="ekr.20180406011011.5"><vh>#783: print- commands fail under pythonw</vh></v>
+<v t="ekr.20180406011011.6"><vh>#788: Fix theme-related bugs</vh></v>
+<v t="ekr.20180406011011.7"><vh>#792: python_console plugin doesn't handle copy/paste properly</vh></v>
+<v t="ekr.20180406011011.8"><vh>#802: @color @image display in vr pane</vh></v>
+<v t="ekr.20180406011011.9"><vh>#808: Loading Images in Themes is Broken</vh></v>
+<v t="ekr.20180406011011.10"><vh>#809: Themes dialog doesn't always start in leo/themes</vh></v>
+<v t="ekr.20180406011011.11"><vh>#812: g.glob_glob problems</vh></v>
+<v t="ekr.20180406011011.12"><vh>#832: Leo crashes on non English systems</vh></v>
+<v t="ekr.20180406011011.13"><vh>#840: config.getData(foo) strips comments inconsistently</vh></v>
+<v t="ekr.20180406011011.14"><vh>#843: Cannot Open Any Non Leo File From Command Line</vh></v>
+</v>
+<v t="ekr.20180406011011.15"><vh>Code</vh>
+<v t="ekr.20180406011011.16"><vh>Added add_path keyword argument to c.recursiveImport</vh></v>
+<v t="ekr.20180406011011.17"><vh>Added g.backupGitIssues</vh></v>
+<v t="ekr.20180406011011.18"><vh>Added g.caller</vh></v>
+<v t="ekr.20180406011011.19"><vh>g.log is a synonym for g.es</vh></v>
+</v>
+<v t="ekr.20180406011011.20"><vh>Commands</vh>
+<v t="ekr.20180406011011.21"><vh>#839: Replaced 5 vs-* commands with eval* commands</vh></v>
+<v t="ekr.20180406011011.22"><vh>Added open-theme-file command</vh></v>
+<v t="ekr.20180406011011.23"><vh>Retired the 'escape' and 'eval-expression' commands</vh></v>
+</v>
+<v t="ekr.20180406011011.24"><vh>Features</vh>
+<v t="ekr.20180406011011.25"><vh>#467: Add setting for preferred directory</vh></v>
+<v t="ekr.20180406011011.26"><vh>#663: Regularize slashes and back slashes</vh></v>
+<v t="ekr.20180406011011.27"><vh>#748: Improve print-settings command</vh></v>
+<v t="ekr.20180406011011.28"><vh>#763: Use html comments to support @file x.md</vh></v>
+<v t="ekr.20180406011011.29"><vh>#766: Create Theme menu, etc.</vh></v>
+<v t="ekr.20180406011011.30"><vh>#784: Warn if stylesheet substitution leaves undefined @-constants</vh></v>
+<v t="ekr.20180406011011.31"><vh>Feature: Allow @path in body text</vh></v>
+<v t="ekr.20180406011011.32"><vh>Won't do: #822: Put outline tabs below the main window bar</vh></v>
+</v>
+<v t="ekr.20180406011011.33"><vh>Settings &amp; command-line arguments</vh></v>
+</v>
 <v t="EKR.20040519091259.2"><vh>Quotes of the month</vh>
 <v t="ekr.20080901114425.2"><vh>Sept 2008</vh></v>
 <v t="ekr.20070425092712"><vh>April 2007</vh></v>
@@ -315,7 +355,16 @@
 </v>
 <v t="ekr.20180124100848.1"><vh>Failures in unified version</vh></v>
 </v>
-<v t="ekr.20100202061222.1494"><vh>Distribution checklist</vh>
+<v t="ekr.20101027131034.1490"><vh>NSIS source files</vh>
+<v t="ekr.20101027160251.1500"><vh>Notes</vh>
+<v t="ekr.20101027135430.1492"><vh>@url nsi new ui readme</vh></v>
+<v t="ekr.20101027135430.1493"><vh>@url about pages</vh></v>
+<v t="ekr.20101027160251.1497"><vh>@url nsDialogs</vh></v>
+</v>
+<v t="ekr.20160510090441.1"><vh>@file ../../leo_assoc.nsi</vh></v>
+<v t="ekr.20101027054254.1590"><vh>@file ../../leo.nsi</vh></v>
+</v>
+<v t="ekr.20100202061222.1494"><vh>Distribution checklist (Full)</vh>
 <v t="ekr.20161015091353.2"><vh>Files</vh></v>
 <v t="ekr.20161015091353.1"><vh>Web docs</vh></v>
 <v t="ekr.20161015091350.1"><vh>Pre-testing</vh></v>
@@ -326,42 +375,13 @@
 <v t="ekr.20161015091353.3"><vh>Announcements</vh></v>
 <v t="ekr.20180301115911.1"><vh>Create python wheel</vh></v>
 </v>
-<v t="ekr.20101027131034.1490"><vh>NSIS source files</vh>
-<v t="ekr.20101027160251.1500"><vh>Notes</vh>
-<v t="ekr.20101027135430.1492"><vh>@url nsi new ui readme</vh></v>
-<v t="ekr.20101027135430.1493"><vh>@url about pages</vh></v>
-<v t="ekr.20101027160251.1497"><vh>@url nsDialogs</vh></v>
-</v>
-<v t="ekr.20160510090441.1"><vh>@file ../../leo_assoc.nsi</vh></v>
-<v t="ekr.20101027054254.1590"><vh>@file ../../leo.nsi</vh></v>
-</v>
-<v t="ekr.20101027070126.1639"><vh>@button make leo</vh>
-<v t="ekr.20090905082405.1487"><vh>&lt;&lt; includes &gt;&gt;</vh></v>
-<v t="ekr.20110614062644.1379"><vh>&lt;&lt; define global paths and file names &gt;&gt;</vh></v>
-<v t="ekr.20101027070126.1643"><vh>class LeoMaker</vh>
-<v t="ekr.20101027070126.1662"><vh>run &amp; helpers</vh>
-<v t="ekr.20101105103524.1494"><vh>clean_manifest</vh></v>
-<v t="ekr.20110603171959.1506"><vh>clean_spellpyx</vh></v>
-<v t="ekr.20141016123713.2120"><vh>copy_nsi_files (Not used)</vh></v>
-<v t="ekr.20110614062644.1378"><vh>copy_ref_files (Not used)</vh></v>
-<v t="ekr.20101027070126.1675"><vh>create_install_files</vh></v>
-<v t="ekr.20101027070126.1676"><vh>create_uninstall_files</vh></v>
-<v t="ekr.20101027070126.1663"><vh>directoryList</vh></v>
-<v t="ekr.20101027070126.1664"><vh>filterLines &amp; helpers</vh>
-<v t="ekr.20101027070126.1665"><vh>delete...</vh></v>
-</v>
-<v t="ekr.20101105103524.1491"><vh>make_manifest</vh></v>
-<v t="ekr.20101105103524.1493"><vh>make_zip</vh></v>
-<v t="ekr.20101027070126.1666"><vh>makeDicts</vh></v>
-<v t="ekr.20101027070126.1667"><vh>printMissing</vh></v>
-<v t="ekr.20161017070909.1"><vh>remove_commit_timestamp_json (Not used)</vh></v>
-</v>
-<v t="ekr.20101027070126.1680"><vh>utils...</vh>
-<v t="ekr.20101027070126.1679"><vh>openFile</vh></v>
-<v t="ekr.20101027070126.1678"><vh>put</vh></v>
-<v t="ekr.20090905082405.1490"><vh>unlink</vh></v>
-</v>
-</v>
+<v t="ekr.20180405171433.1"><vh>Distribution checklist (GitHub Only)</vh>
+<v t="ekr.20180405171433.2"><vh>Files</vh></v>
+<v t="ekr.20180405171433.3"><vh>Web docs</vh></v>
+<v t="ekr.20180405171433.4"><vh>Pre-testing</vh></v>
+<v t="ekr.20180405171433.7"><vh>Create git tag</vh></v>
+<v t="ekr.20180405171433.8"><vh>Publish release</vh></v>
+<v t="ekr.20180405171433.9"><vh>Announcements</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -392,7 +412,7 @@ SOFTWARE.
 </t>
 <t tx="EKR.20040519090846.8">Metadata-Version: 1.0
 Name: leo
-Version: 5.7
+Version: 5.7.1
 Summary: An IDE, PIM and Outliner. See leoeditor.com/preface.html.
 Description: See users own descriptions of Leo at leoeditor.com/testimonials.html.
 Home-page: http://leoeditor.com/
@@ -412,34 +432,24 @@ Classifier: Topic :: Text Processing
 Download-URL: http://sourceforge.net/projects/leo/files/
 
 </t>
-<t tx="EKR.20040519090846.9">Leo 5.7 final February 27, 2018
+<t tx="EKR.20040519090846.9">Leo 5.7.1 April 6, 2018
 
-Leo 5.7 final, http://leoeditor.com, is now available on [SourceForge](http://sourceforge.net/projects/leo/files/Leo/) and on [GitHub](https://github.com/leo-editor/leo-editor).
+Leo 5.7.1, http://leoeditor.com, is now available on
+[GitHub](https://github.com/leo-editor/leo-editor).
 
 Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
 
-Simulating Leo's features in Vim, Emacs or Eclipse is possible, just as it is possible to simulate Python in C or assembly language...
+**The highlights of Leo 5.7.1**
 
-**The highlights of Leo 5.7**
-
-- pip install leo.
-- A debian package for Leo.
-- A web-based Leo Viewer, written by Joe Orr.
-- Added diff-leo-files and diff-and-open-leo-files commands.
-  These create outline-oriented diffs for .leo files.
-- New reload-settings command.
-- Leo optionally shows user tips on startup.
-- Added a new Tips page to Leo's documentation.
-- A visual widget for editing cvs tables.
-- Spell checking works without pyenchant
-- Improved the console_gui plugin.
-- Added live links from urls in the log pane.
-- Unit tests use a string gui, making them faster and more robust.
-- The line_numbering plugin shows line numbers in external files.
-- Improved the javascript importer.
-- Added a TreePad importer.
-- Added 6 new commands.
-- Dozens of bug fixes.
+- Improved support for themes, including the open-theme-file command.
+    - Added --theme=&lt;name&gt; command-line option.
+    - Added @string theme-name setting.
+    - Leo warns if stylesheets contain undefined @-constants.
+- Replaced 5 vs-* commands by corresponding eval* commands.
+- Support @file x.md using html sentinels.
+- Allow @path in @&lt;file&gt; nodes, and optionally generate same in recursive imports.
+- Improved menus.
+- The usual minor bug fixes.
 
 **Links**
 
@@ -559,7 +569,7 @@ Julian S. Fecteau
 </t>
 <t tx="ekr.20070325123540"></t>
 <t tx="ekr.20070425092712">Leo--especially with its feature of user-controllable outlining and
-overview __has for the last 4-5 years had the greatest positive effect
+overview--has for the last 4-5 years had the greatest positive effect
 on my overall programming quality of life than anything else out there
 in the software world (apart maybe from the Python language itself,
 and those who contribute Python modules to the world). -- David McNab
@@ -697,20 +707,6 @@ SectionEnd
     result = [self.indent(z) for z in result]
     return ''.join(result)
 </t>
-<t tx="ekr.20090905082405.1487">import os
-import shutil
-# import string
-# import struct
-# import subprocess
-# import sys
-# import time
-# import leo.core.leoVersion as leoVersion
-</t>
-<t tx="ekr.20090905082405.1490">def unlink (self,fn):
-
-    # print('command: unlink: %s' % fn)
-    os.remove(fn)
-</t>
 <t tx="ekr.20100202061222.1494">@language rest
 </t>
 <t tx="ekr.20101025095431.1517">@language rest</t>
@@ -739,362 +735,11 @@ HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore\2.7\InstallPath
 HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonPath
     val = c:\Python27\Lib;\Python27\DLLs;C:\Python27\Lib\lib-tk
 </t>
-<t tx="ekr.20101027070126.1639"># Commit all files before running this script.
-
-'''
-Make these files in the top-level folder::
-
-    git-manifest.txt
-    nsi-install-files.txt
-    nsi-uninstall-files.txt
-    leo.zip.
-'''
-
-version = '5.7 final' ##version
-&lt;&lt; includes &gt;&gt;
-&lt;&lt; define global paths and file names &gt;&gt;
-
-@others
-
-LeoMaker().run()
-g.es_print('done') # '@button make-leo done')
-</t>
-<t tx="ekr.20101027070126.1643">class LeoMaker:
-    '''
-    A class to make these files in the leo-editor folder:
-
-    - git-manifest.txt.
-    - nsi-install-files.txt
-    - nsi-uninstall-files.txt
-    - leo.zip
-    '''
-
-    @others
-</t>
-<t tx="ekr.20101027070126.1662">def run (self):
-    '''The top-level logic.'''
-    g.cls()
-    # No longer exists. Done by git hooks.
-        # leoVersion.create_commit_timestamp_json()
-            # Create leo/core/commit_timestamp.json.
-    self.clean_spellpyx()
-    self.make_manifest()
-    files = self.clean_manifest()
-    dirs = self.directoryList(rootDir)
-        # Compute the list of all the directories.
-    dirDict,filesDict = self.makeDicts(dirs,files)
-        # Compute dictionaries of directories and files.
-    errors = self.printMissing(files,dirDict,filesDict)
-        # Print manifest lines not in either dict.
-        # This is a crucial check.
-    if not errors:
-        self.create_install_files(dirs,dirDict,filesDict)
-        self.create_uninstall_files(dirs,dirDict,filesDict)
-        self.make_zip()
-        # self.copy_nsi_files()
-        # self.remove_commit_timestamp_json()
-</t>
-<t tx="ekr.20101027070126.1663">def directoryList (self,rootDir):
-    '''
-    Compute a top-down list of all directories.
-    These directories start at the top-level directory.
-    '''
-    trace = False
-    ignoreDirs = ('.bzr','.git','docs')
-    # Important: this adds all directories on EKR's machine,
-    # regardless of whether they appear in the manifest!
-    result = [] ; n = len(rootDir)
-    for z in os.walk(rootDir): # top-down traversal.
-        dirpath, dirnames, filenames = z
-        assert dirpath.startswith(rootDir),z
-        if len(dirpath) &gt; n:
-            path = dirpath[n+1:].replace('\\','/')
-            result.append(path)
-    for z2 in ignoreDirs:
-        result = [ z for z in result if not z.startswith(z2)]
-    if trace:
-        g.trace('-' * 40)
-        g.trace(g.listToString(result))
-    return result
-</t>
-<t tx="ekr.20101027070126.1664">def filterLines (self,lines):
-    '''Filter lines from the input manifest file.'''
-    trace = False
-    # Remove blank lines, comments, and .pyc and .pyo files.
-    lines = self.deleteBlankLines(lines)
-    lines = self.deleteComments(lines)
-    lines = self.deleteTempFiles(lines)
-    lines = self.deleteExt(lines,'.pyc')
-    lines = self.deleteExt(lines,'.pyo')
-    lines = self.deleteExt(lines,'.zip') # Don't include the zip file.
-    lines = self.deleteExt(lines,'.exe') # Don't include the installer.
-    # Remove specific files.
-    deleteList = (
-        '.bzrignore',
-        '.gitignore',
-        # 'bzr-manifest.txt',
-        'git-manifest.txt',
-        # 'bzr-small-manifest.txt',
-        # 'setup.py',
-        'stand_alone_globals.leo',
-        'leoStandAloneGlobals',
-        'leo/test/unittest/.leo_shadow/',
-        'nsi.log.txt', # Can't write log while we are creating it.
-        'leo/core/leoPy.leo',
-        'leo/core/ekrLeoPy.leo',
-    )
-    lines = self.deleteFiles(lines,deleteList)
-    # Delete all files in the top-level docs/ directory
-    lines = [z for z in lines if not z.startswith('docs/')]
-    if trace:
-        g.trace('=' * 40)
-        g.trace(g.listToString(lines))
-    return lines
-</t>
-<t tx="ekr.20101027070126.1665">def deleteBlankLines (self,lines):
-
-    return [z.strip() for z in lines if z.strip()]
-
-def deleteComments (self,lines):
-
-    return [z for z in lines if not z.startswith('#')]
-
-def deleteExt (self,lines,ext):
-
-    return [z for z in lines if not z.endswith(ext)]
-
-def deleteFiles (self,lines,deleteList):
-
-    return [z for z in lines if not z in deleteList]
-
-def deleteTempFiles (self,lines):
-
-    for i in range(1,10):
-        lines = [z for z in lines if not z.endswith('~%s~' % i)]
-    return lines
-</t>
-<t tx="ekr.20101027070126.1666">def makeDicts (self,dirs,lines):
-
-    trace = False ; verbose = True
-    # Create the dirDict.
-    # Keys are directories.
-    # Values are files contained in each directory.
-    dirDict = {}
-    dirDict['**top'] = [] # Create an entry for the root directory.
-    for z in dirs:
-        dirDict[z] = []
-        # Leo 5.4: Add leo/core/commit_timestamp.json
-        # This file is in .gitignore, but we must write it here.
-        if 0:
-            if z == 'leo/core':
-                # g.trace(z)
-                # g.trace('Adding commit_timestamp.json')
-                dirDict[z].append('commit_timestamp.json')
-    # Assign files to dirDict.
-    for line in lines:
-        line = line.strip().replace('\\','/')
-        if line in dirDict.keys():
-            path,fn = None,None
-        elif line.startswith('leo/'):
-            path,fn = g.os_path_split(line)
-        else:
-            path,fn = '**top',line.strip()
-        # Don't include top-level leo directory,
-        # Do include leo/scripts/leo file.
-        if fn and (path != '**top**' or fn != 'leo'):
-            aList = dirDict.get(path,[])
-            assert line not in aList,repr(line)
-            aList.append(fn)
-            dirDict[path]=aList
-    # Trace the result.
-    for theDir in sorted(dirDict):
-        aList = dirDict.get(theDir)
-        if aList and trace:
-            if verbose:
-                print() ; print(theDir)
-                print(g.listToString(aList))
-            else:
-                print(theDir)
-    # Create the inverse dict.
-    filesDict = {}
-    for theDir in sorted(dirDict):
-        aList = dirDict.get(theDir)
-        for fn in aList:
-            path = g.choose(theDir=='**top',
-                fn,'%s/%s' % (theDir,fn))
-            filesDict[path] = theDir
-            # if fn == 'wikiview.py': g.trace(fn,path)
-    return dirDict,filesDict
-</t>
-<t tx="ekr.20101027070126.1667">def printMissing (self,files,dirDict,filesDict):
-    '''A crucial check.'''
-    errors = 0
-    for fn in files:
-        fn = fn.rstrip('/')
-        if fn and fn not in dirDict and fn not in filesDict:
-            g.es_print('missing',fn,color='red')
-            errors += 1
-    if errors:
-        g.es_print('%s errors' % (errors),color='red')
-    return errors
-</t>
-<t tx="ekr.20101027070126.1675">def create_install_files(self,dirs,dirDict,filesDict):
-    '''Create leo/dist/nsi-install-files.txt'''
-    global install_fn,rootDir
-    put = self.put
-    self.f = self.openFile(install_fn)
-    if not self.f: return
-    # Top level
-    theDir = '**top'
-    put('\n')
-    put('; top-level\n')
-    put('SetOutPath "$INSTDIR"\n')
-    put('SetOverwrite ifnewer\n')
-    aList = dirDict.get(theDir,[])
-    for fn in aList:
-        put('File "%s"\n' % fn)
-    for theDir in dirs:
-        if theDir != '**top':
-            aList = dirDict.get(theDir,[])
-            if aList:
-                theDir2 = theDir.replace('/','\\').rstrip('\\')
-                put('\n')
-                put('SetOutPath $INSTDIR\\%s\n' % theDir2)
-                for fn in aList:
-                    # Fix bug 425369: quote file names.
-                    put('File "%s\\%s\\%s"\n' % (
-                        rootDir,theDir2,fn))
-    self.f.close()
-</t>
-<t tx="ekr.20101027070126.1676">def create_uninstall_files(self,dirs,dirDict,filesDict):
-    '''Create leo/dist/nsi-uninstall-files.txt'''
-    def clean(s):
-        return s.replace('/','\\')
-    put = self.put
-    self.f = self.openFile(uninstall_fn)
-    if not self.f: return
-    # Part 1: Delete top-level files.
-    put('\n')
-    put('; Uninstall files...\n\n')
-    put('SetOutPath $Temp\n')
-    # Get the list of top-level files.
-    aList = dirDict.get('**top',[])
-    # Add some special cases:
-    for fn in ('*.pyo','*.pyc',
-        'uninst.exe',
-        # 'setup.py',
-            # setup.py is now allowed at the top level.
-        'git-manifest.txt'
-    ):
-        if fn not in aList:
-            aList.append(fn)
-    for fn in aList:
-        # Always delete individual files.
-        put('Delete "$INSTDIR\\%s"\n' % fn)
-    if 1:
-        # Just delete the leo folder with /r option.
-        # This should be completely safe.
-        put('RMDir /r "$INSTDIR\\leo"\n')
-    else:
-        # Part 2: Delete files in lower directories.
-        for theDir in dirs:
-            if theDir:
-                dir2 = clean(theDir)
-                aList = dirDict.get(theDir,[])
-                if aList:
-                    put('\n')
-                    put('Delete "$INSTDIR\\%s\\*.pyc"\n' % (dir2))
-                    put('Delete "$INSTDIR\\%s\\*.pyo"\n' % (dir2))
-                    # Delete all files in any __pycache__ subdirectory.
-                    put('Delete "$INSTDIR\\%s\\__pycache__\\*.pyc"\n' % (dir2))
-                for fn in aList:
-                    put('Delete "$INSTDIR\\%s\\%s"\n' % (dir2,fn))
-        # Part 3: Delete directories.
-        reverseDirs = dirs[:]
-        reverseDirs.reverse()
-        put('\n')
-        put('; Uninstall directories in reverse order\n')
-        for theDir in reverseDirs:
-            # Delete the directory even if it has files.
-            if theDir and theDir != '**top':
-                if not theDir.startswith('.bzr'):
-                    put('RMDir "$INSTDIR\\%s\\__pycache__"\n' % (clean(theDir)))
-                    put('RMDir "$INSTDIR\\%s"\n' % (clean(theDir)))
-    # Delete the op-level folder.
-    put('\n')
-    put('; Delete the top-level directory.\n')
-    put('RMDir "$INSTDIR"\n')
-        # Important: the /r option is not safe here!
-    self.f.close()
-</t>
-<t tx="ekr.20101027070126.1678">def put (self,s):
-
-    # g.trace(s.rstrip())
-    self.f.write(s)
-</t>
-<t tx="ekr.20101027070126.1679">def openFile (self,fn,mode='w'):
-
-    try:
-        f = open(fn,mode)
-        return f
-    except IOError:
-        g.error('can not open',fn)
-        return None
-</t>
-<t tx="ekr.20101027070126.1680"></t>
 <t tx="ekr.20101027131034.1490">@color</t>
 <t tx="ekr.20101027135430.1492">http://nsis.sourceforge.net/Docs/Modern%20UI%202/Readme.html</t>
 <t tx="ekr.20101027135430.1493">http://nsis.sourceforge.net/Docs/Chapter4.html#4.5</t>
 <t tx="ekr.20101027160251.1497">http://nsis.sourceforge.net/Docs/nsDialogs/Readme.html</t>
 <t tx="ekr.20101027160251.1500"></t>
-<t tx="ekr.20101105103524.1491">def make_manifest(self):
-    '''Create git-manifest.txt.'''
-    os.chdir(rootDir) # Can't be done below.
-    commands = (
-        r'del git-manifest.txt',
-        r'c:\apps\Git\bin\git.exe ls-files &gt; git-manifest.txt',
-        # r'&amp;ed git-manifest.txt',
-    )
-    g.execute_shell_commands(commands,trace=True)
-</t>
-<t tx="ekr.20101105103524.1493">def make_zip(self):
-    '''
-    Create the zip file.
-    
-    The archive will not contain the .git directory, but will contain
-    .gitignore, .gitattributes, etc. To suppress these files, use the
-    export-ignore attribute in a .gitattributes file. Commit this before
-    doing git archive.
-    '''
-    for z in (zipFile,zipFile2):
-        if exists(z): self.unlink(z)
-    os.chdir(rootDir) # Required.
-    commands = (
-        # This commit ensures the proper files are included in the distribution.
-        # r'git commit -m "commit doc files during make"',
-        ##version
-        r'%s archive --format zip --output "%s" --prefix=Leo-5.7-final/ master' % (
-            r'c:\apps\Git\bin\git.exe',zipFile),
-    )
-    g.execute_shell_commands(commands,trace=True)
-    if not g.os_path_exists(zipFile):
-        print('does not exist: %s' % zipFile)
-    # Remove the temporary zip file.
-    if exists(zipFile2):
-        self.unlink(zipFile2)</t>
-<t tx="ekr.20101105103524.1494">def clean_manifest(self):
-    '''Create and filter the list of files from the manifest.'''
-    f = open(manifest_fn)
-    s = f.read()
-    f.close()
-    lines = g.splitLines(s)
-    lines = self.filterLines(lines)
-    # Write the file back.
-    f = open(manifest_fn,'w')
-    f.write('\n'.join(lines))
-    f.close()
-    return lines
-</t>
 <t tx="ekr.20101115090518.1494">Leo 4.8 final                               November 26, 2010
 
 Leo 4.8 final is now available at:
@@ -1183,65 +828,6 @@ Download: http://sourceforge.net/projects/leo/files/
 Bzr:      http://code.launchpad.net/leo-editor/
 Quotes:   http://leoeditor.com/testimonials.html
 </t>
-<t tx="ekr.20110603171959.1506">def clean_spellpyx (self):
-    '''Clean ekr-spellpyx.txt.'''
-    fn = g.os_path_finalize_join(pluginsDir,'ekr-spellpyx.txt')
-    if not g.os_path_exists(fn):
-        return
-    f = self.openFile(fn,mode='rb')
-    s = f.read()
-    f.close()
-    s2 = s.replace(b'\r',b'')
-    if s != s2:
-        g.es_print('cleaning',fn)
-        f = self.openFile(fn,mode='wb')
-        f.write(s2)
-        f.close()
-</t>
-<t tx="ekr.20110614062644.1378">def copy_ref_files (self):
-    '''Copy reference copies of .leo files.'''
-    if 0:
-        # There seems to be no need for this.
-        # Furthermore, this changes the ref files.
-        table = (
-            (pluginsDir,'leoGuiPlugins.leo','leoGuiPluginsRef.leo'),
-            (pluginsDir,'leoPlugins.leo','leoPluginsRef.leo'),
-            (coreDir,'leoPy.leo','leoPyRef.leo'),
-        )
-        for d,src,dst in table:
-            src_path = join(d,src)
-            dst_path = join(d,dst)
-            if not exists(src_path):
-                g.error('does not exist',src_path)
-            if not exists(dst_path):
-                g.error('does not exist',dst_path)
-            if exists(src_path) and exists(dst_path):
-                shutil.copyfile(src_path,dst_path)
-</t>
-<t tx="ekr.20110614062644.1379"># Globals...
-abspath,exists,join = g.os_path_abspath,g.os_path_exists,g.os_path_join
-
-# First.
-# bzrRoot     = join('Lib','site-packages','Leo-%s' % (version))
-
-    # Don't use abspath!
-distDir     = abspath(join(g.app.loadDir,'..','dist'))
-rootDir     = abspath(join(g.app.loadDir,'..','..')) # Same as top.
-pluginsDir  = abspath(join(g.app.loadDir,'..','plugins'))
-
-# Next.
-coreDir =       abspath(join(g.app.loadDir,'..','core'))
-docDir =        abspath(join(g.app.loadDir,'..','doc'))
-docsDir =       abspath(join(g.app.loadDir,'..','..','docs'))
-manifest_fn =   abspath(join(rootDir,'git-manifest.txt'))
-# install_fn =    abspath(join(distDir,'nsi-install-files.txt'))
-# uninstall_fn =  abspath(join(distDir,'nsi-uninstall-files.txt'))
-install_fn =    abspath(join(rootDir,'nsi-install-files.txt'))
-uninstall_fn =  abspath(join(rootDir,'nsi-uninstall-files.txt'))
-zipFile =       abspath(join(rootDir,'Leo-%s.zip' % (version)))
-zipFile2 =      abspath(join(rootDir,'Leo-%s-temp.zip' % (version)))
-
-# assert g.os_path_exists(manifest)</t>
 <t tx="ekr.20120328150744.1791">Leo 4.10 final                                         March 29, 2012
 
 Leo 4.10 final is now available at: http://sourceforge.net/projects/leo/files/
@@ -1532,25 +1118,6 @@ leo/core/ekrLeoPy.leo           export-ignore
 leo/test/unittest/.leo_shadow/  export-ignore
 
 leo/core/commit_timestamp.json merge=ours
-</t>
-<t tx="ekr.20141016123713.2120">def copy_nsi_files(self):
-    '''
-    Copy these files from the leo\dist folder to the leo-editor folder::
-
-        nsi-install-files.txt
-        nsi-uninstall-files.txt
-    '''
-    assert False, g.callers()
-    names = (
-        'nsi-install-files.txt',
-        'nsi-uninstall-files.txt',
-        # 'nsi-boilerplate.txt',
-    )
-    for fn in names:
-        src = g.os_path_join(distDir,fn)
-        dst = g.os_path_join(rootDir,fn)
-        assert g.os_path_exists(src),src
-        shutil.copyfile(src,dst)
 </t>
 <t tx="ekr.20141105082156.2">Leo 5.0 final                       November 24, 2014
 
@@ -2744,7 +2311,9 @@ it is possible to simulate Python in assembly language...
 - Run all unit tests with *both* Python 2 and 3.
 - Run ll -a with *both* Python 2 and 3.</t>
 <t tx="ekr.20161015091353.1">- Regenerate all .html files.
-- Copy files to web, including leo/doc/html/index.html</t>
+- Copy files to web, including leo/doc/html/index.html
+  Do **not** copy searchindex.js.
+</t>
 <t tx="ekr.20161015091353.2">LeoDocs.leo:
 - Make sure copyright dates are correct.
 - Update the "last updated" text in index.html.
@@ -2856,15 +2425,6 @@ Simulating Leo's features in Vim, Emacs or Eclipse is possible, just as it is po
 - [What people are saying about Leo](http://leoeditor.com/testimonials.html)
 - [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
 - [More links](http://leoeditor.com/leoLinks.html)
-</t>
-<t tx="ekr.20161017070909.1">def remove_commit_timestamp_json(self):
-    '''Remove leo/core/commit_timestamp.json.'''
-    path = g.os_path_finalize_join(
-        g.app.loadDir, '..', 'core', 'commit_timestamp.json')
-    if g.os_path_exists(path):
-        os.remove(path)
-    else:
-        g.trace('not found', path)
 </t>
 <t tx="ekr.20161020040946.1">Test files in installed folder:
 
@@ -4072,6 +3632,183 @@ Simulating Leo's features in Vim, Emacs or Eclipse is possible, just as it is po
 - python setup.py bdist_wheel
 - twine upload dist/leo*.whl
 </t>
+<t tx="ekr.20180405171433.1">@language rest
+</t>
+<t tx="ekr.20180405171433.2">LeoDocs.leo:
+- Make sure copyright dates are correct.
+- Update the "last updated" text in index.html.
+- Update version numbers in html/conf.py
+- Update the release notes.
+- Remove @language rest where possible in new notes.
+- Create new "what's new" section.
+- Remove top-level clones.
+- Spell check entire file.
+- Copy release notes to leoDist.leo.
+- Copy release notes to LeoReleaseNotes.leo
+- Select the readme node.
+
+LeoDist.leo:
+- Make sure copyright dates are correct.
+- Update version numbers: search leoDist.leo for ##version.
+- Update readme.md.
+- Check readme.md spelling.
+- Check 'PKG-INFO.TXT'
+
+leoVersion.py:
+- Update version constant.
+
+LeoPyRef.leo and LeoPluginsRef.leo:
+- Regenerate from corresponding local file.
+- Remove top-level clones.
+</t>
+<t tx="ekr.20180405171433.3">- Regenerate all .html files.
+- Copy files to web, including leo/doc/html/index.html
+  Do **not** copy searchindex.js.
+</t>
+<t tx="ekr.20180405171433.4">- Make sure no distributed .leo file contains xml-stylesheet elements.
+  Run @button check .leo files in leo-dist.leo.
+- Make sure Leo looks good without myLeoSettings.leo.
+- Run the "check-bindings" button in leoSettings.leo.
+- Run all unit tests with *both* Python 2 and 3.
+- Run ll -a with *both* Python 2 and 3.</t>
+<t tx="ekr.20180405171433.7">Create a git tag **last**
+
+- Create a full (annotated) tag: do not use the -f option.
+
+    git tag -a 5.xxx -m "Added 5.xxx tag"
+    git push --follow-tags
+</t>
+<t tx="ekr.20180405171433.8">- Update the *GitHub* release at https://github.com/leo-editor/leo-editor/releases
+   This must be done *soon* after the release's actual commit.
+   There is a "Draft New Release" button at the top-right of the page.
+</t>
+<t tx="ekr.20180405171433.9">- Update version number on Leo's wikipedia site:
+  http://en.wikipedia.org/wiki/Leo_%28editor%29
+  - Edit with the 'Edit this page' *tab* (not a link)
+  - Update version number on web site.
+
+- Announce to SourceForge:  http://sourceforge.net/projects/leo/
+   **Markdown accepted, so paste release notes in LeoDocs.leo.**.
+
+- Announce to leo-editor: **Paste source-forge announcement**.
+
+- Announce to Python-announce-list using email:
+   mailto:python-announce-list@python.org
+   **Paste source-forge or leo-editor announcement**.
+
+  - Check it by visiting the archive:
+  https://mail.python.org/pipermail/python-announce-list/
+
+- Register Leo at https://pypi.python.org/pypi/leo
+
+- My blog: http://edreamleo.blogspot.com/
+  **Paste source-forge or leo-editor announcement**.
+  **To get HTML, just use html tab**.
+
+- Twitter (point to my blog)
+</t>
+<t tx="ekr.20180406011011.1">Leo 5.7.1 April 6, 2018
+
+Leo 5.7.1, http://leoeditor.com, is now available on
+[GitHub](https://github.com/leo-editor/leo-editor).
+
+Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+
+**The highlights of Leo 5.7.1**
+
+- Improved support for themes, including the open-theme-file command.
+    - Added --theme=&lt;name&gt; command-line option.
+    - Added @string theme-name setting.
+    - Leo warns if stylesheets contain undefined @-constants.
+- Replaced 5 vs-* commands by corresponding eval* commands.
+- Support @file x.md using html sentinels.
+- Allow @path in @&lt;file&gt; nodes, and optionally generate same in recursive imports.
+- Improved menus.
+- The usual minor bug fixes.
+
+**Links**
+
+- Leo's home page: http://leoeditor.com
+- [Documentation](http://leoeditor.com/leo_toc.html)
+- [Tutorials](http://leoeditor.com/tutorial.html)
+- [Video tutorials](http://leoeditor.com/screencasts.html)
+- [Forum](http://groups.google.com/group/leo-editor)
+- [Download](http://sourceforge.net/projects/leo/files/)
+- [Leo on GitHub](https://github.com/leo-editor/leo-editor)
+- [LeoVue](https://github.com/kaleguy/leovue#leo-vue)
+- [What people are saying about Leo](http://leoeditor.com/testimonials.html)
+- [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
+- [More links](http://leoeditor.com/leoLinks.html)
+</t>
+<t tx="ekr.20180406011011.10">https://github.com/leo-editor/leo-editor/issues/809
+</t>
+<t tx="ekr.20180406011011.11">https://github.com/leo-editor/leo-editor/issues/812
+PickleShareDB.keys should definitely not call g.glob_glob.
+</t>
+<t tx="ekr.20180406011011.12">https://github.com/leo-editor/leo-editor/issues/832
+</t>
+<t tx="ekr.20180406011011.13">https://github.com/leo-editor/leo-editor/issues/840
+Changed c.config.getData and gcm.getData.
+</t>
+<t tx="ekr.20180406011011.14">https://github.com/leo-editor/leo-editor/issues/843
+</t>
+<t tx="ekr.20180406011011.15"></t>
+<t tx="ekr.20180406011011.16">When True, adds @path directives to the root node of imported files.
+</t>
+<t tx="ekr.20180406011011.17"></t>
+<t tx="ekr.20180406011011.18"></t>
+<t tx="ekr.20180406011011.19"></t>
+<t tx="ekr.20180406011011.2">is:issue milestone:5.7.1 is:closed
+https://github.com/leo-editor/leo-editor/issues?q=is%3Aissue+milestone%3A5.7.1+-label%3AWaiting+is%3Aclosed</t>
+<t tx="ekr.20180406011011.20"></t>
+<t tx="ekr.20180406011011.21">https://github.com/leo-editor/leo-editor/issues/839
+The eval* commands are now in mod_scripting.py.
+</t>
+<t tx="ekr.20180406011011.22"></t>
+<t tx="ekr.20180406011011.23">They have been replaced by new eval- commands.
+</t>
+<t tx="ekr.20180406011011.24"></t>
+<t tx="ekr.20180406011011.25">https://github.com/leo-editor/leo-editor/issues/467
+@string initial-chooser-directory</t>
+<t tx="ekr.20180406011011.26">https://github.com/leo-editor/leo-editor/issues/663
+</t>
+<t tx="ekr.20180406011011.27">https://github.com/leo-editor/leo-editor/issues/748
+</t>
+<t tx="ekr.20180406011011.28">https://github.com/leo-editor/leo-editor/issues/763
+</t>
+<t tx="ekr.20180406011011.29">https://github.com/leo-editor/leo-editor/issues/766
+</t>
+<t tx="ekr.20180406011011.3">https://github.com/leo-editor/leo-editor/issues/780
+</t>
+<t tx="ekr.20180406011011.30">https://github.com/leo-editor/leo-editor/issues/784
+</t>
+<t tx="ekr.20180406011011.31">Removed unnecessary check in g.get_directives_dict.
+</t>
+<t tx="ekr.20180406011011.32">https://github.com/leo-editor/leo-editor/issues/822
+
+</t>
+<t tx="ekr.20180406011011.33">Command-line options:
+- Added --theme=&lt;name&gt;
+- Added --trace-themes
+
+Settings:
+- Added @string theme-name
+- Added @string initial-chooser-directory
+  Used by Ctrl-O (file-open-by-name)
+</t>
+<t tx="ekr.20180406011011.4">https://github.com/leo-editor/leo-editor/issues/781
+</t>
+<t tx="ekr.20180406011011.5">https://github.com/leo-editor/leo-editor/issues/783
+</t>
+<t tx="ekr.20180406011011.6">https://github.com/leo-editor/leo-editor/issues/788
+</t>
+<t tx="ekr.20180406011011.7">https://github.com/leo-editor/leo-editor/issues/792
+</t>
+<t tx="ekr.20180406011011.8">https://github.com/leo-editor/leo-editor/issues/802
+</t>
+<t tx="ekr.20180406011011.9">https://github.com/leo-editor/leo-editor/issues/808
+</t>
+<t tx="ekr.20180406011024.1"></t>
 <t tx="maphew.20171107045903.1">Leo 5.6 September 25, 2017
 
 [Leo](http://leoeditor.com/) 5.6 is now available on [SourceForge](http://sourceforge.net/projects/leo/files/Leo/) and on [GitHub](https://github.com/leo-editor/leo-editor).
