@@ -243,6 +243,7 @@ def onCreate(tag, keys):
     c = keys.get('c')
 
     BookMarkDisplayProvider(c)
+    ToolProvider(c)
 
 #@+node:tbrown.20120319161800.21489: ** bookmarks-open-*
 @g.command('bookmarks-open-bookmark')
@@ -1223,6 +1224,58 @@ class BookMarkDisplayProvider(object):
 
     #@-others
 
+#@+node:tbrown.20180408101230.1: ** class ToolProvider
+class ToolProvider:
+    def __init__(self, c):
+        self.c = c
+        c.user_dict.setdefault('_tool_providers', []).append(self)
+    def tm_provides(self):
+        return[('_leo_bookmarks_show', 'Bookmarks')]
+    def tm_provide(self, id_, state):
+
+        c = self.c
+        v = None
+
+        if ':' in id_:
+            gnx = id_.split(':')[1]
+            if not gnx and '_leo_bookmarks_show' in c.db:
+                gnx = c.db['_leo_bookmarks_show']
+            # first try old style local gnx lookup
+            for i in c.all_nodes():
+                if str(i.gnx) == gnx:
+                    v = i
+                    break
+            else:  # use UNL lookup
+                if '#' in gnx:
+                    file_, UNL = gnx.split('#', 1)
+                    other_c = g.openWithFileName(file_, old_c=c)
+                else:
+                    file_, UNL = None, gnx
+                    other_c = c
+                if other_c != c:
+                    # don't use c.bringToFront(), it breaks --minimize
+                    if hasattr(g.app.gui,'frameFactory'):
+                        factory = g.app.gui.frameFactory
+                        if factory and hasattr(factory,'setTabForCommander'):
+                            factory.setTabForCommander(c)
+
+                    g.es("NOTE: bookmarks for this outline\nare in a different outline:\n  '%s'"%file_)
+
+                ok, depth, other_p = g.recursiveUNLFind(UNL.split('-->'), other_c)
+                if ok:
+                    v = other_p.v
+                else:
+                    g.es("Couldn't find '%s'"%gnx)
+
+        if v is None:
+            v = c.p.v
+
+        bmd = BookMarkDisplay(self.c, v=v)
+        return bmd.w
+
+
+    def tm_save_state(self, w):
+        return {}
 #@-others
 #@@language python
 #@@tabwidth -4
