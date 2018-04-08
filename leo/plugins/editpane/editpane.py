@@ -668,7 +668,7 @@ class LeoEditPane(QtWidgets.QWidget):
 
 
     #@-others
-#@+node:tbrown.20180407172200.1: ** tm_provides
+#@+node:tbrown.20180407172200.1: ** class ToolProvider
 class ToolProvider:
     def __init__(self, c):
         self.c = c

@@ -54,6 +54,7 @@ DockAreas = (
     QtConst.LeftDockWidgetArea, QtConst.RightDockWidgetArea
 )
 
+WID_ATTR = '_ns_id'
 def init():
     '''Return True if the plugin has loaded successfully.'''
     if g.app.gui.guiName() != "qt":
@@ -92,6 +93,19 @@ def dock_json(event=None):
         indent=4,
         sort_keys=True
     )
+def wid(w, value=None):
+    """wid - get/set widget ID
+
+    Args:
+        w: widget
+        value (str): value to set
+    Returns:
+        str: widget id
+    """
+    if value is None:
+        return getattr(w, WID_ATTR, None)
+    else:
+        w._ns_id = value
 class DockManager(object):
     """DockManager - manage QDockWidget layouts"""
 
@@ -176,8 +190,8 @@ class DockManager(object):
         while tw.count() > 1:
             dw = QtWidgets.QDockWidget(tw.tabText(1), mw)
             w = tw.widget(1)
-            if not hasattr(w, '_ns_id'):
-                w._ns_id = '_leo_tab:%s' % tw.tabText(1)
+            if not wid(w):
+                wid(w, '_leo_tab:%s' % tw.tabText(1))
             dw.setWidget(w)
             mw.tabifyDockWidget(log_dock, dw)
 
@@ -190,7 +204,7 @@ class DockManager(object):
             QWidget: the widget
         """
         for child in self.c.frame.top.findChildren(QtWidgets.QDockWidget):
-            if child.widget()._ns_id == ns_id:
+            if wid(child.widget()) == ns_id:
                 return child
         g.log("Didn't find "+ns_id, color='warning')
     @staticmethod
@@ -240,7 +254,7 @@ class DockManager(object):
 
                 if ref:
                     ref_w = self.find_dock(ref)
-                    nxt_w = self.find_dock(first['_ns_id'])
+                    nxt_w = self.find_dock(first[WID_ATTR])
 
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
@@ -253,9 +267,9 @@ class DockManager(object):
                     c.frame.top.splitDockWidget(ref_w, nxt_w, align)
 
                 if in_below:
-                    todo.append((in_below, below, first['_ns_id'], QtConst.Vertical))
+                    todo.append((in_below, below, first[WID_ATTR], QtConst.Vertical))
                 if in_above:
-                    todo.append((in_above, above, first['_ns_id'], QtConst.Vertical))
+                    todo.append((in_above, above, first[WID_ATTR], QtConst.Vertical))
             else:  # height spanning
                 left = (bbox[0], bbox[1], first['x'], bbox[3])
                 right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
@@ -264,7 +278,7 @@ class DockManager(object):
 
                 if ref:
                     ref_w = self.find_dock(ref)
-                    nxt_w = self.find_dock(first['_ns_id'])
+                    nxt_w = self.find_dock(first[WID_ATTR])
 
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
@@ -276,9 +290,9 @@ class DockManager(object):
                     c.frame.top.splitDockWidget(ref_w, nxt_w, align)
 
                 if in_left:
-                    todo.append((in_left, left, first['_ns_id'], QtConst.Horizontal))
+                    todo.append((in_left, left, first[WID_ATTR], QtConst.Horizontal))
                 if in_right:
-                    todo.append((in_right, right, first['_ns_id'], QtConst.Horizontal))
+                    todo.append((in_right, right, first[WID_ATTR], QtConst.Horizontal))
 
         # for each tab group, find the visible tab, and and place other
         # docks on it
@@ -310,7 +324,7 @@ class DockManager(object):
                 key=lambda x: self.area_span(x, bbox),
                 reverse=True
             )
-            docks = [self.find_dock(i['_ns_id']) for i in widgets if i['visible']]
+            docks = [self.find_dock(i[WID_ATTR]) for i in widgets if i['visible']]
             heights = [i['height'] for i in widgets if i['visible']]
             c.frame.top.resizeDocks(docks, heights, QtConst.Vertical)
             widths = [i['width'] for i in widgets if i['visible']]
@@ -326,7 +340,7 @@ class DockManager(object):
             self.load_json(file)
     def open_dock_menu(self, pos=None):
         """open_dock_menu - open a dock"""
-        menu = QtWidgets.QMenu()
+        menu = QtWidgets.QMenu(self.c.frame.top)
 
         for id_, name in self.c._tool_manager.tools():
             act = QtWidgets.QAction(name, menu)
@@ -341,7 +355,7 @@ class DockManager(object):
         """
         w = self.c._tool_manager.provide(id_)
         if w:
-            w._ns_id = id_
+            wid(w, id_)
             main_window = self.c.frame.top
             new_dock = QtWidgets.QDockWidget(name, main_window)
             new_dock.setWidget(w)
@@ -385,7 +399,7 @@ class DockManager(object):
         """
 
         c = self.c
-        _id = lambda x: x.widget()._ns_id
+        _id = lambda x: wid(x.widget())
 
         ans = {'area': {}, 'widget': {}, 'tab_group': {}}
         widgets = c.frame.top.findChildren(QtWidgets.QDockWidget)
@@ -415,7 +429,7 @@ class DockManager(object):
                     d['tab_group'] = None
             for i in 'x', 'y', 'width', 'height':
                 d[i] = getattr(w, i)()
-            d['_ns_id'] = _id(w)
+            d[WID_ATTR] = _id(w)
         return ans
 
 
