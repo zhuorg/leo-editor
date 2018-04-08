@@ -46,7 +46,7 @@ import json
 import os
 
 import leo.core.leoGlobals as g
-from leo.core.leoQt import QtCore, QtWidgets
+from leo.core.leoQt import QtCore, QtWidgets, QtGui
 QtConst = QtCore.Qt
 
 DockAreas = (
@@ -59,20 +59,26 @@ def init():
     if g.app.gui.guiName() != "qt":
         print('dock_layout.py plugin not loading because gui is not Qt')
         return False
-    g.registerHandler('after-create-leo-frame',onCreate)
+    g.registerHandler('after-create-leo-frame', onCreate)
     g.plugin_signon(__name__)
     create_commands()
     return True
 def onCreate (tag, key):
     c = key.get('c')
     DockManager(c)
+    ToolManager(c)
 def create_commands():
     """create_commands - add commands"""
-    cmds = ['dockify', 'load_json', 'load_layout', 'save_layout', 'toggle_titles']
+    cmds = [
+        'dockify', 'load_json', 'load_layout', 'save_layout', 'toggle_titles',
+        'open_dock_menu',
+    ]
     for cmd_name in cmds:
+        g.log(cmd_name)
         def cmd(event, cmd_name=cmd_name):
             getattr(event['c']._dock_manager, cmd_name)()
         g.command("dock-%s" % cmd_name.replace('_', '-'))(cmd)
+
 @g.command('dock-json')
 def dock_json(event=None):
     """dock_json - introspect dock layout
@@ -318,6 +324,30 @@ class DockManager(object):
             [("Layout files", '*.json'), ("All files", '*')], startpath=layouts)
         if file:
             self.load_json(file)
+    def open_dock_menu(self, pos=None):
+        """open_dock_menu - open a dock"""
+        menu = QtWidgets.QMenu()
+
+        for id_, name in self.c._tool_manager.tools():
+            act = QtWidgets.QAction(name, menu)
+            act.triggered.connect(lambda checked, id_=id_, name=name: self.open_dock(id_, name))
+            menu.addAction(act)
+        menu.exec_(QtGui.QCursor.pos())
+    def open_dock(self, id_, name):
+        """open_dock - open a dock
+
+        Args:
+            id_ (str): dock ID
+        """
+        w = self.c._tool_manager.provide(id_)
+        if w:
+            w._ns_id = id_
+            main_window = self.c.frame.top
+            new_dock = QtWidgets.QDockWidget(name, main_window)
+            new_dock.setWidget(w)
+            main_window.addDockWidget(QtConst.TopDockWidgetArea, new_dock)
+        else:
+            g.log("Could not find tool: %s" % id_, color='error')
     def save_layout(self):
         """save_layout - save a layout"""
         # FIXME: startpath option here?  cwd doesn't work
@@ -443,5 +473,18 @@ class ToolManager(object):
         self.providers = c.user_dict.setdefault('_tool_providers', [])
         c._tool_manager = self
 
+    def tools(self):
+        """tools - list available tools"""
+        ans = []
+        for provider in self.providers:
+            ans.extend(provider.tm_provides())
+        return ans
 
+    def provide(self, id_):
+        for provider in self.providers:
+            ids = [i[0] for i in provider.tm_provides()]
+            if id_ in ids:
+                w = provider.tm_provide(id_, {})
+                if w:
+                    return w
 

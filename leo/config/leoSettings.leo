@@ -1559,7 +1559,7 @@
 </v>
 <v t="ekr.20170509104949.1"><vh>@menu &amp;Change Window Layout</vh>
 <v t="tbrown.20180407150033.1"><vh>@item dock-dockify</vh></v>
-<v t="tbrown.20180407150033.2"><vh>@item dock-add-pane</vh></v>
+<v t="tbrown.20180407170513.1"><vh>@item dock-open-dock-menu</vh></v>
 <v t="tbrown.20180407150033.3"><vh>@item dock-load-layout</vh></v>
 <v t="tbrown.20180407150033.4"><vh>@item dock-save-layout</vh></v>
 <v t="tbrown.20180407150033.5"><vh>@item dock-toggle-titles</vh></v>
@@ -12437,10 +12437,10 @@ AltControlShift hoist
 <t tx="tbrown.20180407145941.4"></t>
 <t tx="tbrown.20180407145941.5"></t>
 <t tx="tbrown.20180407150033.1">Dockify (temp. entry)</t>
-<t tx="tbrown.20180407150033.2">Add tool</t>
 <t tx="tbrown.20180407150033.3">Load layout</t>
 <t tx="tbrown.20180407150033.4">Save layout</t>
 <t tx="tbrown.20180407150033.5">Toggle titles</t>
+<t tx="tbrown.20180407170513.1">Open a dock / pane / tool</t>
 <t tx="ville.20090701225947.3902"># Open current node in external editor. 'v' is mnemonic for 'vi', because vi users request this most
 # cm-external-editor = Alt-v</t>
 <t tx="ville.20091008201813.3909">Qt ui uses a different (simpler) setup for creating context menus,

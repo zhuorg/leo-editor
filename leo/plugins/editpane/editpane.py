@@ -74,6 +74,19 @@ def edit_pane_csv(event):
     while not isinstance(w, NestedSplitter):
         w = w.parent()
     w.insert(-1, LeoEditPane(c=c, show_control=False, lep_type='EDITOR-CSV'))
+#@+node:tbrown.20180407173833.1: ** init
+def init():
+    '''Return True if the plugin has loaded successfully.'''
+    if g.app.gui.guiName() != "qt":
+        print('editpane.py plugin not loading because gui is not Qt')
+        return False
+    g.registerHandler('after-create-leo-frame', onCreate)
+    g.plugin_signon(__name__)
+    return True
+#@+node:tbrown.20180407173852.1: ** onCreate
+def onCreate (tag, key):
+    c = key.get('c')
+    ToolProvider(c)
 #@+node:tbrown.20171028115438.4: ** class LeoEditPane
 class LeoEditPane(QtWidgets.QWidget):
     """
@@ -655,6 +668,17 @@ class LeoEditPane(QtWidgets.QWidget):
 
 
     #@-others
+#@+node:tbrown.20180407172200.1: ** tm_provides
+class ToolProvider:
+    def __init__(self, c):
+        self.c = c
+        c.user_dict.setdefault('_tool_providers', []).append(self)
+    def tm_provides(self):
+        return [('LEP', 'Edit/View pane')]
+    def tm_provide(self, id_, state):
+        return LeoEditPane(self.c)
+    def tm_save_state(self, w):
+        return {}
 #@-others
 #@@language python
 #@@tabwidth -4
