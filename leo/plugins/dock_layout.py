@@ -199,7 +199,7 @@ class DockManager(object):
             dw.setWidget(w)
             mw.tabifyDockWidget(log_dock, dw)
 
-    def find_dock(self, ns_id):
+    def find_dock(self, id_):
         """find_dock - find a dock widget
 
         Args:
@@ -208,9 +208,14 @@ class DockManager(object):
             QWidget: the widget
         """
         for child in self.c.frame.top.findChildren(QtWidgets.QDockWidget):
-            if wid(child.widget()) == ns_id:
+            if wid(child.widget()) == id_:
                 return child
-        g.log("Didn't find "+ns_id, color='warning')
+        w = self.c._tool_manager.provide(id_)
+        if w:
+            dock = QtWidgets.QDockWidget(self.c.frame.top)
+            dock.setWidget(w)
+            return dock
+        g.log("Didn't find "+id_, color='warning')
     @staticmethod
     def in_bbox(widget, bbox):
         """in_bbox - determine if the widget's in a bbox
@@ -332,7 +337,7 @@ class DockManager(object):
                 self.swap_dock(src, ordered[n])
             self.find_dock(viz).raise_()  # raise viz. tab
 
-        if hasattr(c.frame.top, 'resizeDocks'):
+        if hasattr(c.frame.top, 'resizeDocks'):  # not in Qt 4?
             widgets = sorted(
                 list(d['widget'].values()),
                 key=lambda x: self.area_span(x, bbox),
@@ -508,11 +513,14 @@ class ToolManager(object):
             ans.extend(provider.tm_provides())
         return ans
 
-    def provide(self, id_):
+    def provide(self, id_, state=None):
+        if state is None:
+            state = {}
         for provider in self.providers:
             ids = [i[0] for i in provider.tm_provides()]
             if id_ in ids:
-                w = provider.tm_provide(id_, {})
+                w = provider.tm_provide(id_, state)
                 if w:
+                    wid(w, id_)
                     return w
-
+        g.log("Couldn't provide "+id_, color='warning')
