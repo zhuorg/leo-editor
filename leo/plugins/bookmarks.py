@@ -646,6 +646,7 @@ class BookMarkDisplay(object):
         self.reloadSettings()
         # stuff for pane persistence
         self.w._ns_id = '_leo_bookmarks_show:'
+        self.w._tm_id = '_leo_bookmarks_show'
         # v might not be in this outline
         c.db['_leo_bookmarks_show'] = v.context.vnode2position(v).get_UNL()
         # else:

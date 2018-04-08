@@ -73,7 +73,7 @@ def create_commands():
     """create_commands - add commands"""
     cmds = [
         'dockify', 'load_json', 'load_layout', 'save_layout', 'toggle_titles',
-        'open_dock_menu',
+        'open_dock_menu', 'plot_json',
     ]
     for cmd_name in cmds:
         g.log(cmd_name)
@@ -123,6 +123,12 @@ class DockManager(object):
         wid(c.frame.top.findChild(QtWidgets.QWidget, "outlineFrame"), '_leo_pane:outlineFrame')
         wid(c.frame.top.findChild(QtWidgets.QWidget, "logFrame"), '_leo_pane:logFrame')
         wid(c.frame.top.findChild(QtWidgets.QWidget, "bodyFrame"), '_leo_pane:bodyFrame')
+
+        def load(timer, self=self):
+            timer.stop()
+            self.load()
+        timer = g.IdleTime(load, delay=500)
+        timer.start()
     @staticmethod
     def area_span(widget, bbox):
         """area_span - find max. proportion of area width/height spanned
@@ -212,10 +218,10 @@ class DockManager(object):
                 return child
         w = self.c._tool_manager.provide(id_)
         if w:
-            dock = QtWidgets.QDockWidget(self.c.frame.top)
+            dock = QtWidgets.QDockWidget()# self.c.frame.top)
             dock.setWidget(w)
             return dock
-        g.log("Didn't find "+id_, color='warning')
+        g.log("Didn't find %s" % id_, color='warning')
     @staticmethod
     def in_bbox(widget, bbox):
         """in_bbox - determine if the widget's in a bbox
@@ -229,6 +235,16 @@ class DockManager(object):
         xctr = widget['x']+widget['width']/2
         yctr = -widget['y']-widget['height']/2
         return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
+
+    def load(self):
+        """load - load layout on idle after load"""
+        self.dockify()
+        def delayed_layout(timer, self=self):
+            timer.stop()
+            self.load_json(g.os_path_finalize_join(
+                g.computeHomeDir(), '.leo', 'layouts', 'default.json'))
+        timer = g.IdleTime(delayed_layout, delay=500)
+        timer.start()
 
     def load_json(self, file):
         """load_json - load layout from JSON file
@@ -477,14 +493,19 @@ class ToolManager(object):
 
     provider should be an object with callables as follows:
 
-        provider.tm_provides() - a list of (id_, name) tuples, ids and names of things
-        this provider can provide
+        provider.tm_provides() - a list of (id_, name) tuples, ids and names of
+        things this provider can provide
 
-        provider.tm_provide(id_, state) - provide a QWidget based on ID, which will be
-        initialized with dict state
+        provider.tm_provide(id_, state) - provide a QWidget based on ID, which
+        will be initialized with dict state
 
         provider.tm_save_state(w) - provide a JSON serialisable dict that saves
         state for widget w
+
+    NOTE: providers are only asked to provide things they've already claimed
+    (tm_provides()) they provide, unline NestedSplitter which asked all
+    providers in turn to provide a widget. So providers /no longer/ need to
+    check what they're being asked for, unless they provide more than one thing.
 
     Example:
 
@@ -522,5 +543,6 @@ class ToolManager(object):
                 w = provider.tm_provide(id_, state)
                 if w:
                     wid(w, id_)
+                    g.log("Provided %s" % id_)
                     return w
-        g.log("Couldn't provide "+id_, color='warning')
+        g.log("Couldn't provide %s" % id_, color='warning')
