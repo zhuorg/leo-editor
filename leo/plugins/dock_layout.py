@@ -54,7 +54,8 @@ DockAreas = (
     QtConst.LeftDockWidgetArea, QtConst.RightDockWidgetArea
 )
 
-WID_ATTR = '_ns_id'
+WID_ATTR = '_tm_id'
+
 def init():
     '''Return True if the plugin has loaded successfully.'''
     if g.app.gui.guiName() != "qt":
@@ -105,7 +106,7 @@ def wid(w, value=None):
     if value is None:
         return getattr(w, WID_ATTR, None)
     else:
-        w._ns_id = value
+        setattr(w, WID_ATTR, value)
 class DockManager(object):
     """DockManager - manage QDockWidget layouts"""
 
@@ -118,7 +119,10 @@ class DockManager(object):
         self.c = c
         c._dock_manager = self
 
-
+        # set _tm_id where needed, previously done in free_layout
+        wid(c.frame.top.findChild(QtWidgets.QWidget, "outlineFrame"), '_leo_pane:outlineFrame')
+        wid(c.frame.top.findChild(QtWidgets.QWidget, "logFrame"), '_leo_pane:logFrame')
+        wid(c.frame.top.findChild(QtWidgets.QWidget, "bodyFrame"), '_leo_pane:bodyFrame')
     @staticmethod
     def area_span(widget, bbox):
         """area_span - find max. proportion of area width/height spanned
@@ -255,10 +259,11 @@ class DockManager(object):
                 if ref:
                     ref_w = self.find_dock(ref)
                     nxt_w = self.find_dock(first[WID_ATTR])
+                    if not ref_w or not nxt_w:
+                        break  # aborts loading layout
 
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
-                            print("Swap V, width")
                             self.swap_dock(ref_w, nxt_w)
                     else:
                         if d['widget'][ref]['x'] > first['x']:
@@ -279,6 +284,8 @@ class DockManager(object):
                 if ref:
                     ref_w = self.find_dock(ref)
                     nxt_w = self.find_dock(first[WID_ATTR])
+                    if not ref_w or not nxt_w:
+                        break  # aborts loading layout
 
                     if align == QtConst.Vertical:
                         if d['widget'][ref]['y'] > first['y']:
@@ -305,16 +312,23 @@ class DockManager(object):
                 g.log("Can't find visible tab for "+str(tg))
                 continue
             viz_w = self.find_dock(viz)
+            if not viz_w:
+                break  # aborts loading layout
+
             # make a list of tabs, left to right
             ordered = [viz_w]
             for tab in tg:  # add other tabs to group
                 if tab == viz:
                     continue
                 tab_w = self.find_dock(tab)
+                if not tab_w:
+                    break
                 c.frame.top.tabifyDockWidget(viz_w, tab_w)
                 ordered.append(tab_w)
             for n in range(len(tg)):  # reorder tabs to match list
                 src = self.find_dock(tg[n])
+                if not src:
+                    break
                 self.swap_dock(src, ordered[n])
             self.find_dock(viz).raise_()  # raise viz. tab
 
