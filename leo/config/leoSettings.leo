@@ -797,6 +797,7 @@
 <v t="ekr.20111029055127.16614"><vh>@data import_xml_tags</vh></v>
 </v>
 <v t="ekr.20060122105527.3"><vh>Keyboard and minibuffer options</vh>
+<v t="ekr.20180411070112.1"><vh>@bool replace-meta-with-alt = False</vh></v>
 <v t="ekr.20160504145653.1"><vh>@bool plain_key_outline_search = True</vh></v>
 <v t="ekr.20120205022040.15410"><vh>@bool enable_alt_ctrl_bindings = True</vh></v>
 <v t="ekr.20131007055150.13034"><vh>@bool ignore_unbound_non_ascii_keys = False</vh></v>
@@ -6081,14 +6082,15 @@ in myLeoSettings.leo.  But most users will never need to do this.
 False: start-find commands puts focus in Find panel.</t>
 <t tx="ekr.20131119143342.20108"></t>
 <t tx="ekr.20131213135427.21826"></t>
-<t tx="ekr.20131213135427.21827">&amp;Open Theme File</t>
+<t tx="ekr.20131213135427.21827"></t>
 <t tx="ekr.20131213135427.21828"></t>
 <t tx="ekr.20131213135427.21829"></t>
 <t tx="ekr.20131213135427.21830"></t>
-<t tx="ekr.20131213135427.21831">Recent Files
-
-A placeholder for the actual menu.
-Leo's init code populates this menu as a special case.</t>
+<t tx="ekr.20131213135427.21831"># 文件
+# The first non-blank, non-comment body line is an alternate menu name.
+#
+# A placeholder for the actual menu.
+# Leo's init code populates this menu as a special case.</t>
 <t tx="ekr.20131213135427.21832"></t>
 <t tx="ekr.20131213135427.21833"></t>
 <t tx="ekr.20131213135427.21834">&amp;Save...</t>
@@ -11444,22 +11446,18 @@ if 0: # The base class
 
 Notes:
 
-- The menu name always follows @menu. If the menu name is 'Plugins', Leo will
-create the Plugins menu and populate the menu by calling the
-'create-optional-menus' hook. This creates the Plugins menu as usual.
+- The menu name always follows @menu. If the menu name is 'Plugins', Leo will create the Plugins menu and populate the menu by calling the 'create-optional-menus' hook. This creates the Plugins menu as usual.
+
+- The first non-blank, non-comment line of the body of an @menu item is an an alternate name for the menu.  This allows translations of menus.
 
 - Nested @menu nodes contain submenus.
 
-- The command name follows @item. If the body text of an @item node exists, the
-first line of the body text is the menu name. Otherwise, the menu name is the command name.
-However, if the command name starts with a '*', hyphens are removed from the
-menu name.
+- The command name follows @item. If the body text of an @item node exists, the first non-blank, non-comment line of the body text is the menu name. Otherwise, the menu name is the command name. However, if the command name starts with a '*', hyphens are removed from the menu name.
 
-- Menu names and command names may contain a single ampersand (&amp;). If present,
-the following character is underlined in the name.
+- Menu names and command names may contain a single ampersand (&amp;). If present, the following character is underlined in the name.
 
-- If the command name in an @item node is just a hyphen (-), the item represents
-a menu separator.</t>
+- If the command name in an @item node is just a hyphen (-), the item represents a menu separator.
+</t>
 <t tx="ekr.20170825083426.1"># typedef names, one per line
 
 # These fix #545:
@@ -11756,9 +11754,9 @@ May be overridden by themes.</t>
 <t tx="ekr.20180403114558.1"></t>
 <t tx="ekr.20180403114818.1"></t>
 <t tx="ekr.20180403115138.1"></t>
-<t tx="ekr.20180403115320.1">Alt+Ctrl+E set-find-everywhere
-Alt+Ctrl+N set-find-node-only
-Alt+Ctrl+S set-find-suboutline-only
+<t tx="ekr.20180403115320.1"># Alt+Ctrl+E set-find-everywhere
+# Alt+Ctrl+N set-find-node-only
+# Alt+Ctrl+S set-find-suboutline-only
 </t>
 <t tx="ekr.20180403115410.1"></t>
 <t tx="ekr.20180403115435.1"></t>
@@ -11791,6 +11789,11 @@ Alt+Ctrl+S set-find-suboutline-only
 <t tx="ekr.20180406014111.1"></t>
 <t tx="ekr.20180406014118.1"></t>
 <t tx="ekr.20180406014127.1"></t>
+<t tx="ekr.20180411070112.1">The setting only has effect on MacOS.
+False: Legacy operation.
+True:  Replace the Meta key with the Alt Key.
+       This allows Windows Keyboards to be used without changing key bindings.
+</t>
 <t tx="jlunz.20150821113251.1">def html_tag():
     """expand &lt;tag&gt; to 
        &lt;tag&gt;\n&lt;/tag&gt; with proper indendation"""

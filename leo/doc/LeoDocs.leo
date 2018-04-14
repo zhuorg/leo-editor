@@ -1430,7 +1430,12 @@
 <v t="ekr.20060620094033"><vh>What's New...</vh>
 <v t="ekr.20101025080245.5791"><vh>@rst html/what-is-new.html</vh>
 <v t="ekr.20071116062917.2"><vh>@rst-no-head links</vh></v>
-<v t="ekr.20180404015558.1"><vh>What's new in 5.7.1</vh></v>
+<v t="ekr.20180404015558.1"><vh>What's new in 5.7.1</vh>
+<v t="ekr.20180411071648.1"><vh>Features</vh>
+<v t="ekr.20180411071654.1"><vh>#850: Optionally convert Meta to Alt on MacOs</vh></v>
+</v>
+<v t="ekr.20180411071733.1"><vh>Settings</vh></v>
+</v>
 <v t="ekr.20180125034531.1"><vh>What's new in Leo 5.7</vh>
 <v t="ekr.20180126002550.1"><vh>Highlights</vh></v>
 <v t="ekr.20180126002657.1"><vh>Code</vh></v>
@@ -1935,10 +1940,7 @@
 <v t="ekr.20180124122055.1"><vh>New line_numbering.py plugin</vh></v>
 </v>
 </v>
-</v>
-</v>
-<v t="ekr.20180404015558.1"></v>
-<v t="ekr.20180404015249.1"><vh>Leo 5.7.1 release notes</vh>
+<v t="ekr.20180404015249.1"><vh>Leo 5.7.1 Themes</vh>
 <v t="ekr.20180404020342.1"><vh>Bugs</vh>
 <v t="ekr.20180404015841.6"><vh>#780: @tabwidth -2 in @data qt-gui-plugin-style-sheet crashes Leo</vh></v>
 <v t="ekr.20180404022106.1"><vh>#781: ViewRendered Plugin fails on Python 2.7 (Bad Import Statement)</vh></v>
@@ -1976,6 +1978,20 @@
 </v>
 <v t="ekr.20180404063924.1"><vh>Settings &amp; command-line arguments</vh></v>
 </v>
+</v>
+</v>
+<v t="ekr.20180404015558.1"></v>
+<v t="ekr.20180411070654.1"><vh>Leo 5.7.2 release notes</vh>
+<v t="ekr.20180411150947.1"><vh>Bugs</vh>
+<v t="ekr.20180411150950.1"><vh>#757: MacOS: replace-then-find does not work in headlines</vh></v>
+</v>
+<v t="ekr.20180411073507.1"><vh>Features</vh>
+<v t="ekr.20180411105215.1"><vh>#794: Clicking Find Tab should do exactly what pushing Ctrl-F does</vh></v>
+<v t="ekr.20180411102234.1"><vh>#838: Better .ipynb importer/exporters</vh></v>
+<v t="ekr.20180411073658.1"><vh>#848: Recent Files menu will break for foreign languages</vh></v>
+<v t="ekr.20180411073531.1"><vh>#850: Optionally convert Meta to Alt on MacOs</vh></v>
+</v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="EKR.20040524104904.140">Leo stores options in **@settings trees**, outlines whose headline is @settings. When opening a .leo file, Leo looks for @settings trees not only in the outline being opened but also in various leoSettings.leo files. This scheme allows for the following kinds of settings:
@@ -1994,7 +2010,6 @@ There are four kinds of settings files:
 3. **Machine settings files**, named **LeoSettings.leo** (note the capital 'L'), and appearing in a unique directory.
 
 4. **Theme files**. These are .leo files containing stylesheets and other appearance-related settings.
-
 
 The following sections describe the kinds of nodes in @settings trees.
 </t>
@@ -7300,7 +7315,7 @@ Scripts can get or change the context of the body as follows::
 </t>
 <t tx="ekr.20090401113141.1">To generate .odt or .rtf or .pdf files, you create an intermediate file and ignore the the "official" output file, in this case test.html. The intermediate file contains the rST text corresponding to the @rst tree.
 
-To tell the rst3 plugin to generate an intermediate file, do::
+To tell the rst3 command to generate an intermediate file, do::
 
     write_intermediate_file = True
 
@@ -20575,8 +20590,13 @@ At one time I thought the following might work, but it appears that it doesn't:
     This brings up the "Change Key Sequence" panel.
 
 5. Set both radio buttons to "Not Assigned" and click OK.</t>
-<t tx="ekr.20160304081437.3">To enable a theme:
+<t tx="ekr.20160304081437.3">To enable a theme .leo file, put the following setting in myLeoSettings.leo::
 
+    @string theme-name &lt;theme file, without the .leo extension&gt;
+
+You can also define a theme directly in myLeoSettings.leo as follows:
+
+- *Remove* (or disable) any previous @theme tree in myLeoSettings.leo.
 - *Select* one of the @theme trees in leoSettings.leo.
 - *Copy* the entire @theme tree to myLeoSettings.leo.
 - *Move* the copied tree to the *end* of the @settings tree.
@@ -26307,6 +26327,53 @@ Theme files should contain three settings that describe the theme::
 </t>
 <t tx="ekr.20180404070940.1"></t>
 <t tx="ekr.20180404172529.1">When True, adds @path directives to the root node of imported files.
+</t>
+<t tx="ekr.20180411070654.1">Leo 5.7.2, http://leoeditor.com, is now available on
+[GitHub](https://github.com/leo-editor/leo-editor).
+
+Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
+
+**The highlights of Leo 5.7.2**
+
+- Much improved support for Jupyter (.ipynb) files.
+- The usual minor bug fixes.
+
+**Links**
+
+- Leo's home page: http://leoeditor.com
+- [Documentation](http://leoeditor.com/leo_toc.html)
+- [Tutorials](http://leoeditor.com/tutorial.html)
+- [Video tutorials](http://leoeditor.com/screencasts.html)
+- [Forum](http://groups.google.com/group/leo-editor)
+- [Download](http://sourceforge.net/projects/leo/files/)
+- [Leo on GitHub](https://github.com/leo-editor/leo-editor)
+- [LeoVue](https://github.com/kaleguy/leovue#leo-vue)
+- [What people are saying about Leo](http://leoeditor.com/testimonials.html)
+- [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
+- [More links](http://leoeditor.com/leoLinks.html)
+</t>
+<t tx="ekr.20180411071648.1"></t>
+<t tx="ekr.20180411071654.1">https://github.com/leo-editor/leo-editor/issues/850
+
+This feature is disabled by default. To enable, set @bool replace-meta-with-alt = True.
+</t>
+<t tx="ekr.20180411071733.1">- @bool replace-meta-with-alt.
+</t>
+<t tx="ekr.20180411073507.1"></t>
+<t tx="ekr.20180411073531.1">https://github.com/leo-editor/leo-editor/issues/850
+
+This feature is disabled by default. To enable, set @bool replace-meta-with-alt = True.</t>
+<t tx="ekr.20180411073658.1">https://github.com/leo-editor/leo-editor/issues/848
+
+The first non-blank, non-comment line of the node `@menu Recent Files' can contain an alternate (translated) menu name.
+
+You should not just change the headline of the node: it should remain unchanged. Indeed, the point of this item is that Leo has to know which item is the Recent Files item, so some other way was needed to specify an alternate name.</t>
+<t tx="ekr.20180411102234.1">https://github.com/leo-editor/leo-editor/issues/838
+Leo's @auto whatever.ipynb allow close integration with Jupyter notebooks.</t>
+<t tx="ekr.20180411105215.1">https://github.com/leo-editor/leo-editor/issues/794
+</t>
+<t tx="ekr.20180411150947.1"></t>
+<t tx="ekr.20180411150950.1">https://github.com/leo-editor/leo-editor/issues/757
 </t>
 <t tx="peckj.20130813123907.6841" str_ctime="1376412039.0" str_mtime="1376412039.0" str_atime="1376414164.0">Documenting new plugins is important for users to be able understand and use the features they add. To that effect, there are a few documentation steps that should not be overlooked.
 
