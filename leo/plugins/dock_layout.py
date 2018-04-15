@@ -29,10 +29,10 @@ created during restoration of a layout, as follows:
  - for each dock, find the proportion, 0-1, of the full bbox spanned by the
    dock, both width and height, note the greater of the two, and its
    orientation.  E.g. (0.7, horiz), or (1.0, vert).
- - There will always be at least one dock that spans the whole bbox (proportion
-   1.0), you can't arrange docks so that that's not true.
+ - There will always be at least one splitter that spans the whole bbox (proportion
+   1.0), you can't arrange splitters so that that's not true.
  - There may be more than one, that's ok
- - Pick one of the docks that spans the whole bbox.  It will split the bbox
+ - Pick one of the splitters that spans the whole bbox.  It will split the bbox
    into 1-3 pieces:
        - 1 - this dock is the last widget left to place
        - 2 - this dock spans the top/bottom/left/right edge of the bbox
@@ -44,6 +44,8 @@ created during restoration of a layout, as follows:
 """
 import json
 import os
+
+from collections import defaultdict
 
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets, QtGui
@@ -76,7 +78,6 @@ def create_commands():
         'open_dock_menu', 'plot_json',
     ]
     for cmd_name in cmds:
-        g.log(cmd_name)
         def cmd(event, cmd_name=cmd_name):
             getattr(event['c']._dock_manager, cmd_name)()
         g.command("dock-%s" % cmd_name.replace('_', '-'))(cmd)
@@ -127,7 +128,7 @@ class DockManager(object):
         def load(timer, self=self):
             timer.stop()
             self.load()
-        timer = g.IdleTime(load, delay=500)
+        timer = g.IdleTime(load, delay=1000)
         timer.start()
     @staticmethod
     def area_span(widget, bbox):
@@ -243,7 +244,7 @@ class DockManager(object):
             timer.stop()
             self.load_json(g.os_path_finalize_join(
                 g.computeHomeDir(), '.leo', 'layouts', 'default.json'))
-        timer = g.IdleTime(delayed_layout, delay=500)
+        timer = g.IdleTime(delayed_layout, delay=1000)
         timer.start()
 
     def load_json(self, file):
@@ -252,7 +253,9 @@ class DockManager(object):
         Args:
             file: JSON file to load
         """
-
+        D = True
+        if D:
+            _names = lambda x: ' '.join(i['_tm_id'] for i in x)
         c = self.c
         d = json.load(open(file))
 
@@ -265,17 +268,44 @@ class DockManager(object):
 
         while todo:
             widgets, bbox, ref, align = todo.pop(0)
+
+            # look for columns and rows
+            cols = defaultdict(lambda: list())
+            rows = defaultdict(lambda: list())
+            for w in widgets:
+                if not w['visible']:
+                    continue
+                cols[(w['x'], w['width'])].append(w)
+                rows[(w['y'], w['height'])].append(w)
+            heights = {k:sum(w['height'] for w in cols[k]) for k in cols}
+            widths = {k:sum(w['width'] for w in rows[k]) for k in rows}
+            height = -(bbox[1] - bbox[3])
+            width = bbox[2] - bbox[0]
+            """
+            if the maximum width of all rows is the width of a column, column split
+            if the maximum height of all columns is the height of a row, row split
+            """
+            if d:
+                print(height, width)
+                print(heights)
+                print(widths)
+
             ordered = sorted(
                 widgets,
                 key=lambda x: self.area_span(x, bbox),
                 reverse=True
             )
+            if D:
+                for i in widgets:
+                    print(i, self.area_span(i, bbox))
             first = ordered[0]
             if self.area_span(first, bbox)[1]:  # width spanning
                 below = (bbox[0], bbox[1], bbox[2], -first['y']-first['height'])
                 above = (bbox[0], -first['y'], bbox[2], bbox[3])
                 in_below = [i for i in widgets if i['visible'] and self.in_bbox(i, below)]
                 in_above = [i for i in widgets if i['visible'] and self.in_bbox(i, above)]
+                if D:
+                    print("%s over %s" % (_names(in_above), _names(in_below)))
 
                 if ref:
                     ref_w = self.find_dock(ref)
@@ -301,6 +331,8 @@ class DockManager(object):
                 right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
                 in_left = [i for i in widgets if i['visible'] and self.in_bbox(i, left)]
                 in_right = [i for i in widgets if i['visible'] and self.in_bbox(i, right)]
+                if D:
+                    print("%s left of %s" % (_names(in_left), _names(in_right)))
 
                 if ref:
                     ref_w = self.find_dock(ref)

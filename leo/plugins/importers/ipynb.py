@@ -116,6 +116,26 @@ class Import_IPYNB(object):
             assert p.level() == root_level + 1, (p.level(), p.h)
             stack = self.move_node(n, p, stack)
             p.moveToNodeAfterTree()
+    #@+node:ekr.20160412101537.16: *5* ipynb.move_node
+    def move_node(self, n, p, stack):
+        '''Move node to level n'''
+        # Cut back the stack so that p will be at level n (if possible).
+        if n is None:
+            n = 1
+        if stack:
+            stack = stack[:n]
+            if len(stack) == n:
+                prev = stack.pop()
+                p.moveAfter(prev)
+            else:
+                # p will be under-indented if len(stack) < n-1
+                # This depends on user markup, so it can't be helped.
+                parent = stack[-1]
+                n2 = parent.numberOfChildren()
+                p.moveToNthChildOf(parent, n2)
+        # Push p *after* moving p.
+        stack.append(p.copy())
+        return stack
     #@+node:ekr.20160412101537.9: *4* ipynb.add_markup
     def add_markup(self):
         '''Add @language directives, but only if necessary.'''
