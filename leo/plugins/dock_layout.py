@@ -45,7 +45,7 @@ created during restoration of a layout, as follows:
 import json
 import os
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets, QtGui
@@ -57,6 +57,8 @@ DockAreas = (
 )
 
 WID_ATTR = '_tm_id'
+
+BBox = namedtuple('BBox', 'minx miny maxx maxy')
 
 def init():
     '''Return True if the plugin has loaded successfully.'''
@@ -141,8 +143,8 @@ class DockManager(object):
         Returns:
             tuple: (float, bool) max. proportion, is width
         """
-        xprop = widget['width'] / float(bbox[2] - bbox[0])
-        yprop = widget['height'] / float(bbox[3] - bbox[1])
+        xprop = widget['width'] / float(bbox.maxx - bbox.minx)
+        yprop = widget['height'] / float(bbox.maxy - bbox.miny)
         if xprop > yprop:
             return xprop, True
         else:
@@ -164,7 +166,7 @@ class DockManager(object):
             x.append(w['x']+w['width'])
             y.append(-w['y'])
             y.append(-w['y']-w['height'])
-        return min(x), min(y), max(x), max(y)
+        return BBox(minx=min(x), miny=min(y), maxx=max(x), maxy=max(y))
     def dockify(self):
         """dockify - Move UI elements into docks"""
         c = self.c
@@ -235,7 +237,7 @@ class DockManager(object):
         """
         xctr = widget['x']+widget['width']/2
         yctr = -widget['y']-widget['height']/2
-        return bbox[0] < xctr < bbox[2] and bbox[1] < yctr < bbox[3]
+        return bbox.minx < xctr < bbox.maxx and bbox.miny < yctr < bbox.maxy
 
     def load(self):
         """load - load layout on idle after load"""
@@ -266,6 +268,7 @@ class DockManager(object):
         widgets = list(d['widget'].values())
         todo = [(widgets, self.bbox(widgets), None, None)]
 
+        Span = namedtuple('Span', "start size")  # x, width or y, height
         while todo:
             widgets, bbox, ref, align = todo.pop(0)
 
@@ -275,35 +278,46 @@ class DockManager(object):
             for w in widgets:
                 if not w['visible']:
                     continue
-                cols[(w['x'], w['width'])].append(w)
-                rows[(w['y'], w['height'])].append(w)
+                cols[Span(w['x'], w['width'])].append(w)
+                rows[Span(w['y'], w['height'])].append(w)
             heights = {k:sum(w['height'] for w in cols[k]) for k in cols}
             widths = {k:sum(w['width'] for w in rows[k]) for k in rows}
-            height = -(bbox[1] - bbox[3])
-            width = bbox[2] - bbox[0]
+            height = -(bbox.miny - bbox.maxy)
+            width = bbox.maxx - bbox.minx
             """
             if the maximum width of all rows is the width of a column, column split
             if the maximum height of all columns is the height of a row, row split
             """
-            if d:
+            if D:
                 print(height, width)
                 print(heights)
                 print(widths)
 
-            ordered = sorted(
-                widgets,
-                key=lambda x: self.area_span(x, bbox),
-                reverse=True
-            )
-            if D:
-                for i in widgets:
-                    print(i, self.area_span(i, bbox))
-            first = ordered[0]
-            if self.area_span(first, bbox)[1]:  # width spanning
-                below = (bbox[0], bbox[1], bbox[2], -first['y']-first['height'])
-                above = (bbox[0], -first['y'], bbox[2], bbox[3])
+            PropSpan = namedtuple('PropSpan', 'prop span')
+            col_prop = sorted([PropSpan(heights[i]/float(height), i) for i in heights], reverse=True)
+            row_prop = sorted([PropSpan(widths[i]/float(width), i) for i in widths], reverse=True)
+
+            #X ordered = sorted(
+            #X     widgets,
+            #X     key=lambda x: self.area_span(x, bbox),
+            #X     reverse=True
+            #X )
+            #X if D:
+            #X     for i in widgets:
+            #X         print(i, self.area_span(i, bbox))
+            #X first = ordered[0]
+            if row_prop[0].prop > col_prop[0].prop:  # width spanning
+                below = BBox(bbox.minx, bbox.miny, bbox.maxx, row_prop[0].span.start)
+                above = BBox(bbox.minx, row_prop[0].span.start+row_prop[0].span.size, bbox.maxx, bbox.maxy)
+                within = BBox(bbox.minx, row_prop[0].span.start, bbox.maxx, row_prop[0].span.start+row_prop[0].span.size)
                 in_below = [i for i in widgets if i['visible'] and self.in_bbox(i, below)]
                 in_above = [i for i in widgets if i['visible'] and self.in_bbox(i, above)]
+                in_within = [i for i in widgets if i['visible'] and self.in_bbox(i, within)]
+                if D:
+                    print("below", below, in_below)
+                    print("above", above, in_above)
+                    print("within", within, in_within)
+                first = in_within[0]
                 if D:
                     print("%s over %s" % (_names(in_above), _names(in_below)))
 
@@ -327,10 +341,17 @@ class DockManager(object):
                 if in_above:
                     todo.append((in_above, above, first[WID_ATTR], QtConst.Vertical))
             else:  # height spanning
-                left = (bbox[0], bbox[1], first['x'], bbox[3])
-                right = (first['x']+first['width'], bbox[1], bbox[2], bbox[3])
+                left = BBox(bbox.minx, bbox.miny, col_prop[0].span.start, bbox.maxy)
+                right = BBox(col_prop[0].span.start+col_prop[0].span.size, bbox.miny, bbox.maxx, bbox.maxy)
+                within = BBox(col_prop[0].span.start, bbox.miny, col_prop[0].span.start+col_prop[0].span.size, bbox.maxy)
                 in_left = [i for i in widgets if i['visible'] and self.in_bbox(i, left)]
                 in_right = [i for i in widgets if i['visible'] and self.in_bbox(i, right)]
+                in_within = [i for i in widgets if i['visible'] and self.in_bbox(i, within)]
+                if D:
+                    print("left", left, in_left)
+                    print("right", right, in_right)
+                    print("within", within, in_within)
+                first = in_within[0]
                 if D:
                     print("%s left of %s" % (_names(in_left), _names(in_right)))
 
