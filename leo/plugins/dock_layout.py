@@ -164,8 +164,8 @@ class DockManager(object):
         for w in [i for i in widgets if i['visible']]:
             x.append(w['x'])
             x.append(w['x']+w['width'])
-            y.append(-w['y'])
-            y.append(-w['y']-w['height'])
+            y.append(w['y'])
+            y.append(w['y']+w['height'])
         return BBox(minx=min(x), miny=min(y), maxx=max(x), maxy=max(y))
     def dockify(self):
         """dockify - Move UI elements into docks"""
@@ -236,7 +236,7 @@ class DockManager(object):
             bool: widget is in bbox
         """
         xctr = widget['x']+widget['width']/2
-        yctr = -widget['y']-widget['height']/2
+        yctr = widget['y']+widget['height']/2
         return bbox.minx < xctr < bbox.maxx and bbox.miny < yctr < bbox.maxy
 
     def load(self):
