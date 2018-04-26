@@ -713,7 +713,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
 
             name = mungeName(label)
             # Prepend the shortcut if it exists:
-            stroke = k.getShortcutForCommandName(cmd_name)
+            stroke = k.getStrokeForCommandName(cmd_name)
             if stroke:
                 label = '%s:  %s' % (label, k.prettyPrintKey(stroke))
             if 1: # Not bad.
@@ -766,17 +766,20 @@ class DynamicWindow(QtWidgets.QMainWindow):
         #@+others
         #@+node:ekr.20131118172620.16892: *7* class EventWrapper
         class EventWrapper(object):
-            #@+others
-            #@+node:ekr.20131119204029.18406: *8* ctor
+            
             def __init__(self, c, w, next_w, func):
                 self.c = c
-                self.d = self.create_d() # Keys: strokes; values: command-names.
+                self.d = self.create_d()
+                    # Keys: stroke.s; values: command-names.
+                    ### To do: use stroke as the key, not stroke.s.
                 self.w = w
                 self.next_w = next_w
                 self.eventFilter = qt_events.LeoQtEventFilter(c, w, 'EventWrapper')
                 self.func = func
                 self.oldEvent = w.event
                 w.event = self.wrapper
+
+            #@+others
             #@+node:ekr.20131120054058.16281: *8* create_d
             def create_d(self):
                 '''Create self.d dictionary.'''
@@ -804,7 +807,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
                     'set-find-suboutline-only',
                 )
                 for cmd_name in table:
-                    stroke = c.k.getShortcutForCommandName(cmd_name)
+                    stroke = c.k.getStrokeForCommandName(cmd_name)
                     # if not stroke: g.trace('missing',cmd_name)
                     if stroke:
                         d[stroke.s] = cmd_name
@@ -824,17 +827,11 @@ class DynamicWindow(QtWidgets.QMainWindow):
                     # http://qt-project.org/doc/qt-4.8/qevent.html#Type-enum
                     g.trace(type_)
                 return self.oldEvent(event)
-            #@+node:ekr.20131118172620.16894: *8* keyPress
+            #@+node:ekr.20131118172620.16894: *8* keyPress (EventWrapper)
             def keyPress(self, event):
                 trace = False
                 s = g.u(event.text())
-                if 0: # This doesn't work.
-                    eat = isinstance(self.w, (QtWidgets.QCheckBox, QtWidgets.QRadioButton))
-                    g.trace('eat', eat, w)
-                    if eat and s in ('\n', '\r'):
-                        return True
                 out = s and s in '\t\r\n'
-                # if trace: g.trace(out, repr(s))
                 if out:
                     # Move focus to next widget.
                     if s == '\t':
@@ -848,18 +845,16 @@ class DynamicWindow(QtWidgets.QMainWindow):
                         if trace: g.trace('return func', self.func.__name__)
                         self.func()
                     return True
-                else:
-                    ef = self.eventFilter
-                    tkKey, ch, ignore = ef.toTkKey(event)
-                    stroke = ef.toStroke(tkKey, ch) # ch not used.
-                    cmd_name = self.d.get(stroke)
-                    if trace: g.trace(cmd_name, s, tkKey, stroke)
+                # Stay in the present widget.
+                binding, ch = self.eventFilter.toBinding(event)
+                if  binding:
+                    cmd_name = self.d.get(binding)
                     if cmd_name:
+                        if trace: g.trace(cmd_name, s, binding, ch)
                         self.c.k.simulateCommand(cmd_name)
                         return True
-                    else:
-                        # Do the normal processing.
-                        return self.oldEvent(event)
+                # Do the normal processing.
+                return self.oldEvent(event)
             #@+node:ekr.20131118172620.16895: *8* keyRelease
             def keyRelease(self, event):
                 return self.oldEvent(event)
@@ -962,7 +957,8 @@ class DynamicWindow(QtWidgets.QMainWindow):
     #@+node:ekr.20110605121601.18177: *3* dw.setLeoWindowIcon
     def setLeoWindowIcon(self):
         """ Set icon visible in title bar and task bar """
-        self.setWindowIcon(QtGui.QIcon(g.app.leoDir + "/Icons/leoapp32.png"))
+        # self.setWindowIcon(QtGui.QIcon(g.app.leoDir + "/Icons/leoapp32.png"))
+        g.app.gui.attachLeoIcon(self)
     #@+node:ekr.20110605121601.18174: *3* dw.setSplitDirection
     def setSplitDirection(self, main_splitter, secondary_splitter, orientation):
         '''Set the orientations of the splitters in the Leo main window.'''
@@ -1243,9 +1239,10 @@ class LeoBaseTabWidget(QtWidgets.QTabWidget):
         name = self.tabText(index)
         self.detached.append((name, w))
         self.factory.detachTab(w)
-        icon = g.app.gui.getImageImageFinder("application-x-leo-outline.png")
+        icon = g.app.gui.getImageFinder("application-x-leo-outline.png")
         icon = QtGui.QIcon(icon)
-        w.window().setWindowIcon(icon)
+        if icon:
+            w.window().setWindowIcon(icon)
         c = w.leo_c
         if c.styleSheetManager:
             c.styleSheetManager.set_style_sheets(w=w)
@@ -1385,14 +1382,8 @@ class LeoQtBody(leoFrame.LeoBody):
     #@+node:ekr.20140901062324.18562: *5* LeoQtBody.reloadSettings
     def reloadSettings(self):
         c = self.c
-        self.trace_onBodyChanged = c.config.getBool('trace_onBodyChanged')
         self.useScintilla = c.config.getBool('qt-use-scintilla')
         self.use_chapters = c.config.getBool('use_chapters')
-        # These are no longer used.
-            # self.unselectedBackgroundColor = c.config.getColor(
-                # 'unselected_body_bg_color')
-            # self.unselectedForegroundColor = c.config.getColor(
-                # 'unselected_body_fg_color')
     #@+node:ekr.20160309074124.1: *5* LeoQtBody.set_invisibles
     def set_invisibles(self, c):
         '''Set the show-invisibles bit in the document.'''
@@ -2043,7 +2034,6 @@ class LeoQtFrame(leoFrame.LeoFrame):
     def reloadSettings(self):
         c = self.c
         self.cursorStay = c.config.getBool("cursor_stay_on_paste", default=True)
-        self.trace_status_line = c.config.getBool('trace_status_line')
         self.use_chapters = c.config.getBool('use_chapters')
         self.use_chapter_tabs = c.config.getBool('use_chapter_tabs')
     #@+node:ekr.20110605121601.18248: *5* qtFrame.setIvars
@@ -3484,16 +3474,18 @@ class LeoQtLog(leoFrame.LeoLog):
             self.selectHelper(tabName)
     #@+node:ekr.20110605121601.18332: *5* LeoQtLog.selectHelper
     def selectHelper(self, tabName):
-        trace = False and not g.unitTesting
+
         c, w = self.c, self.tabWidget
         for i in range(w.count()):
             if tabName == w.tabText(i):
                 w.setCurrentIndex(i)
                 widget = w.widget(i)
-                # 2011/11/21: Set the .widget ivar only if there is a wrapper.
+                #
+                # Set the .widget ivar only if there is a wrapper.
                 wrapper = hasattr(widget, 'leo_log_wrapper') and widget.leo_log_wrapper
-                if wrapper: self.logCtrl = wrapper
-                if trace: g.trace(tabName, 'widget', widget, 'wrapper', wrapper)
+                if wrapper:
+                    self.logCtrl = wrapper
+                #
                 # Do *not* set focus here!
                     # c.widgetWantsFocus(tab_widget)
                 if tabName == 'Find':
@@ -3506,14 +3498,14 @@ class LeoQtLog(leoFrame.LeoLog):
                         else:
                             findbox.setFocus()
                 elif tabName == 'Spell':
-                    # the base class uses this as a flag to see if
-                    # the spell system needs initing
+                    #
+                    # the base class uses this as a flag to see if the spell system needs initing
                     self.frameDict['Spell'] = widget
-                self.tabName = tabName # 2011/11/20
+                self.tabName = tabName
                 return True
+        #
         # General case.
-        self.tabName = None # 2011/11/20
-        if trace: g.trace('** not found', tabName)
+        self.tabName = None
         return False
     #@-others
 #@+node:ekr.20110605121601.18340: ** class LeoQtMenu (LeoMenu)
@@ -4605,12 +4597,11 @@ class QtMenuWrapper(LeoQtMenu, QtWidgets.QMenu):
             key, aList = c.config.getShortcut(commandName)
             if aList:
                 result = []
-                for si in aList:
-                    assert g.isShortcutInfo(si), si
+                for bi in aList:
                     # Don't show mode-related bindings.
-                    if not si.isModeBinding():
-                        accel = k.prettyPrintKey(si.stroke)
-                        if trace: g.trace('%20s %s' % (accel, si.dump()))
+                    if not bi.isModeBinding():
+                        accel = k.prettyPrintKey(bi.stroke)
+                        if trace: g.trace('%20s %s' % (accel, bi.dump()))
                         result.append(accel)
                         # Break here if we want to show only one accerator.
                 action.setText('%s\t%s' % (s, ', '.join(result)))

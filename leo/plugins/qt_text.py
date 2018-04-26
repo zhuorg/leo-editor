@@ -144,8 +144,8 @@ class QTextMixin(object):
     #@+node:ekr.20140901062324.18698: *4* qtm.setFocus
     def setFocus(self):
         '''QTextMixin'''
-        trace = (False or g.app.trace_focus) and not g.unitTesting
-        if trace: print('BaseQTextWrapper.setFocus', self.widget)
+        if 'focus' in g.app.debug:
+            print('BaseQTextWrapper.setFocus', self.widget)
         # Call the base class
         assert isinstance(self.widget, (
             QtWidgets.QTextBrowser,
@@ -938,8 +938,7 @@ class QMinibufferWrapper(QLineEditWrapper):
             c, k = self.c, self.c.k
             if not k.state.kind:
                 # c.widgetWantsFocusNow(w) # Doesn't work.
-                event2 = g.app.gui.create_key_event(c,
-                    char='', stroke='', w=c.frame.body.wrapper)
+                event2 = g.app.gui.create_key_event(c, w=c.frame.body.wrapper)
                 k.fullCommand(event2)
                 # c.outerUpdate() # Doesn't work.
         #@-<< define mouseReleaseEvent >>

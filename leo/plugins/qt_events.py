@@ -39,7 +39,7 @@
 import leo.core.leoGlobals as g
 import leo.core.leoGui as leoGui
 from leo.core.leoQt import QtCore, QtGui, QtWidgets
-import string
+# import string
 # import sys
 #@+others
 #@+node:ekr.20141028061518.17: ** class LeoQtEventFilter
@@ -63,69 +63,62 @@ class LeoQtEventFilter(QtCore.QObject):
         # Support for ctagscompleter.py plugin.
         self.ctagscompleter_active = False
         self.ctagscompleter_onKey = None
-    #@+node:ekr.20110605121601.18540: *3* filter.eventFilter
+    #@+node:ekr.20110605121601.18540: *3* filter.eventFilter & helpers
     def eventFilter(self, obj, event):
-        trace = (False or g.new_keys) and not g.unitTesting
+        trace = False and not g.unitTesting
         traceEvent = False # True: call self.traceEvent.
         traceKeys = True
         c, k = self.c, self.c.k
-        eventType = event.type()
-        ev = QtCore.QEvent
         #
-        # Part 1: Handle non-key event first
-        #
+        # Handle non-key events first.
         if not self.c.p:
             return False # Startup. Let Qt handle the key event
         if trace and traceEvent:
              self.traceEvent(obj, event)
         self.traceWidget(event)
-        self.do_non_key_event(event, obj)
-        if eventType not in (ev.ShortcutOverride, ev.KeyPress, ev.KeyRelease):
-            if trace and traceEvent: self.traceEvent(obj, event)
+        if self.doNonKeyEvent(event, obj):
             return False # Let Qt handle the non-key event.
         #
-        # Part 2: Ignore incomplete key events.
-        #
-        if self.ignore_key_event(event, obj):
+        # Ignore incomplete key events.
+        if self.shouldIgnoreKeyEvent(event, obj):
             return False # Let Qt handle the key event.
         #
-        # Part 3: Generate a key_event for k.masterKeyHandler.
-        #
-        tkKey, ch, ignore = self.toTkKey(event)
-        if not ignore:
-            shortcut = self.toStroke(tkKey)
-            stroke = g.KeyStroke(shortcut) if shortcut else None
-            aList = k.masterGuiBindingsDict.get(stroke, [])
-                # Keys are g.KeyStrokes.
-        #
-        # Part 4: Return if necessary.
-        #
-        if ignore:
-            return False # Allow Qt to handle the key event.
-        significant = (
-            tkKey or
-            ch in self.flashers or 
-            k.inState() or
-            bool(aList)
-        )
-        if not significant:
-            return False # Allow Qt to handle the key event.
-        #
-        # Part 5: Pass a new key event to masterKeyHandler.
-        #
-        if trace and traceKeys:
-            g.trace('shortcut: %r, len(aList): %s' % (shortcut, len(aList)))
+        # Generate a g.KeyStroke for k.masterKeyHandler.
         try:
-            key_event = self.create_key_event(event, c, self.w, ch, tkKey, shortcut)
+            binding, ch = self.toBinding(event)
+            if not binding:
+                return False # Allow Qt to handle the key event.
+            stroke = g.KeyStroke(binding=binding)
+            if trace and traceKeys:
+                g.trace('binding: %s, stroke: %s, char: %r' % (binding, stroke, ch))
+            #
+            # Pass the KeyStroke to masterKeyHandler.
+            key_event = self.createKeyEvent(event, c, self.w, ch, binding)
             k.masterKeyHandler(key_event)
             c.outerUpdate()
         except Exception:
             g.es_exception()
         return True
             # Whatever happens, suppress all other Qt key handling.
-    #@+node:ekr.20180413180751.2: *4* filter.do_non_key_event
-    def do_non_key_event(self, event, obj):
-        '''Handle all non-key event. Return True if the event has been handled.'''
+    #@+node:ekr.20110605195119.16937: *4* filter.createKeyEvent
+    def createKeyEvent(self, event, c, w, ch, binding):
+
+        return leoGui.LeoKeyEvent(
+            c=self.c,
+            char=ch,
+                # char = None doesn't work at present.
+                # But really, the binding should suffice.
+            event=event,
+            binding=binding,
+            w = w,
+            x = getattr(event, 'x', None) or 0,
+            y = getattr(event, 'y', None) or 0,
+            x_root = getattr(event, 'x_root', None) or 0,
+            y_root = getattr(event, 'y_root', None) or 0,
+        )
+    #@+node:ekr.20180413180751.2: *4* filter.doNonKeyEvent
+    def doNonKeyEvent(self, event, obj):
+        '''Handle all non-key event. '''
         c = self.c
         ev = QtCore.QEvent
         eventType = event.type()
@@ -141,8 +134,10 @@ class LeoQtEventFilter(QtCore.QObject):
                     c.frame.top.lineEdit.restore_selection()
         elif eventType == ev.FocusOut and self.tag == 'body':
             c.frame.body.onFocusOut(obj)
-    #@+node:ekr.20180413180751.3: *4* filter.ignore_key_event
-    def ignore_key_event(self, event, obj):
+        return eventType not in (ev.ShortcutOverride, ev.KeyPress, ev.KeyRelease)
+            # Return True if the event has been handled.
+    #@+node:ekr.20180413180751.3: *4* filter.shouldIgnoreKeyEvent
+    def shouldIgnoreKeyEvent(self, event, obj):
         '''
         Return True if we should ignore the key event.
         
@@ -159,213 +154,98 @@ class LeoQtEventFilter(QtCore.QObject):
         else:
             # QTextEdit: ignore all key events except keyPress events.
             return eventType != ev.KeyPress
-    #@+node:ekr.20180413180751.4: *4* filter.toStroke
-    def toStroke(self, tkKey):
-        '''Convert the official tkKey name to a stroke.'''
-        trace = False and not g.unitTesting
-        s = tkKey
-        table = (
-            ('Alt-', 'Alt+'),
-            ('Ctrl-', 'Ctrl+'),
-            ('Control-', 'Ctrl+'),
-            # Use Alt+Key-1, etc.  Sheesh.
-            # ('Key-','Key+'),
-            ('Meta-', 'Meta+'), # 2016/06/13: per Karsten Wolf.
-            ('Shift-', 'Shift+')
-        )
-        for a, b in table:
-            s = s.replace(a, b)
-        if trace: g.trace('tkKey', tkKey, '-->', s)
-        return s
-    #@+node:ekr.20120204061120.10088: *3* filter.Key construction
-    #@+node:ekr.20110605195119.16937: *4* filter.create_key_event
-    def create_key_event(self, event, c, w, ch, tkKey, shortcut):
-        trace = False and not g.unitTesting
-        verbose = True
-        if trace and verbose: g.trace('ch: %s, tkKey: %s, shortcut: %s' % (
-            repr(ch), repr(tkKey), repr(shortcut)))
-        # Last-minute adjustments...
-        if shortcut == 'Return':
-            ch = '\n' # Somehow Qt wants to return '\r'.
-        elif shortcut == 'Escape':
-            ch = 'Escape'
-        # Switch the Shift modifier to handle the cap-lock key.
-        if len(ch) == 1 and len(shortcut) == 1 and ch.isalpha() and shortcut.isalpha():
-            if ch != shortcut:
-                if trace and verbose: g.trace('caps-lock')
-                shortcut = ch
-        # Patch provided by resi147.
-        # See the thread: special characters in MacOSX, like '@'.
-        if g.isMac:
-            darwinmap = {
-                'Alt-Key-5': '[',
-                'Alt-Key-6': ']',
-                'Alt-Key-7': '|',
-                'Alt-slash': '\\',
-                'Alt-Key-8': '{',
-                'Alt-Key-9': '}',
-                'Alt-e': '€',
-                'Alt-l': '@',
-            }
-            if tkKey in darwinmap:
-                shortcut = darwinmap[tkKey]
-            if c.config.getBool('replace-meta-with-alt', default=False):
-                table = (
-                    ('Meta','Alt'),
-                    ('Ctrl+Alt+', 'Alt+Ctrl+'),
-                    # Shift already follows meta.
-                )
-                for z1, z2 in table:
-                    shortcut = shortcut.replace(z1, z2)
-        char = ch
-        # Auxiliary info.
-        x = getattr(event, 'x', None) or 0
-        y = getattr(event, 'y', None) or 0
-        # Support for fastGotoNode plugin
-        x_root = getattr(event, 'x_root', None) or 0
-        y_root = getattr(event, 'y_root', None) or 0
-        if trace and verbose: g.trace('ch: %s, shortcut: %s printable: %s' % (
-            repr(ch), repr(shortcut), ch in string.printable))
-        return leoGui.LeoKeyEvent(c, char, event, shortcut, w, x, y, x_root, y_root)
-    #@+node:ekr.20110605121601.18543: *4* filter.toTkKey & helpers (must not change!)
-    def toTkKey(self, event):
+    #@+node:ekr.20110605121601.18543: *4* filter.toBinding & helpers
+    def toBinding(self, event):
         '''
-        Return tkKey,ch,ignore:
+        Return (binding, actual_ch):
 
-        tkKey: the Tk spelling of the event used to look up
-               bindings in k.masterGuiBindingsDict.
-               **This must not ever change!**
-
-        ch:    the insertable key, or ''.
-
-        ignore: True if the key should be ignored.
-                This is **not** the same as 'not ch'.
+        binding:    A user binding, to create g.KeyStroke.
+                    Spelling no longer fragile.
+        actual_ch:  The insertable key, or ''.
         '''
         mods = self.qtMods(event)
         keynum, text, toString, ch = self.qtKey(event)
-        # g.trace('keynum',repr(keynum),'text',repr(text),'toString',toString,'ch',repr(ch))
-        tkKey, ch, ignore = self.tkKey(
-            event, mods, keynum, text, toString, ch)
-        return tkKey, ch, ignore
-    #@+node:ekr.20110605121601.18546: *5* filter.tkKey & helper
-    def tkKey(self, event, mods, keynum, text, toString, ch):
-        '''Carefully convert the Qt key to a
-        Tk-style binding compatible with Leo's core
-        binding dictionaries.'''
-        trace = False and not g.unitTesting
-        c = self.c
-        ch1 = ch # For tracing.
-        use_shift = (
-            'Home', 'End', 'Tab',
-            'Up', 'Down', 'Left', 'Right',
-            'Next', 'Prior', # 2010/01/10: Allow Shift-PageUp and Shift-PageDn.
-            # 2011/05/17: Fix bug 681797.
-            # There is nothing 'dubious' about these provided that they are bound.
-            # If they are not bound, then weird characters will be inserted.
-            'Delete', 'Ins', 'Backspace',
-            'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-        )
-        # Convert '&' to 'ampersand', etc.
-        # *Do* allow shift-bracketleft, etc.
-        ch2 = self.char2tkName(ch or toString)
-        if ch2: ch = ch2
-        if not ch: ch = ''
-        if 'Shift' in mods:
-            if trace: g.trace(repr(ch))
-            if len(ch) == 1 and ch.isalpha():
-                mods.remove('Shift')
-                ch = ch.upper()
-            elif len(ch) > 1 and ch not in use_shift:
-                # Experimental!
-                mods.remove('Shift')
-            # 2009/12/19: Speculative.
-            # if ch in ('parenright','parenleft','braceright','braceleft'):
-                # mods.remove('Shift')
-        elif len(ch) == 1:
-            ch = ch.lower()
-        if ch and ch in string.digits:
-            replace_meta = g.isMac and c.config.getBool('replace-meta-with-alt', default=False)
-            if ('Alt' in mods or 'Control' in mods or (replace_meta and 'Meta' in mods)):
-                mods.append('Key')
-        # *Do* allow bare mod keys, so they won't be passed on.
-        tkKey = '%s%s%s' % ('-'.join(mods), mods and '-' or '', ch)
-        if trace: g.trace(
-            'text: %s toString: %s ch1: %s ch: %s' % (
-            repr(text), repr(toString), repr(ch1), repr(ch)))
-        ignore = not ch # Essential
-        ch = text or toString
-        return tkKey, ch, ignore
-    #@+node:ekr.20110605121601.18547: *6* filter.char2tkName
-    char2tkNameDict = {
-        # Part 1: same as g.app.guiBindNamesDict
-        "&": "ampersand",
-        "^": "asciicircum",
-        "~": "asciitilde",
-        "*": "asterisk",
-        "@": "at",
-        "\\": "backslash",
-        "|": "bar",
-        "{": "braceleft",
-        "}": "braceright",
-        "[": "bracketleft",
-        "]": "bracketright",
-        ":": "colon",
-        ",": "comma",
-        "$": "dollar",
-        "=": "equal",
-        "!": "exclam",
-        ">": "greater",
-        "<": "less",
-        "-": "minus",
-        "#": "numbersign",
-        '"': "quotedbl",
-        "'": "quoteright",
-        "(": "parenleft",
-        ")": "parenright",
-        "%": "percent",
-        ".": "period",
-        "+": "plus",
-        "?": "question",
-        "`": "quoteleft",
-        ";": "semicolon",
-        "/": "slash",
-        " ": "space",
-        "_": "underscore",
-        # Part 2: special Qt translations.
-        'Backspace': 'BackSpace',
-        'Backtab': 'Tab', # The shift mod will convert to 'Shift+Tab',
-        'Esc': 'Escape',
-        'Del': 'Delete',
-        'Ins': 'Insert', # was 'Return',
-        # Comment these out to pass the key to the QTextWidget.
-        # Use these to enable Leo's page-up/down commands.
-        'PgDown': 'Next',
-        'PgUp': 'Prior',
-        # New entries.  These simplify code.
-        'Down': 'Down', 'Left': 'Left', 'Right': 'Right', 'Up': 'Up',
-        'End': 'End',
-        'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4', 'F5': 'F5',
-        'F6': 'F6', 'F7': 'F7', 'F8': 'F8', 'F9': 'F9',
-        'F10': 'F10', 'F11': 'F11', 'F12': 'F12',
-        'Home': 'Home',
-        # 'Insert':'Insert',
-        'Return': 'Return',
-        'Tab': 'Tab',
-        # 'Tab':'\t', # A hack for QLineEdit.
-        # Unused: Break, Caps_Lock,Linefeed,Num_lock
-    }
-    # Called only by tkKey.
-
-    def char2tkName(self, ch):
-        val = self.char2tkNameDict.get(ch)
-        # g.trace(repr(ch),repr(val))
-        return val
-    #@+node:ekr.20120204061120.10087: *4* filter.Common key construction helpers
-    #@+node:ekr.20110605121601.18541: *5* filter.isSpecialOverride
-    def isSpecialOverride(self, tkKey, ch):
-        '''Return True if tkKey is a special Tk key name.
-        '''
-        return tkKey or ch in self.flashers
+        actual_ch = text or toString
+        # 
+        # Never allow empty chars, or chars in g.app.gui.ignoreChars
+        if toString in g.app.gui.ignoreChars:
+            return None, None
+        ch = ch or toString or ''
+        if not ch:
+            return None, None
+        #
+        # Check for AltGr and Alt+Ctrl keys *before* creating a binding.
+        actual_ch, ch, mods = self.doMacTweaks(actual_ch, ch, mods)
+        mods = self.doAltTweaks(actual_ch, keynum, mods, toString)
+        #
+        # Use *ch* in the binding.
+        binding = '%s%s' % (''.join(['%s+' % (z) for z in mods]), ch)
+        #
+        # Return the tweaked *actual* char.
+        binding, actual_ch = self.doLateTweaks(binding, actual_ch)
+        return binding, actual_ch
+    #@+node:ekr.20180419154543.1: *5* filter.doAltTweaks
+    def doAltTweaks(self, actual_ch, keynum, mods, toString):
+        '''Turn AltGr and some Alt-Ctrl keys into plain keys.'''
+        qt = QtCore.Qt
+       
+        def removeAltCtrl(mods):
+            for mod in ('Alt', 'Control'):
+                if mod in mods:
+                    mods.remove(mod)
+            return mods
+        #   
+        # Remove Alt, Ctrl for AltGr keys.
+        # See https://en.wikipedia.org/wiki/AltGr_key
+        if keynum == qt.Key_AltGr:
+            return removeAltCtrl(mods)
+        #
+        # Handle Alt-Ctrl modifiers for chars whose that are not ascii.
+        # Testing: Alt-Ctrl-E is '€'.
+        if (
+            len(actual_ch) == 1 and ord(actual_ch) > 127 and
+            'Alt' in mods and 'Control' in mods
+        ):
+            return removeAltCtrl(mods)
+        return mods
+    #@+node:ekr.20180417161548.1: *5* filter.doLateTweaks
+    def doLateTweaks(self, binding, ch):
+        '''Make final tweaks. g.KeyStroke does other tweaks later.'''
+        #
+        # These are needed  because ch is separate from binding.
+        if ch == '\r':
+            ch = '\n'
+        if binding == 'Escape':
+            ch = 'Escape'
+        #
+        # Adjust the case of the binding string (for the minibuffer).
+        if len(ch) == 1 and len(binding) == 1 and ch.isalpha() and binding.isalpha():
+            if ch != binding:
+                binding = ch
+        return binding, ch
+        
+    #@+node:ekr.20180419160958.1: *5* filter.doMacTweaks
+    def doMacTweaks(self, actual_ch, ch, mods):
+        '''Replace MacOS Alt characters.'''
+        ### g.trace(mods, repr(actual_ch), repr(ch)
+        if g.isMac and len(mods) == 1 and mods[0] == 'Alt':
+            # Patch provided by resi147.
+            # See the thread: special characters in MacOSX, like '@'.
+            mac_d = {
+                '/': '\\',
+                '5': '[',
+                '6': ']',
+                '7': '|',
+                '8': '{',
+                '9': '}',
+                'e': '€',
+                'l': '@',
+            }
+            if ch.lower() in mac_d:
+                # Ignore the case.
+                actual_ch = ch = g.toUnicode(mac_d.get(ch.lower()))
+                mods = []
+        return actual_ch, ch, mods
     #@+node:ekr.20110605121601.18544: *5* filter.qtKey
     def qtKey(self, event):
         '''
@@ -373,7 +253,7 @@ class LeoQtEventFilter(QtCore.QObject):
 
         Modifiers are handled separately.
 
-        Return keynum,text,toString,ch
+        Return (keynum, text, toString, ch).
 
         keynum: event.key()
         ch:     g.u(chr(keynum)) or '' if there is an exception.
@@ -382,26 +262,30 @@ class LeoQtEventFilter(QtCore.QObject):
             For all others:   QtGui.QKeySequence(keynum).toString()
         text:   event.text()
         '''
-        trace = False and not g.unitTesting
         keynum = event.key()
-        text = event.text() # This is the unicode text.
+        text = event.text() # This is the unicode character!
         qt = QtCore.Qt
         d = {
-            qt.Key_Shift: 'Key_Shift',
-            qt.Key_Control: 'Key_Control', # MacOS: Command key
-            qt.Key_Meta: 'Key_Meta', # MacOS: Control key, Alt-Key on Microsoft keyboard on MacOs.
             qt.Key_Alt: 'Key_Alt',
             qt.Key_AltGr: 'Key_AltGr',
                 # On Windows, when the KeyDown event for this key is sent,
                 # the Ctrl+Alt modifiers are also set.
+            qt.Key_Control: 'Key_Control', # MacOS: Command key
+            qt.Key_Meta: 'Key_Meta', # MacOS: Control key, Alt-Key on Microsoft keyboard on MacOs.
+            qt.Key_Shift: 'Key_Shift',
         }
         if d.get(keynum):
-            toString = d.get(keynum)
+            if 0: # Allow bare modifier key.
+                toString = d.get(keynum)
+            else:
+                toString = ''
         else:
             toString = QtGui.QKeySequence(keynum).toString()
         # Fix bug 1244461: Numpad 'Enter' key does not work in minibuffer
         if toString == 'Enter':
             toString = 'Return'
+        if toString == 'Esc':
+            toString = 'Escape'
         try:
             ch1 = chr(keynum)
         except ValueError:
@@ -412,20 +296,16 @@ class LeoQtEventFilter(QtCore.QObject):
             ch = ch1
         text = g.u(text)
         toString = g.u(toString)
-        if trace and self.keyIsActive:
-            mods = '+'.join(self.qtMods(event))
-            g.trace(
-                'keynum %7x ch %3s toString %s %s' % (
-                keynum, repr(ch), mods, repr(toString)))
         return keynum, text, toString, ch
     #@+node:ekr.20120204061120.10084: *5* filter.qtMods
     def qtMods(self, event):
         '''Return the text version of the modifiers of the key event.'''
-        modifiers = event.modifiers()
-        # The order of this table must match the order created by k.strokeFromSetting.
+        c = self.c
         qt = QtCore.Qt
-        # 2016/06/13: toStroke can now generate meta on MacOS.
-        # In other words: only one version of this table is needed.
+        modifiers = event.modifiers()
+        #
+        # The order of this table no longer matters.
+        qt = QtCore.Qt
         table = (
             (qt.AltModifier, 'Alt'),
             (qt.ControlModifier, 'Control'),
@@ -433,10 +313,16 @@ class LeoQtEventFilter(QtCore.QObject):
             (qt.ShiftModifier, 'Shift'),
         )
         mods = [b for a, b in table if (modifiers & a)]
+        #
+        # MacOS: optionally convert Meta to Atl.
+        if c.config.getBool('replace-meta-with-alt', default=False):
+            if 'Meta' in mods:
+                mods.remove('Meta')
+                mods.append('Alt')
         return mods
     #@+node:ekr.20140907103315.18767: *3* filter.Tracing
     #@+node:ekr.20110605121601.18548: *4* filter.traceEvent
-    def traceEvent(self, obj, event, tkKey, override):
+    def traceEvent(self, obj, event):
         if g.unitTesting: return
         # http://qt-project.org/doc/qt-4.8/qevent.html#properties
         exclude_names = ('tree', 'log', 'body', 'minibuffer')
@@ -557,24 +443,18 @@ class LeoQtEventFilter(QtCore.QObject):
             if self.tag in exclude_names:
                 return
             if eventType == val:
-                if traceKey:
-                    g.trace(
-                        '%-25s %-25s in-state: %5s key: %s override: %s: obj: %s' % (
-                        kind, self.tag, repr(c.k and c.k.inState()), tkKey, override, obj.__class__.__name__))
-                else:
-                    g.trace('%-25s %-25s %s' % (kind, self.tag, obj.__class__.__name__))
+                if traceKey: g.trace(
+                    '%-25s %-25s in-state: %5r, obj: %s' % (
+                    kind, self.tag, c.k and c.k.inState(), obj.__class__.__name__))
                 return
         if eventType not in ignore:
             g.trace('%-25s %-25s %s' % (eventType, self.tag, obj.__class__.__name__))
     #@+node:ekr.20131121050226.16331: *4* filter.traceWidget
     def traceWidget(self, event):
         '''Show unexpected events in unusual widgets.'''
-        # py-lint: disable=E1101
-        # E1101:9240,0:Class 'QEvent' has no 'CloseSoftwareInputPanel' member
-        # E1101:9267,0:Class 'QEvent' has no 'RequestSoftwareInputPanel' member
-        if not g.app.debug_app: return
-        verbose = False
-        c = self.c
+        verbose = False # Not good for --trace-events
+        if 'events' not in g.app.debug:
+            return
         e = QtCore.QEvent
         assert isinstance(event, QtCore.QEvent)
         et = event.type()
@@ -645,34 +525,37 @@ class LeoQtEventFilter(QtCore.QObject):
             e.FocusOut: 'focus-out', # 9
             e.WindowActivate: 'window-activate', # 24
         }
-        table = (
-            c.frame.miniBufferWidget and c.frame.miniBufferWidget.widget,
-            c.frame.body.wrapper and c.frame.body.wrapper.widget,
-            c.frame.tree and c.frame.tree.treeWidget,
-            c.frame.log and c.frame.log.logCtrl and c.frame.log.logCtrl.widget,
-        )
+        # c = self.c
+        # table = (
+            # c.frame.miniBufferWidget and c.frame.miniBufferWidget.widget,
+            # c.frame.body.wrapper and c.frame.body.wrapper.widget,
+            # c.frame.tree and c.frame.tree.treeWidget,
+            # c.frame.log and c.frame.log.logCtrl and c.frame.log.logCtrl.widget,
+        # )
+        if et in ignore_d:
+            return
         w = QtWidgets.QApplication.focusWidget()
-        if verbose or g.app.debug_widgets:
+        if verbose: # Too verbose for --trace-events.
             for d in (ignore_d, focus_d, line_edit_ignore_d, none_ignore_d):
                 t = d.get(et)
                 if t: break
             else:
                 t = et
             g.trace('%20s %s' % (t, w.__class__))
-        elif w is None:
-            if et not in none_ignore_d and et not in ignore_d:
+            return
+        if w is None:
+            if et not in none_ignore_d:
                 t = focus_d.get(et) or et
                 g.trace('None %s' % (t))
-        elif w not in table:
-            if isinstance(w, QtWidgets.QPushButton):
-                pass
-            elif isinstance(w, QtWidgets.QLineEdit):
-                if et not in ignore_d and et not in line_edit_ignore_d:
-                    t = focus_d.get(et) or et
-                    g.trace('%20s %s' % (t, w.__class__))
-            elif et not in ignore_d:
+        if isinstance(w, QtWidgets.QPushButton):
+            return
+        if isinstance(w, QtWidgets.QLineEdit):
+            if et not in line_edit_ignore_d:
                 t = focus_d.get(et) or et
                 g.trace('%20s %s' % (t, w.__class__))
+            return
+        t = focus_d.get(et) or et
+        g.trace('%20s %s' % (t, w.__class__))
     #@-others
 #@-others
 #@@language python

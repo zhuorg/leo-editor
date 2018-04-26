@@ -1219,31 +1219,31 @@ class KeyHandler (object):
     def char_to_tk_name(self, ch):
         return self.tk_dict.get(ch, ch)
     #@+node:ekr.20170430115131.2: *5* CKey.create_key_event
-    def create_key_event(self, c, w, ch, shortcut):
+    def create_key_event(self, c, w, ch, binding):
         trace = False
         # Last-minute adjustments...
-        if shortcut == 'Return':
+        if binding == 'Return':
             ch = '\n' # Somehow Qt wants to return '\r'.
-        elif shortcut == 'Escape':
+        elif binding == 'Escape':
             ch = 'Escape'
         # Switch the Shift modifier to handle the cap-lock key.
         if isinstance(ch, int):
-            g.trace('can not happen: ch: %r shortcut: %r' % (ch, shortcut))
+            g.trace('can not happen: ch: %r binding: %r' % (ch, binding))
         elif (
             ch and len(ch) == 1 and
-            shortcut and len(shortcut) == 1 and
-            ch.isalpha() and shortcut.isalpha()
+            binding and len(binding) == 1 and
+            ch.isalpha() and binding.isalpha()
         ):
-            if ch != shortcut:
+            if ch != binding:
                 if trace: g.trace('caps-lock')
-                shortcut = ch
-        if trace: g.trace('ch: %r, shortcut: %r' % (ch, shortcut))
+                binding = ch
+        if trace: g.trace('ch: %r, binding: %r' % (ch, binding))
         import leo.core.leoGui as leoGui
         return leoGui.LeoKeyEvent(
             c=c,
             char=ch,
             event={'c': c, 'w': w},
-            shortcut=shortcut,
+            binding=binding,
             w=w, x=0, y=0, x_root=0, y_root=0,
         )
     #@+node:ekr.20170430115030.1: *5* CKey.is_key_event
@@ -1614,7 +1614,7 @@ class LeoCursesGui(leoGui.LeoGui):
             stdscr.keypad(0)
             curses.echo()
             curses.endwin()
-            if g.app.trace_shutdown:
+            if 'shutdown' in g.app.debug:
                 g.pr('Exiting Leo...')
     #@+node:ekr.20170502020354.1: *5* CGui.run
     def run(self):
@@ -1860,7 +1860,7 @@ class LeoCursesGui(leoGui.LeoGui):
         Return the Leo wrapper for the npyscreen widget that is being edited.
         '''
         # Careful during startup.
-        trace = (False or g.app.trace_focus) and not g.unitTesting
+        trace = 'focus' in g.app.debug
         editw = getattr(g.app.gui.curses_form, 'editw', None)
         if editw is None:
             if trace: g.trace('(CursesGui) no editw')
@@ -1890,7 +1890,7 @@ class LeoCursesGui(leoGui.LeoGui):
         '''
         Given a Leo wrapper w, set focus to the underlying npyscreen widget.
         '''
-        trace = (True or g.app.trace_focus) and not g.unitTesting
+        trace = 'focus' in g.app.debug
         verbose = True # verbose trace of callers.
         # Get the wrapper's npyscreen widget.
         widget = getattr(w, 'widget', None)
@@ -1921,7 +1921,7 @@ class LeoCursesGui(leoGui.LeoGui):
     #@+node:ekr.20171204040620.2: *7* CGui.switch_editing
     def switch_editing(self, i, w):
         '''Clear editing for *all* widgets and set form.editw to i'''
-        trace = (True or g.app.trace_focus) and not g.unitTesting
+        trace = 'focus' in g.app.debug
         how = None # 'leo-set-focus'
         form = self.curses_form
         if i == form.editw:
@@ -1975,7 +1975,7 @@ class LeoCursesGui(leoGui.LeoGui):
     #@+node:ekr.20171204100910.1: *6* CGui.OLD_set_focus
     def OLD_set_focus(self, c, w):
         '''Given a Leo wrapper, set focus to the underlying npyscreen widget.'''
-        trace = (False or g.app.trace_focus) and not g.unitTesting
+        trace = 'focus' in g.app.debug
         verbose = True # Full trace of callers.
         # Get the wrapper's npyscreen widget.
         widget = getattr(w, 'widget', None)

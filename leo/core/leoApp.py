@@ -97,8 +97,8 @@ class LeoApp(object):
         #@+node:ekr.20161028035755.1: *5* << LeoApp: command-line arguments >>
         self.batchMode = False
             # True: run in batch mode.
-        self.debug = False
-            # True: run Leo in debug mode.
+        self.debug = []
+            # A list of switches to be enabled.
         self.diff = False
             # True: run Leo in diff mode.
         self.enablePlugins = True
@@ -130,11 +130,7 @@ class LeoApp(object):
         self.start_minimized = False
             # For qt_frame plugin.
         self.trace_binding = None
-            # True: name of binding to trace, or None.
-        self.trace_focus = False
-            # True: trace changes in focus.
-        self.trace_plugins = False
-            # True: trace imports of plugins.
+            # The name of a binding to trace, or None.
         self.trace_setting = None
             # The name of a setting to trace, or None.
         self.translateToUpperCase = False
@@ -150,14 +146,8 @@ class LeoApp(object):
         #@+node:ekr.20161028035835.1: *5* << LeoApp: Debugging & statistics >>
         self.count = 0
             # General purpose debugging count.
-        self.debug_app = False
-            # True: Enable debugging (of widgets)
         self.debug_dict = {}
             # For general use.
-        self.debug_widgets = False
-            # True: enable verbose tracing of widgets.
-        self.debugSwitch = 0
-            # For g.es_exception: 0: Brief; 1: Full.
         self.disable_redraw = False
             # True: disable all redraws.
         self.disableSave = False
@@ -174,10 +164,6 @@ class LeoApp(object):
             # Set by p.safeMoveToThreadNext.
         self.statsDict = {}
             # dict used by g.stat, g.clear_stats, g.print_stats.
-        self.trace_open_with = True
-            # True: trace open-with logic in core and vim and xemacs plugins.
-        self.trace_shutdown = False
-            # True: trace shutdown logic.
         self.validate_outline = False
             # True: enables c.validate_outline. (slow)
         #@-<< LeoApp: Debugging & statistics >>
@@ -1275,11 +1261,10 @@ class LeoApp(object):
                       during initial load, so UI remains for files
                       further along the command line.
         """
-        trace = self.trace_shutdown and not g.unitTesting
         c = frame.c
-        if trace: g.pr('closeLeoWindow: changed: %s %s' % (c.changed, c.shortFileName()))
+        if 'shutdown' in g.app.debug:
+            g.pr('closeLeoWindow: changed: %s %s' % (c.changed, c.shortFileName()))
         c.endEditing() # Commit any open edits.
-        if trace: g.trace('changed', c.changed)
         if c.promptingForClose:
             # There is already a dialog open asking what to do.
             return False
@@ -1309,16 +1294,16 @@ class LeoApp(object):
     #@+node:ekr.20031218072017.2612: *4* app.destroyAllOpenWithFiles
     def destroyAllOpenWithFiles(self):
         '''Remove temp files created with the Open With command.'''
-        trace = self.trace_shutdown and not g.unitTesting
-        if trace: g.pr('destroyAllOpenWithFiles')
+        if 'shutdown' in g.app.debug:
+            g.pr('destroyAllOpenWithFiles')
         if g.app.externalFilesController:
             g.app.externalFilesController.shut_down()
             g.app.externalFilesController = None
     #@+node:ekr.20031218072017.2615: *4* app.destroyWindow
     def destroyWindow(self, frame):
         '''Destroy all ivars in a Leo frame.'''
-        trace = self.trace_shutdown and not g.unitTesting
-        if trace: g.pr('destroyWindow:  %s' % frame.c.shortFileName())
+        if 'shutdown' in g.app.debug:
+            g.pr('destroyWindow:  %s' % frame.c.shortFileName())
         if g.app.externalFilesController:
             g.app.externalFilesController.destroy_frame(frame)
         if frame in g.app.windowList:
@@ -1330,8 +1315,8 @@ class LeoApp(object):
     #@+node:ekr.20031218072017.1732: *4* app.finishQuit
     def finishQuit(self):
         # forceShutdown may already have fired the "end1" hook.
-        trace = self.trace_shutdown and not g.unitTesting
-        if trace: g.pr('finishQuit')
+        if 'shutdown' in g.app.debug:
+            g.pr('finishQuit')
         if not g.app.killed:
             g.doHook("end1")
             g.app.cacher.commit()
@@ -1353,9 +1338,10 @@ class LeoApp(object):
 
         In particular, may be called from plugins during startup.
         """
-        trace = self.trace_shutdown and not g.unitTesting
+        trace = 'shutdown' in g.app.debug
         app = self
-        if trace: g.pr('forceShutdown')
+        if trace:
+            g.pr('forceShutdown')
         for c in app.commanders():
             app.forgetOpenFile(c.fileName(), force=True)
         # Wait until everything is quiet before really quitting.
@@ -1413,7 +1399,7 @@ class LeoApp(object):
     #@+node:ekr.20120427064024.10066: *4* app.forgetOpenFile
     def forgetOpenFile(self, fn, force=False):
         '''Forget the open file, so that is no longer considered open.'''
-        trace = self.trace_shutdown and not g.unitTesting
+        trace = 'shutdown' in g.app.debug
         d, tag = g.app.db, 'open-leo-files'
         if not d or not fn:
             # Fix https://github.com/leo-editor/leo-editor/issues/69
@@ -1425,8 +1411,6 @@ class LeoApp(object):
             aList.remove(fn)
             if trace:
                 g.pr('forgetOpenFile: %s' % g.shortFileName(fn))
-                # for z in aList:
-                #    g.pr('  %s' % (z))
             d[tag] = aList
         else:
             if trace: g.pr('forgetOpenFile: did not remove: %s' % (fn))
@@ -1595,7 +1579,7 @@ class LoadManager(object):
         #
         self.globalSettingsDict = None
             # A g.TypedDict: the join of settings in leoSettings.leo & myLeoSettings.leo
-        self.globalShortcutsDict = None
+        self.globalBindingsDict = None
             # A g.TypedDictOfLists: the join of shortcuts in leoSettings.leo & myLeoSettings.leo.
         #
         # LoadManager ivars corresponding to user options...
@@ -1835,7 +1819,7 @@ class LoadManager(object):
             settings_d, junk_shortcuts_d = lm.computeLocalSettings(
                 c=theme_c,
                 settings_d=lm.globalSettingsDict,
-                shortcuts_d=lm.globalShortcutsDict,
+                bindings_d=lm.globalBindingsDict,
                 localFlag=False,
             )
             setting = settings_d.get_string_setting('theme-name')
@@ -1850,7 +1834,7 @@ class LoadManager(object):
     #@+node:ekr.20180321124503.1: *5* LM.resolve_theme_path
     def resolve_theme_path(self, fn, tag):
         '''Search theme directories for the given .leo file.'''
-        trace = False and not g.unitTesting # and g.trace_themes
+        trace = False and not g.unitTesting
         if not fn:
             return None
         if not fn.endswith('.leo'):
@@ -1940,15 +1924,15 @@ class LoadManager(object):
         else:
             return 'D'
     #@+node:ekr.20120223062418.10421: *4* LM.computeLocalSettings
-    def computeLocalSettings(self, c, settings_d, shortcuts_d, localFlag):
+    def computeLocalSettings(self, c, settings_d, bindings_d, localFlag):
         '''
         Merge the settings dicts from c's outline into *new copies of*
-        settings_d and shortcuts_d.
+        settings_d and bindings_d.
         '''
-        # g.trace('%s\n%s\n%s' % (c.shortFileName(), settings_d, shortcuts_d))
+        # g.trace('%s\n%s\n%s' % (c.shortFileName(), settings_d, bindings_d))
         lm = self
         shortcuts_d2, settings_d2 = lm.createSettingsDicts(c, localFlag)
-        assert shortcuts_d
+        assert bindings_d
         assert settings_d
         if settings_d2:
             if g.app.trace_setting:
@@ -1961,18 +1945,19 @@ class LoadManager(object):
             settings_d = settings_d.copy()
             settings_d.update(settings_d2)
         if shortcuts_d2:
-            shortcuts_d = lm.mergeShortcutsDicts(c, shortcuts_d, shortcuts_d2, localFlag)
-        return settings_d, shortcuts_d
+            bindings_d = lm.mergeShortcutsDicts(c, bindings_d, shortcuts_d2, localFlag)
+        return settings_d, bindings_d
     #@+node:ekr.20121126202114.3: *4* LM.createDefaultSettingsDicts
     def createDefaultSettingsDicts(self):
-        '''Create lm.globalSettingsDict & lm.globalShortcutsDict.'''
+        '''Create lm.globalSettingsDict & lm.globalBindingsDict.'''
         settings_d = g.app.config.defaultsDict
         assert isinstance(settings_d, g.TypedDict), settings_d
         settings_d.setName('lm.globalSettingsDict')
-        shortcuts_d = g.TypedDictOfLists(
-            name='lm.globalShortcutsDict',
-            keyType=type('s'), valType=g.ShortcutInfo)
-        return settings_d, shortcuts_d
+        bindings_d = g.TypedDictOfLists(
+            name='lm.globalBindingsDict',
+            keyType=type('s'),
+            valType=g.BindingInfo)
+        return settings_d, bindings_d
     #@+node:ekr.20120214165710.10726: *4* LM.createSettingsDicts
     def createSettingsDicts(self, c, localFlag, theme=False):
         import leo.core.leoConfig as leoConfig
@@ -2002,14 +1987,14 @@ class LoadManager(object):
                 g.app.preReadFlag = False
             # Merge the settings from c into *copies* of the global dicts.
             d1, d2 = lm.computeLocalSettings(c,
-                lm.globalSettingsDict, lm.globalShortcutsDict, localFlag=True)
+                lm.globalSettingsDict, lm.globalBindingsDict, localFlag=True)
                     # d1 and d2 are copies.
             d1.setName(settingsName)
             d2.setName(shortcutsName)
         else:
             # Get the settings from the globals settings dicts.
             d1 = lm.globalSettingsDict.copy(settingsName)
-            d2 = lm.globalShortcutsDict.copy(shortcutsName)
+            d2 = lm.globalBindingsDict.copy(shortcutsName)
         return PreviousSettings(d1, d2)
     #@+node:ekr.20120214132927.10723: *4* LM.mergeShortcutsDicts & helpers
     def mergeShortcutsDicts(self, c, old_d, new_d, localFlag):
@@ -2029,19 +2014,20 @@ class LoadManager(object):
             if localFlag:
                 g.trace('new_d.d')
                 g.printDict(new_d.d)
-        si_list = new_d.get(g.app.trace_setting)
-        if si_list:
+        bi_list = new_d.get(g.app.trace_setting)
+        if bi_list:
             # This code executed only if g.app.trace_setting exists.
-            for si in si_list:
-                fn = si.kind.split(' ')[-1]
-                stroke = c.k.prettyPrintKey(si.stroke)
-                if si.pane and si.pane != 'all':
-                    pane = ' in %s panes' % si.pane
+            for bi in bi_list:
+                fn = bi.kind.split(' ')[-1]
+                stroke = c.k.prettyPrintKey(bi.stroke)
+                if bi.pane and bi.pane != 'all':
+                    pane = ' in %s panes' % bi.pane
                 else:
                     pane = ''
-                g.trace(repr(si))
-                g.es_print('--trace-setting: %20s binds %s to %-20s%s' %  (
-                    fn, g.app.trace_setting, stroke, pane))
+                if trace:
+                    g.trace(repr(bi))
+                    g.es_print('--trace-setting: %20s binds %s to %-20s%s' %  (
+                        fn, g.app.trace_setting, stroke, pane))
         inverted_old_d = lm.invert(old_d)
         inverted_new_d = lm.invert(new_d)
         # #510 & #327: always honor --trace-binding here.
@@ -2056,18 +2042,21 @@ class LoadManager(object):
                  g.trace('--trace-binding: %20s binds %s to %s' % (
                     c.shortFileName(), binding, d.get(binding) or []))
             else:
-                stroke = c.k.canonicalizeShortcut(binding)
-                si_list = inverted_new_d.get(stroke)
-                if si_list:
-                    for si in si_list:
-                        fn = si.kind.split(' ')[-1] # si.kind #
+                binding = g.app.trace_binding
+                stroke = g.KeyStroke(binding)
+                bi_list = inverted_new_d.get(stroke)
+                if bi_list:
+                    print('')
+                    for bi in bi_list:
+                        fn = bi.kind.split(' ')[-1] # bi.kind #
                         stroke2 = c.k.prettyPrintKey(stroke)
-                        if si.pane and si.pane != 'all':
-                            pane = ' in %s panes' % si.pane
+                        if bi.pane and bi.pane != 'all':
+                            pane = ' in %s panes' % bi.pane
                         else:
                             pane = ''
                         g.es_print('--trace-binding: %20s binds %s to %-20s%s' %  (
-                            fn, stroke2, si.commandName, pane))
+                            fn, stroke2, bi.commandName, pane))
+                    print('')
         # Fix bug 951921: check for duplicate shortcuts only in the new file.
         lm.checkForDuplicateShortcuts(c, inverted_new_d)
         inverted_old_d.update(inverted_new_d) # Updates inverted_old_d in place.
@@ -2077,48 +2066,51 @@ class LoadManager(object):
     def checkForDuplicateShortcuts(self, c, d):
         '''
         Check for duplicates in an "inverted" dictionary d
-        whose keys are strokes and whose values are lists of ShortcutInfo nodes.
+        whose keys are strokes and whose values are lists of BindingInfo nodes.
 
         Duplicates happen only if panes conflict.
         '''
         # lm = self
         # Fix bug 951921: check for duplicate shortcuts only in the new file.
         for ks in sorted(list(d.keys())):
-            conflict, panes = False, ['all']
+            duplicates, panes = [], ['all']
             aList = d.get(ks)
-            aList2 = [si for si in aList if not si.pane.startswith('mode')]
+                # A list of bi objects.
+            aList2 = [z for z in aList if not z.pane.startswith('mode')]
             if len(aList) > 1:
-                for si in aList2:
-                    if si.pane in panes:
-                        conflict = True; break
+                for bi in aList2:
+                    if bi.pane in panes:
+                        duplicates.append(bi)
                     else:
-                        panes.append(si.pane)
-            if conflict:
-                g.es_print('conflicting key bindings in %s' % (c.shortFileName()))
-                for si in aList2:
-                    g.es_print('%6s %s %s' % (si.pane, si.stroke.s, si.commandName))
+                        panes.append(bi.pane)
+            if duplicates:
+                bindings = list(set([z.stroke.s for z in duplicates]))
+                kind = 'duplicate, (not conflicting)' if len(bindings) == 1 else 'conflicting'
+                g.es_print('%s key bindings in %s' % (kind, c.shortFileName()))
+                for bi in aList2:
+                    g.es_print('%6s %s %s' % (
+                        bi.pane, bi.stroke.s, bi.commandName))
     #@+node:ekr.20120214132927.10724: *5* LM.invert
     def invert(self, d):
         '''
         Invert a shortcut dict whose keys are command names,
         returning a dict whose keys are strokes.
         '''
-        trace = False and not g.unitTesting; verbose = True
+        trace = False and not g.unitTesting
+        verbose = True
         if trace: g.trace('*' * 40, d.name())
         result = g.TypedDictOfLists(
             name='inverted %s' % d.name(),
             keyType=g.KeyStroke,
-            valType=g.ShortcutInfo)
+            valType=g.BindingInfo)
         for commandName in d.keys():
-            for si in d.get(commandName, []):
-                # This assert can fail if there is an exception in the ShortcutInfo ctor.
-                assert isinstance(si, g.ShortcutInfo), si
-                stroke = si.stroke # This is canonicalized.
-                si.commandName = commandName # Add info.
+            for bi in d.get(commandName, []):
+                stroke = bi.stroke # This is canonicalized.
+                bi.commandName = commandName # Add info.
                 assert stroke
                 if trace and verbose:
                     g.trace('%40s %s' % (commandName, stroke))
-                result.add(stroke, si)
+                result.add(stroke, bi)
         if trace: g.trace('returns  %4s %s %s' % (
             len(list(result.keys())), id(d), result.name()))
         return result
@@ -2134,15 +2126,14 @@ class LoadManager(object):
         result = g.TypedDictOfLists(
             name='uninverted %s' % d.name(),
             keyType=type('commandName'),
-            valType=g.ShortcutInfo)
+            valType=g.BindingInfo)
         for stroke in d.keys():
-            for si in d.get(stroke, []):
-                assert isinstance(si, g.ShortcutInfo), si
-                commandName = si.commandName
+            for bi in d.get(stroke, []):
+                commandName = bi.commandName
                 if trace and verbose:
                     g.trace('uninvert %20s %s' % (stroke, commandName))
                 assert commandName
-                result.add(commandName, si)
+                result.add(commandName, bi)
         if trace: g.trace('returns %4s %s %s' % (
             len(list(result.keys())), id(d), result.name()))
         return result
@@ -2193,7 +2184,7 @@ class LoadManager(object):
     #@+node:ekr.20120213081706.10382: *4* LM.readGlobalSettingsFiles
     def readGlobalSettingsFiles(self):
         '''Read leoSettings.leo and myLeoSettings.leo using a null gui.'''
-        trace = g.trace_themes and not g.unitTesting
+        trace = 'themes' in g.app.debug
         lm = self
         # Open the standard settings files with a nullGui.
         # Important: their commanders do not exist outside this method!
@@ -2201,17 +2192,17 @@ class LoadManager(object):
         old_commanders = g.app.commanders()
         commanders = [lm.openSettingsFile(path) for path in paths]
         commanders = [z for z in commanders if z]
-        settings_d, shortcuts_d = lm.createDefaultSettingsDicts()
+        settings_d, bindings_d = lm.createDefaultSettingsDicts()
         for c in commanders:
             # Merge the settings dicts from c's outline into
-            # *new copies of* settings_d and shortcuts_d.
-            settings_d, shortcuts_d = lm.computeLocalSettings(
-                c, settings_d, shortcuts_d, localFlag=False)
+            # *new copies of* settings_d and bindings_d.
+            settings_d, bindings_d = lm.computeLocalSettings(
+                c, settings_d, bindings_d, localFlag=False)
         # Adjust the name.
-        shortcuts_d.setName('lm.globalShortcutsDict')
+        bindings_d.setName('lm.globalBindingsDict')
         # g.trace('===== settings 1 keys:', len(settings_d.d.keys()))
         lm.globalSettingsDict = settings_d
-        lm.globalShortcutsDict = shortcuts_d
+        lm.globalBindingsDict = bindings_d
         # Add settings from --theme or @string theme-name files.
         # This must be done *after* reading myLeoSettigns.leo.
         theme_path = lm.computeThemeFilePath()
@@ -2220,7 +2211,7 @@ class LoadManager(object):
             if theme_c:
                 # Merge theme_c's settings into globalSettingsDict.
                 settings_d, junk_shortcuts_d = lm.computeLocalSettings(
-                    theme_c, settings_d, shortcuts_d, localFlag=False)
+                    theme_c, settings_d, bindings_d, localFlag=False)
                 lm.globalSettingsDict = settings_d
                 # Set global vars
                 g.app.theme_directory = g.os_path_dirname(theme_path)
@@ -2718,6 +2709,8 @@ class LoadManager(object):
         parser = optparse.OptionParser(
             usage="usage: launchLeo.py [options] file1, file2, ...")
             # Automatically implements the --help option.
+            # Apparently requires the --debug option.
+        #
         # Parse the options, and remove them from sys.argv.
         self.addOptionsToParser(parser)
         options, args = parser.parse_args()
@@ -2732,7 +2725,6 @@ class LoadManager(object):
         self.doSimpleOptions(options)
         # Compute the lm.files ivar.
         lm.files = lm.computeFilesList(options, fileName)
-        # Compute the return values.
         script = None if pymacs else self.doScriptOption(options, parser)
         d = {
             'gui': lm.doGuiOption(options),
@@ -2762,11 +2754,12 @@ class LoadManager(object):
         
         def add_bool(option, help, dest=None):
             add(option, action='store_true', dest=dest, help=help)
-            
+
         def add_other(option, help, dest=None, m=None):
             add(option, dest=dest, help=help, metavar=m)
 
-        add_bool('--debug',         'enable debug mode')
+        add_bool('--debug',        'enable debugging')
+            # The tracing options append items to the g.app.debug list.
         add_bool('--diff',          'use Leo as an external git diff')
         add_bool('--fullscreen',    'start fullscreen')
         add_bool('--ipython',       'enable ipython support')
@@ -2787,8 +2780,12 @@ class LoadManager(object):
         add_bool('--session-save',  'save session tabs on exit')
         add_bool('--silent',        'disable all log messages')
         add_other('--theme',        'use the named theme file', m='NAME')
-        add_bool('--trace-binding', 'trace key bindings')
+        add_other('--trace-binding', 'trace commands bound to a key', m='KEY')
+        add_bool('--trace-events',  'trace non-key events')
         add_bool('--trace-focus',   'trace changes of focus')
+        add_bool('--trace-gnx',     'trace gnx logic')
+        add_bool('--trace-ipython', 'trace ipython bridge')
+        add_bool('--trace-keys',    'trace key events')
         add_bool('--trace-plugins', 'trace imports of plugins')
         add_other('--trace-setting', 'trace where named setting is set', m="NAME")
         add_bool('--trace-shutdown', 'trace shutdown logic')
@@ -2875,8 +2872,6 @@ class LoadManager(object):
     def doSimpleOptions(self, options):
         '''These args just set g.app ivars.'''
         trace = False
-        # --debug
-        g.app.debug = options.debug
         # --fail-fast
         g.app.failFast = options.fail_fast
         # --fullscreen
@@ -2909,21 +2904,32 @@ class LoadManager(object):
         g.app.save_session = bool(options.session_save)
         # --silent
         g.app.silentMode = options.silent
+        #
+        # Most --trace- options append items to g.app.debug.
+        table = (
+            ('events', options.trace_events), # New
+            ('focus', options.trace_focus), # Replaced.
+            ('gnx', options.trace_gnx), # New. Replaced trace_gnxDict.
+            ('keys', options.trace_keys), # New
+            ('ipython', options.trace_ipython), # New
+            ('plugins', options.trace_plugins), # Replaced
+            ('shutdown', options.trace_shutdown), # Replaced.
+            ('themes', options.trace_themes),
+            # ('vim', options.trace_vim), # Use --trace-keys instead.
+        )
+        for val, option in table:
+            if option:
+                g.app.debug.append(val)
+        #
+        # These are not bool options.
         # --trace-binding
         g.app.trace_binding = options.trace_binding
-        # --trace-focus
-        g.app.trace_focus = options.trace_focus
-        # --trace-plugins
-        g.app.trace_plugins = options.trace_plugins
+            # g.app.config does not exist yet.
+        #
         # --trace-setting=setting
         g.app.trace_setting = options.trace_setting
             # g.app.config does not exist yet.
-        # --trace-shutdown
-        g.app.trace_shutdown = options.trace_shutdown
-        # --trace-themes
-        g.trace_themes = options.trace_themes
-
-       
+        
     #@+node:ekr.20180312154839.1: *6* LM.doWindowSizeOption
     def doWindowSizeOption(self, options):
         

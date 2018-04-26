@@ -1297,7 +1297,6 @@ class LeoTree(object):
         self.use_chapters = False # May be overridden in subclasses.
         # Define these here to keep pylint happy.
         self.canvas = None
-        self.trace_select = None
     #@+node:ekr.20081005065934.8: *3* LeoTree.May be defined in subclasses
     # These are new in Leo 4.6.
 
@@ -1471,11 +1470,14 @@ class LeoTree(object):
         i, j = w.getSelectionRange()
         ins = w.getInsertPoint()
         if i != j: ins = i
-        # g.trace('w',w,'ch',repr(ch),g.callers())
-        if ch == '\b':
-            if i != j: w.delete(i, j)
-            else: w.delete(ins - 1)
-            w.setSelectionRange(i - 1, i - 1, insert=i - 1)
+        if ch in ('\b', 'BackSpace'):
+            if i != j:
+                w.delete(i, j)
+                # Bug fix: 2018/04/19.
+                w.setSelectionRange(i, i, insert=i)
+            else:
+                w.delete(ins - 1)
+                w.setSelectionRange(i - 1, i - 1, insert=i - 1)
         elif ch and ch not in ('\n', '\r'):
             if i != j: w.delete(i, j)
             elif k.unboundKeyAction == 'overwrite': w.delete(i, i + 1)
@@ -1485,7 +1487,7 @@ class LeoTree(object):
         if s.endswith('\n'):
             s = s[: -1]
         # 2011/11/14: Not used at present.
-        # w.setWidth(self.headWidth(s=s))
+            # w.setWidth(self.headWidth(s=s))
         if ch in ('\n', '\r'):
             self.endEditLabel() # Now calls self.onHeadChanged.
     #@+node:ekr.20031218072017.3706: *3* LeoTree.Must be defined in subclasses
@@ -2063,8 +2065,6 @@ class NullTree(LeoTree):
         self.fontName = None
         self.canvas = None
         self.redrawCount = 0
-        self.trace_edit = False
-        self.trace_select = False
         self.updateCount = 0
     #@+node:ekr.20070228163350.2: *3* NullTree.edit_widget
     def edit_widget(self, p):

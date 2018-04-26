@@ -17,31 +17,19 @@ isMac = sys.platform.startswith('darwin')
 isWindows = sys.platform.startswith('win')
 #@+<< global switches >>
 #@+node:ekr.20120212060348.10374: **  << global switches >> (leoGlobals.py)
-new_keys = False
-if new_keys:
-    print('===== g.new_keys =====')
-
 in_bridge = False
     # Set to True in leoBridge.py just before importing leo.core.leoApp.
     # This tells leoApp to load a null Gui.
-trace_themes = False
-    # Trace initialization of themes.
-trace_gnxDict = False
-    # True: trace assignments to fc.gnxDict & related.
+#
 # Debugging options...
 enableDB = True
     # Don't even think about eliminating this constant:
     # it is needed for debugging.
-# Switches to trace the garbage collector.
-trace_gc = False
-trace_gc_calls = False
-trace_gc_verbose = False
-trace_gc_inited = False
+#
 # Other tracing options...
 trace_scroll = False
     # Trace calls to get/setYScrollPosition.
-trace_minibuffer = False
-trace_modes = False
+#
 # These print statements have been moved to writeWaitingLog.
 # This allows for better --silent operation.
 if 0:
@@ -340,28 +328,21 @@ def isGeneralSetting(obj):
     return isinstance(obj, GeneralSetting)
 #@+node:ekr.20120201164453.10090: *3* class g.KeyStroke & isStroke/OrNone
 class KeyStroke(object):
-    '''A class that announces that its contents has been canonicalized by k.strokeFromSetting.
-
-    This allows type-checking assertions in the code.'''
+    '''
+    A class that represent any key stroke or binding.
+    
+    stroke.s is the "canonicalized" stroke.
+    '''
     #@+others
-    #@+node:ekr.20120204061120.10066: *4*  ks.ctor
-    def __init__(self, s):
-        trace = False and not g.unitTesting and s == 'name'
-        if trace: g.trace('(KeyStroke)', s, g.callers())
-        assert s and g.isString(s), repr(s)
-        self.s = s
-    #@+node:ekr.20120204061120.10068: *4*  Special methods
-    #@+node:ekr.20120203053243.10118: *5* ks.__hash__
-    # Allow KeyStroke objects to be keys in dictionaries.
-
-    def __hash__(self):
-        return self.s.__hash__() if self.s else 0
-    #@+node:ekr.20120204061120.10067: *5* ks.__repr___ & __str__
-    def __str__(self):
-        return '<KeyStroke: %s>' % (repr(self.s))
-
-    __repr__ = __str__
-    #@+node:ekr.20120203053243.10117: *5* ks.rich comparisons
+    #@+node:ekr.20180414195401.2: *4*  ks.__init__
+    def __init__(self, binding):
+        trace = False and not g.unitTesting
+        if binding:
+            self.s = self.finalize_binding(binding)
+        else:
+            self.s = None
+        if trace: g.trace(repr(self.s))
+    #@+node:ekr.20120203053243.10117: *4* ks.__eq__, etc
     #@+at All these must be defined in order to say, for example:
     #     for key in sorted(d)
     # where the keys of d are KeyStroke objects.
@@ -384,6 +365,182 @@ class KeyStroke(object):
     def __gt__(self, other): return not self.__lt__(other) and not self.__eq__(other)
 
     def __ge__(self, other): return not self.__lt__(other)
+    #@+node:ekr.20120203053243.10118: *4* ks.__hash__
+    # Allow KeyStroke objects to be keys in dictionaries.
+
+    def __hash__(self):
+        return self.s.__hash__() if self.s else 0
+    #@+node:ekr.20120204061120.10067: *4* ks.__repr___ & __str__
+    def __str__(self):
+        return '<KeyStroke: %s>' % (repr(self.s))
+
+    __repr__ = __str__
+    #@+node:ekr.20180417160703.1: *4* ks.dump
+    def dump(self):
+        '''Show results of printable chars.'''
+        for i in range(128):
+            s = chr(i)
+            stroke = g.KeyStroke(s)
+            if stroke.s != s:
+                print('%2s %10r %r' % (i, s, stroke.s))
+        for ch in ('backspace', 'linefeed', 'return', 'tab'):
+            stroke = g.KeyStroke(ch)
+            print('%2s %10r %r' % ('', ch, stroke.s))
+    #@+node:ekr.20180415082249.1: *4* ks.finalize_binding
+    def finalize_binding(self, binding):
+
+        trace = False and 'keys' in g.app.debug
+        self.mods = self.find_mods(binding)
+        s = self.strip_mods(binding)
+        s = self.finalize_char(s)
+            # May change self.mods.
+        mods = ''.join(['%s+' % z.capitalize() for z in self.mods])
+        if trace:
+            g.trace('%20s:%-20s ==> %s' % (binding, self.mods, mods+s))
+        return mods+s
+    #@+node:ekr.20180415083926.1: *4* ks.finalize_char
+    def finalize_char(self, s):
+        '''Perform very-last-minute translations on bindings.'''
+        #
+        # Retain "bigger" spelling for gang-of-four bindings with modifiers.
+        shift_d = {
+            'bksp': 'BackSpace',
+            'backspace': 'BackSpace',
+            'backtab': 'Tab', # The shift mod will convert to 'Shift+Tab',
+            'linefeed': 'Return',
+            '\r': 'Return',
+            'return': 'Return',
+            'tab': 'Tab',
+        }
+        if self.mods and s.lower() in shift_d:
+            return shift_d.get(s.lower())
+                # Returning '' breaks existing code.
+        #
+        # Make all other translations...
+        #
+        # This dict ensures proper capitalization.
+        # It also translates legacy Tk binding names to ascii chars.
+        translate_d = {
+            #
+            # The gang of four...
+            'bksp': 'BackSpace',
+            'backspace': 'BackSpace',
+            'backtab': 'Tab', # The shift mod will convert to 'Shift+Tab',
+            'linefeed': '\n',
+            '\r': '\n',
+            'return': '\n',
+            'tab': 'Tab',
+            #
+            # Special chars...
+            'delete': 'Delete',
+            'down': 'Down',
+            'end': 'End',
+            'enter': 'Enter',
+            'escape': 'Escape',
+            'home': 'Home',
+            'insert': 'Insert',
+            'left':'Left',
+            'next': 'Next',
+            'prior': 'Prior',
+            'right': 'Right',
+            'up': 'Up',
+            #
+            # Qt key names...
+            'del': 'Delete',
+            'dnarrow': 'Down',
+            'esc': 'Escape',
+            'ins': 'Insert',
+            'ltarrow': 'Left',
+            'pagedn': 'Next',
+            'pageup': 'Prior',
+            'pgdown': 'Next',
+            'pgup': 'Prior',
+            'rtarrow': 'Right',
+            'uparrow': 'Up',
+            #
+            # Legacy Tk binding names...
+            "ampersand": "&",
+            "asciicircum": "^",
+            "asciitilde": "~",
+            "asterisk": "*",
+            "at": "@",
+            "backslash": "\\",
+            "bar": "|",
+            "braceleft": "{",
+            "braceright": "}",
+            "bracketleft": "[",
+            "bracketright": "]",
+            "colon": ":",
+            "comma": ",",
+            "dollar": "$",
+            "equal": "=",
+            "exclam": "!",
+            "greater": ">",
+            "less": "<",
+            "minus": "-",
+            "numbersign": "#",
+            "quotedbl": '"',
+            "quoteright": "'",
+            "parenleft": "(",
+            "parenright": ")",
+            "percent": "%",
+            "period": ".",
+            "plus": "+",
+            "question": "?",
+            "quoteleft": "`",
+            "semicolon": ";",
+            "slash": "/",
+            "space": " ",
+            "underscore": "_",
+        }
+        # pylint: disable=undefined-loop-variable
+        # Looks like a pylint bug.
+        if s in (None, 'none'):
+            return ''
+        if s.lower() in translate_d:
+            return translate_d.get(s.lower())
+        if s.isalpha():
+            if len(s) == 1:
+                if 'shift' in self.mods:
+                    if len(self.mods) == 1:
+                        self.mods.remove('shift')
+                        s = s.upper()
+                    else:
+                        s = s.lower()
+                elif self.mods:
+                    s = s.lower()
+            else:
+                # Make sure all special chars are in translate_d.
+                if g.app.gui: # It may not exist yet.
+                    if s.capitalize() in g.app.gui.specialChars:
+                        s = s.capitalize()
+            return s
+        # Translate possibly-dubious user settings.
+        shift_list = "_+{}|:\"<>?"
+            # Shifting these characters has no effect.
+        shift_d = {
+            # Top row of keyboard.
+            "-": "_",
+            "=": "+",
+            # Second row of keyboard.
+            "[": "{",
+            "]": "}",
+            "\\": '|',
+            # Third row of keyboard.
+            ";": ":",
+            "'": '"',
+            # Fourth row of keyboard.
+            ".": "<",
+            ",": ">",
+            "//": "?",
+        }
+        if 'shift' in self.mods and s in shift_list:
+            # Shifting these chars has no effect.
+            self.mods.remove('shift')
+        elif 'shift' in self.mods and s in shift_d:
+            self.mods.remove('shift')
+            s = shift_d.get(s)
+        return s
     #@+node:ekr.20120203053243.10124: *4* ks.find, lower & startswith
     # These may go away later, but for now they make conversion of string strokes easier.
 
@@ -395,10 +552,73 @@ class KeyStroke(object):
 
     def startswith(self, s):
         return self.s.startswith(s)
+    #@+node:ekr.20180415081209.2: *4* ks.find_mods
+    def find_mods(self, s):
+        '''Return the list of all modifiers seen in s.'''
+        s = s.lower()
+        table = (
+            ['alt',],
+            ['command', 'cmd',],
+            ['ctrl', 'control',], # Use ctrl, not control.
+            ['meta',],
+            ['shift', 'shft',],
+        )
+        result = []
+        for aList in table:
+            kind = aList[0]
+            for mod in aList:
+                for suffix in '+-':
+                    if s.find(mod+suffix) > -1:
+                        s = s.replace(mod+suffix,'')
+                        result.append(kind)
+                        break
+        return result
+    #@+node:ekr.20180417101435.1: *4* ks.isAltCtl
+    def isAltCtrl(self):
+        '''Return True if this is an Alt-Ctrl character.'''
+        mods = self.find_mods(self.s)
+        return 'alt' in mods and 'ctrl' in mods
     #@+node:ekr.20120203053243.10121: *4* ks.isFKey
     def isFKey(self):
-        s = self.s.lower()
-        return s.startswith('f') and len(s) <= 3 and s[1:].isdigit()
+        return self.s in g.app.gui.FKeys
+       
+    #@+node:ekr.20180417102341.1: *4* ks.isPlainKey (does not handle alt-ctrl chars)
+    def isPlainKey(self):
+        '''
+        Return True if self.s represents a plain key.
+        
+        **Note**: The caller is responsible for handling Alt-Ctrl keys.
+        '''
+        s = self.s
+        if s in g.app.gui.ignoreChars:
+            # For unit tests.
+            return False
+        if self.find_mods(s) or self.isFKey():
+            return False
+        if s in g.app.gui.specialChars:
+            return False
+        return True
+    #@+node:ekr.20180419170934.1: *4* ks.prettyPrint
+    def prettyPrint(self):
+        
+        s = self.s
+        if not s:
+            return '<None>'
+        d = {' ': 'Space', '\t': 'Tab', '\n': 'Return', '\r': 'LineFeed'}
+        ch = s[-1]
+        return s[:-1] + d.get(ch, ch)
+    #@+node:ekr.20180415124853.1: *4* ks.strip_mods
+    def strip_mods(self, s):
+        '''Remove all modifiers from s, without changing the case of s.'''
+        table = ('alt', 'cmd', 'command', 'control', 'ctrl', 'meta', 'shift', 'shft')
+        for mod in table:
+            for suffix in '+-':
+                target = mod+suffix
+                i = s.lower().find(target)
+                if i > -1:
+                    s = s[:i] + s[i+len(target):]
+                    break
+        return s
     #@+node:ekr.20120203053243.10125: *4* ks.toGuiChar
     def toGuiChar(self):
         '''Replace special chars by the actual gui char.'''
@@ -410,6 +630,24 @@ class KeyStroke(object):
         elif s in ('\b', 'backspace'): s = '\b'
         elif s in ('.', 'period'): s = '.'
         return s
+    #@+node:ekr.20180417100834.1: *4* ks.toInsertableChar
+    def toInsertableChar(self):
+        '''Convert self to an (insertable) char.'''
+        # pylint: disable=len-as-condition
+        s = self.s
+        if not s or self.find_mods(s):
+            return ''
+        # Handle the "Gang of Four"
+        d = {
+            'BackSpace': '\b',
+            'LineFeed': '\n',
+            # 'Insert': '\n',
+            'Return': '\n',
+            'Tab': '\t',
+        }
+        if s in d:
+            return d.get(s)
+        return s if len(s) == 1 else ''
     #@-others
 
 def isStroke(obj):
@@ -1412,25 +1650,21 @@ class SherlockTracer(object):
         import sys
         sys.settrace(None)
     #@-others
-#@+node:ekr.20120123115816.10209: *3* class g.ShortcutInfo & isShortcutInfo
-# bindKey:            ShortcutInfo(kind,commandName,func,pane)
-# bindKeyToDict:      ShortcutInfo(kind,commandName,func,pane,stroke)
-# createModeBindings: ShortcutInfo(kind,commandName,func,nextMode,stroke)
-# Important: The startup code uses this class,
-# so it is convenient to define it in leoGlobals.py.
-
-class ShortcutInfo(object):
+#@+node:ekr.20120123115816.10209: *3* class g.BindingInfo & isBindingInfo
+class BindingInfo(object):
     '''
     A class representing any kind of key binding line.
 
     This includes other information besides just the KeyStroke.
     '''
+    # Important: The startup code uses this class,
+    # so it is convenient to define it in leoGlobals.py.
     #@+others
-    #@+node:ekr.20120129040823.10254: *4*  ctor (ShortcutInfo)
+    #@+node:ekr.20120129040823.10254: *4* bi.__init__
     def __init__(self, kind, commandName='', func=None, nextMode=None, pane=None, stroke=None):
         trace = False and commandName == 'new' and not g.unitTesting
-        if not (stroke is None or g.isStroke(stroke)):
-            g.trace('***** (ShortcutInfo) oops', repr(stroke))
+        if not g.isStrokeOrNone(stroke):
+            g.trace('***** (BindingInfo) oops', repr(stroke))
         self.kind = kind
         self.commandName = commandName
         self.func = func
@@ -1438,24 +1672,23 @@ class ShortcutInfo(object):
         self.pane = pane
         self.stroke = stroke
             # The *caller* must canonicalize the shortcut.
-        if trace: g.trace('(ShortcutInfo)', commandName, stroke, g.callers())
-    #@+node:ekr.20120203153754.10031: *4* __hash__ (ShortcutInfo)
+        if trace: g.trace('(BindingInfo)', commandName, stroke, g.callers())
+    #@+node:ekr.20120203153754.10031: *4* bi.__hash__
     def __hash__(self):
         return self.stroke.__hash__() if self.stroke else 0
-    #@+node:ekr.20120125045244.10188: *4* __repr__ & ___str_& dump (ShortcutInfo)
+    #@+node:ekr.20120125045244.10188: *4* bi.__repr__ & ___str_& dump
     def __repr__(self):
         return self.dump()
 
     __str__ = __repr__
 
     def dump(self):
-        si = self
-        result = ['ShortcutInfo %17s' % (si.kind)]
+        result = ['BindingInfo %17s' % (self.kind)]
         # Print all existing ivars.
         table = ('commandName', 'func', 'nextMode', 'pane', 'stroke')
         for ivar in table:
-            if hasattr(si, ivar):
-                val = getattr(si, ivar)
+            if hasattr(self, ivar):
+                val = getattr(self, ivar)
                 if val not in (None, 'none', 'None', ''):
                     if ivar == 'func':
                         # pylint: disable=no-member
@@ -1463,13 +1696,13 @@ class ShortcutInfo(object):
                     s = '%s: %r' % (ivar, val)
                     result.append(s)
         return '[%s]' % ' '.join(result).strip()
-    #@+node:ekr.20120129040823.10226: *4* isModeBinding
+    #@+node:ekr.20120129040823.10226: *4* bi.isModeBinding
     def isModeBinding(self):
         return self.kind.startswith('*mode')
     #@-others
 
-def isShortcutInfo(obj):
-    return isinstance(obj, ShortcutInfo)
+def isBindingInfo(obj):
+    return isinstance(obj, BindingInfo)
 #@+node:ekr.20080531075119.1: *3* class g.Tracer
 class Tracer(object):
     '''A "debugger" that computes a call graph.
@@ -1757,6 +1990,34 @@ def alert(message, c=None):
     if not g.unitTesting:
         g.es(message)
         g.app.gui.alert(c, message)
+#@+node:ekr.20180415144534.1: *4* g.assert_is
+def assert_is(obj, list_or_class, warn=True):
+    
+    if warn:
+        ok = isinstance(obj, list_or_class)
+        if not ok:
+            g.es_print('can not happen. %r: expected %s, got: %s' % (
+                obj, list_or_class, obj.__class__.__name__))
+            g.es_print(g.callers())
+        return ok
+    else:
+        assert isinstance(obj, list_or_class), (
+            obj, obj.__class__.__name__, g.callers())
+#@+node:ekr.20180420081530.1: *4* g._assert
+def _assert(condition, show_callers=True):
+    '''A safer alternative to a bare assert.'''
+    if g.unitTesting:
+        assert condition
+        return
+    ok = bool(condition)
+    if ok:
+        return True
+    print('')
+    g.es_print('===== g._assert failed =====')
+    print('')
+    if show_callers:
+        g.es_print(g.callers())
+    return False
 #@+node:ekr.20051023083258: *4* g.callers & g.caller & _callerName
 def callers(n=4, count=0, excludeCaller=True, verbose=False):
     '''
@@ -1981,16 +2242,28 @@ def listToString(obj, indent='', tag=None):
 #@+node:ekr.20050819064157: *4* g.objToSTring & g.toString
 def objToString(obj, indent='', printCaller=False, tag=None):
     '''Pretty print any Python object to a string.'''
+    # pylint: disable=undefined-loop-variable
+        # Looks like a a pylint bug.
+    #
+    # Compute s.
     if isinstance(obj, dict):
         s = dictToString(obj, indent=indent)
     elif isinstance(obj, list):
         s = listToString(obj, indent=indent)
     elif isinstance(obj, tuple):
         s = tupleToString(obj, indent=indent)
-    # elif g.isString(obj):
-        # s = obj
+    elif g.isString(obj):
+        # Print multi-line strings as lists.
+        s = obj
+        lines = g.splitLines(s)
+        if len(lines) > 1:
+            s = listToString(lines, indent=indent)
+        else:
+            s = repr(s)
     else:
         s = repr(obj)
+    #
+    # Compute the return value.
     if printCaller and tag:
         prefix = '%s: %s' % (g.caller(), tag)
     elif printCaller or tag:
@@ -2095,61 +2368,47 @@ def clearAllIvars(o):
 #@+node:ekr.20031218072017.1590: *4* g.collectGarbage
 def collectGarbage():
     try:
-        if not g.trace_gc_inited:
-            g.enable_gc_debug()
-        if g.trace_gc_verbose or g.trace_gc_calls:
-            g.pr('collectGarbage:')
         gc.collect()
     except Exception:
         pass
-    # Only init once, regardless of what happens.
-    g.trace_gc_inited = True
 #@+node:ekr.20060127162818: *4* g.enable_gc_debug
-no_gc_message = False
-
 def enable_gc_debug(event=None):
     # pylint: disable=no-member
-    if gc:
-        if g.trace_gc_verbose:
-
-            if g.isPython3:
-                gc.set_debug(
-                    gc.DEBUG_STATS | # prints statistics.
-                    gc.DEBUG_LEAK | # Same as all below.
-                    gc.DEBUG_COLLECTABLE |
-                    gc.DEBUG_UNCOLLECTABLE |
-                    # gc.DEBUG_INSTANCES |
-                    # gc.DEBUG_OBJECTS |
-                    gc.DEBUG_SAVEALL)
-            else:
-                gc.set_debug(
-                    gc.DEBUG_STATS | # prints statistics.
-                    gc.DEBUG_LEAK | # Same as all below.
-                    gc.DEBUG_COLLECTABLE |
-                    gc.DEBUG_UNCOLLECTABLE |
-                    gc.DEBUG_INSTANCES |
-                    gc.DEBUG_OBJECTS |
-                    gc.DEBUG_SAVEALL)
-        # else:
-            # gc.set_debug(gc.DEBUG_STATS)
-    elif not g.no_gc_message:
-        g.no_gc_message = True
+    if not gc:
         g.error('can not import gc module')
+        return
+    if g.isPython3:
+        gc.set_debug(
+            gc.DEBUG_STATS | # prints statistics.
+            gc.DEBUG_LEAK | # Same as all below.
+            gc.DEBUG_COLLECTABLE |
+            gc.DEBUG_UNCOLLECTABLE |
+            # gc.DEBUG_INSTANCES |
+            # gc.DEBUG_OBJECTS |
+            gc.DEBUG_SAVEALL)
+    else:
+        gc.set_debug(
+            gc.DEBUG_STATS | # prints statistics.
+            gc.DEBUG_LEAK | # Same as all below.
+            gc.DEBUG_COLLECTABLE |
+            gc.DEBUG_UNCOLLECTABLE |
+            gc.DEBUG_INSTANCES |
+            gc.DEBUG_OBJECTS |
+            gc.DEBUG_SAVEALL)
 #@+node:ekr.20031218072017.1592: *4* g.printGc
 # Formerly called from unit tests.
 
 def printGc(tag=None):
-    if not g.trace_gc: return None
     tag = tag or g._callerName(n=2)
     printGcObjects(tag=tag)
     printGcRefs(tag=tag)
-    if g.trace_gc_verbose:
-        printGcVerbose(tag=tag)
+    printGcVerbose(tag=tag)
 #@+node:ekr.20031218072017.1593: *5* g.printGcRefs
 def printGcRefs(tag=''):
+    verbose = False
     refs = gc.get_referrers(app.windowList[0])
     g.pr('-' * 30, tag)
-    if g.trace_gc_verbose:
+    if verbose:
         g.pr("refs of", app.windowList[0])
         for ref in refs:
             g.pr(type(ref))
@@ -2168,8 +2427,6 @@ def printGcAll(tag=''):
         if t == 'instance':
             try: t = obj.__class__
             except Exception: pass
-        # if isinstance(obj, (tuple, list)):
-            # g.pr(id(obj),repr(obj))
         # 2011/02/28: Some types may not be hashable.
         try:
             d[t] = d.get(t, 0) + 1
@@ -4917,7 +5174,7 @@ def importModule(moduleName, pluginName=None, verbose=False):
     then from the extensions and external directories.
     '''
     # Important: g is Null during startup.
-    trace = (False or g.app.trace_plugins) and not g.unitTesting
+    trace = 'plugins' in g.app.debug
     # if moduleName == 'rope': g.pdb()
     module = sys.modules.get(moduleName)
     if module:
@@ -4988,7 +5245,7 @@ def importFromPath(moduleName, path, verbose=False):
     **Warning**: This is a thin wrapper for imp.load_module, which is
     equivalent to reload! Reloading Leo files while running will crash Leo.
     '''
-    trace = g.app.trace_plugins and not g.unitTesting
+    trace = 'plugins' in g.app.debug
     path = g.os_path_normpath(path)
     if g.isPython3:
         assert g.isString(path)
@@ -5901,15 +6158,12 @@ def es_event_exception(eventName, full=False):
 def es_exception(full=True, c=None, color="red"):
     typ, val, tb = sys.exc_info()
     # val is the second argument to the raise statement.
-    if full or g.app.debugSwitch > 0:
+    if full:
         lines = traceback.format_exception(typ, val, tb)
     else:
         lines = traceback.format_exception_only(typ, val)
     for line in lines:
         g.es_print_error(line, color=color)
-    # if g.app.debugSwitch > 1:
-        # import pdb # Be careful: g.pdb may or may not have been defined.
-        # pdb.set_trace()
     fileName, n = g.getLastTracebackFileAndLineNumber()
     return fileName, n
 #@+node:ekr.20061015090538: *3* g.es_exception_type
@@ -5935,7 +6189,7 @@ def es_print_exception(full=True, c=None, color="red"):
     '''Print exception info about the last exception.'''
     typ, val, tb = sys.exc_info()
         # val is the second argument to the raise statement.
-    if full or g.app.debugSwitch > 0:
+    if full:
         lines = traceback.format_exception(typ, val, tb)
     else:
         lines = traceback.format_exception_only(typ, val)

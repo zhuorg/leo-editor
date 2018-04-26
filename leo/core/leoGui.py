@@ -28,7 +28,6 @@ class LeoGui(object):
     #@+node:ekr.20031218072017.3722: *3* LeoGui.__init__
     def __init__(self, guiName):
         '''Ctor for the LeoGui class.'''
-        # g.trace("LeoGui",guiName,g.callers())
         self.active = None # Used only by qt_gui.
         self.consoleOnly = True # True if g.es goes to console.
         self.globalFindTabManager = None
@@ -49,13 +48,25 @@ class LeoGui(object):
         self.utils = None
         # To keep pylint happy.
         self.ScriptingControllerClass = NullScriptingControllerClass
+        #
+        # Define special keys that may be overridden is subclasses.
+        self.ignoreChars = []
+            # Keys that are always to be ignore.
+        self.FKeys = []
+            # The representation of F-keys.
+        self.specialChars = []
+            # A list of characters/keys to be handle specially.
     #@+node:ekr.20061109212618.1: *3* LeoGui: Must be defined only in base class
     #@+node:ekr.20110605121601.18847: *4* LeoGui.create_key_event (LeoGui)
-    def create_key_event(self, c, char, stroke, w, event=None, x=None, y=None, x_root=None, y_root=None):
+    def create_key_event(self, c,
+        binding=None, char=None, event=None, w=None,
+        x=None, x_root=None,
+        y=None, y_root=None,
+    ):
         # Do not call strokeFromSetting here!
         # For example, this would wrongly convert Ctrl-C to Ctrl-c,
         # in effect, converting a user binding from Ctrl-Shift-C to Ctrl-C.
-        return LeoKeyEvent(c, char, event, stroke, w, x, y, x_root, y_root)
+        return LeoKeyEvent(c, char, event, binding, w, x, y, x_root, y_root)
     #@+node:ekr.20031218072017.3740: *4* LeoGui.guiName
     def guiName(self):
         try:
@@ -68,7 +79,7 @@ class LeoGui(object):
         self.scriptFileName = scriptFileName
     #@+node:ekr.20110605121601.18845: *4* LeoGui.event_generate (LeoGui)
     def event_generate(self, c, char, shortcut, w):
-        event = self.create_key_event(c, char, shortcut, w)
+        event = self.create_key_event(c, binding=shortcut, char=char, w=w)
         c.k.masterKeyHandler(event)
         c.outerUpdate()
     #@+node:ekr.20061109212618: *3* LeoGu: Must be defined in subclasses
@@ -247,14 +258,16 @@ class LeoKeyEvent(object):
     '''A gui-independent wrapper for gui events.'''
     #@+others
     #@+node:ekr.20110605121601.18846: *3* LeoKeyEvent.__init__
-    def __init__(self, c, char, event, shortcut, w, x=None, y=None, x_root=None, y_root=None):
+    def __init__(self, c, char, event, binding, w,
+        x=None, y=None, x_root=None, y_root=None
+    ):
         '''Ctor for LeoKeyEvent class.'''
         trace = False and not g.unitTesting
-        if g.isStroke(shortcut):
-            g.trace('***** (LeoKeyEvent) oops: already a stroke', shortcut, g.callers())
-            stroke = shortcut
+        if g.isStroke(binding):
+            g.trace('***** (LeoKeyEvent) oops: already a stroke', binding, g.callers())
+            stroke = binding
         else:
-            stroke = g.KeyStroke(shortcut) if shortcut else None
+            stroke = g.KeyStroke(binding) if binding else None
         assert g.isStrokeOrNone(stroke), '(LeoKeyEvent) %s %s' % (
             repr(stroke), g.callers())
         if trace: g.trace('(LeoKeyEvent) stroke', stroke)
