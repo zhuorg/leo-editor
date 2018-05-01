@@ -747,12 +747,16 @@ class LeoFrame(object):
     #@+node:ekr.20051009045404: *4* frame.createFirstTreeNode
     def createFirstTreeNode(self):
         f = self; c = f.c
-        v = leoNodes.VNode(context=c)
-        p = leoNodes.Position(v)
-        v.initHeadString("NewHeadline")
-        # New in Leo 4.5: p.moveToRoot would be wrong: the node hasn't been linked yet.
-        p._linkAsRoot(oldRoot=None)
-        # c.setRootPosition() # New in 4.4.2.
+        if len(c.hiddenRootNode.children) == 0:
+            assert c.hiddenRootNode is leoNodes.VNode.getRoot(c.fileName())
+            v = leoNodes.VNode(context=c)
+            c.hiddenRootNode.children.append(v)
+            return
+            p = leoNodes.Position(v)
+            v.initHeadString("NewHeadline")
+            # New in Leo 4.5: p.moveToRoot would be wrong: the node hasn't been linked yet.
+            p._linkAsRoot(oldRoot=None)
+            # c.setRootPosition() # New in 4.4.2.
     #@+node:ekr.20150509194519.1: *3* LeoFrame.cmd (decorator)
     def cmd(name):
         '''Command decorator for the LeoFrame class.'''
@@ -1555,7 +1559,7 @@ class LeoTree(object):
         c = self.c
         if not c.frame.body.wrapper:
             return # Defensive.
-        assert p.v.context == c
+        assert p.v.context == c.fileName()
             # Selecting a foreign position will not be pretty.
         old_p = c.p
         call_event_handlers = p != old_p

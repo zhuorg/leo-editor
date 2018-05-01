@@ -1199,6 +1199,7 @@ else:
     
     path = g.os_path_join('Ỗ','Ỗ')
     try:
+        c2 = None
         c2 = g.openWithFileName(path,old_c=c)
     finally:
         if c2:

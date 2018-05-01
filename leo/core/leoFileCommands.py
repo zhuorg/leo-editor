@@ -512,12 +512,27 @@ class FileCommands(object):
         self.currentPosition = None
         # New in 3.12...
         self.copiedTree = None
-        self.gnxDict = {}
-            # keys are gnx strings as returned by canonicalTnodeIndex.
-            # Values are vnodes.
-            # 2011/12/10: This dict is never re-inited.
+        self._gnxDict = leoNodes.VNode.getGnxDict(c.fileName())
         self.vnodesDict = {}
             # keys are gnx strings; values are ignored
+    #@+node:vitalije.20180430162304.1: *4* fc.gnxDict property
+    _gnxDict_warning_given = False
+
+    def _getGnxDict(self):
+        return self._gnxDict
+
+    def _setGnxDict(self, d):
+        if not FileCommands._gnxDict_warning_given:
+            FileCommands._gnxDict_warning_given = True
+            g.warning('Usage of fileCommands.gnxDict is deprecated\n'
+                      'If you need to create VNodes outside of this\n'
+                      'gnxDict, pass context=None to VNode constructor')
+        self._gnxDict = d
+
+    gnxDict = property(_getGnxDict, _setGnxDict)
+        # keys are gnx strings as returned by canonicalTnodeIndex.
+        # Values are vnodes.
+        # 2011/12/10: This dict is never re-inited.
     #@+node:ekr.20031218072017.3020: *3* fc.Reading
     #@+node:ekr.20060919104836: *4*  fc.Reading Top-level
     #@+node:ekr.20070919133659.1: *5* fc.checkLeoFile
@@ -593,8 +608,8 @@ class FileCommands(object):
         # Save and clear gnxDict.
         # This ensures that new indices will be used for all nodes.
         if reassignIndices:
-            oldGnxDict = self.gnxDict
-            self.gnxDict = {}
+            oldGnxDict = self.gnxDict.copy()
+            self.gnxDict.clear()
         else:
             # All pasted nodes should already have unique gnx's.
             ni = g.app.nodeIndices
@@ -630,7 +645,7 @@ class FileCommands(object):
                 return None
             p._linkAfter(current, adjust=False)
         if reassignIndices:
-            self.gnxDict = oldGnxDict
+            self.gnxDict.update(oldGnxDict)
             self.reassignAllIndices(p)
         else:
             # Fix #862: paste-retaining-clones can corrupt the outline.
@@ -1183,7 +1198,7 @@ class FileCommands(object):
         children = []
         for sax_child in sax_node.children:
             tnx = sax_child.tnx
-            v = self.gnxDict.get(tnx)
+            v = leoNodes.VNode.getGnxDict(self.c.fileName()).get(tnx)
             if v: # A clone. Don't look at the children.
                 self.updateSaxClone(sax_child, parent_v, v)
             else:
@@ -1436,9 +1451,6 @@ class FileCommands(object):
         assert c.hiddenRootNode.children == children
         v = children[0] if children else None
         return v
-       
-            
-                
     #@+node:ekr.20060919110638.11: *5* fc.resolveTnodeLists
     def resolveTnodeLists(self):
         '''
@@ -1454,7 +1466,7 @@ class FileCommands(object):
                     index = self.canonicalTnodeIndex(tnx)
                     # new gnxs:
                     index = g.toUnicode(index)
-                    v = self.gnxDict.get(index)
+                    v = leoNodes.VNode.getGnxDict(self.c.fileName()).get(index)
                     if v:
                         if trace: g.trace(tnx, v)
                         result.append(v)

@@ -23,8 +23,13 @@ if use_zodb:
         ZODB = None
 else:
     ZODB = None
+from collections import defaultdict
 #@-<< imports >>
 #@+others
+#@+node:vitalije.20180430165602.1: ** getCommander
+def getCommander(context):
+    for c in (x for x in g.app.commanders() if x.fileName() == context):
+        return c
 #@+node:ekr.20031218072017.1991: ** class NodeIndices
 class NodeIndices(object):
     '''A class managing global node indices (gnx's).'''
@@ -44,14 +49,10 @@ class NodeIndices(object):
     #@+node:ekr.20150321161305.8: *3* ni.check_gnx
     def check_gnx(self, c, gnx, v):
         '''Check that no vnode exists with the given gnx in fc.gnxDict.'''
-        fc = c.fileCommands
-        if fc is None:
-            g.internalError('getNewIndex: fc is None! c:' % c)
-        else:
-            v2 = fc.gnxDict.get(gnx)
-            if v2 and v2 != v:
-                g.internalError(
-                    'getNewIndex: gnx clash %s: v: %s v2: %s' % (gnx, v, v2))
+        v2 = VNode.getGnxDict(c).get(gnx)
+        if v2 and v2 != v:
+            g.internalError(
+                'getNewIndex: gnx clash %s: v: %s v2: %s' % (gnx, v, v2))
     #@+node:ekr.20150302061758.14: *3* ni.compute_last_index
     def compute_last_index(self, c):
         '''Scan the entire leo outline to compute ni.last_index.'''
@@ -106,16 +107,14 @@ class NodeIndices(object):
             g.internalError('getNewIndex: v is None')
             return ''
         c = v.context
-        fc = c.fileCommands
         t_s = self.update()
             # Updates self.lastTime and self.lastIndex.
         gnx = g.toUnicode("%s.%s.%d" % (self.userId, t_s, self.lastIndex))
         if trace:
             if g.unitTesting: g.pr('')
-            g.trace('%s v: %x gnx: %s ' % (c.shortFileName(), id(v), gnx))
+            g.trace('%s v: %x gnx: %s ' % (c, id(v), gnx))
         v.fileIndex = gnx
         self.check_gnx(c, gnx, v)
-        fc.gnxDict[gnx] = v
         return gnx
     #@+node:ekr.20150322134954.1: *3* ni.new_vnode_helper
     def new_vnode_helper(self, c, gnx, v):
@@ -124,7 +123,6 @@ class NodeIndices(object):
         if gnx:
             v.fileIndex = gnx
             ni.check_gnx(c, gnx, v)
-            c.fileCommands.gnxDict[gnx] = v
         else:
             v.fileIndex = ni.getNewIndex(v)
     #@+node:ekr.20031218072017.1997: *3* ni.scanGnx
@@ -788,11 +786,11 @@ class Position(object):
                     # g.recursiveUNLFind  and sf.copy_to_my_settings undo this replacement.
         UNL = '-->'.join(reversed(aList))
         if with_proto:
-            # return ("file://%s#%s" % (self.v.context.fileName(), UNL)).replace(' ', '%20')
-            s = "unl:" + "//%s#%s" % (self.v.context.fileName(), UNL)
+            # return ("file://%s#%s" % (self.v.context, UNL)).replace(' ', '%20')
+            s = "unl:" + "//%s#%s" % (self.v.context, UNL)
             return s.replace(' ', '%20')
         elif with_file:
-            return ("%s#%s" % (self.v.context.fileName(), UNL))
+            return ("%s#%s" % (self.v.context, UNL))
         else:
             return UNL
     #@+node:ekr.20080416161551.192: *4* p.hasBack/Next/Parent/ThreadBack
@@ -829,7 +827,7 @@ class Position(object):
             v, childIndex = p.stack[n]
             # See how many children v's parent has.
             if n == 0:
-                parent_v = v.context.hiddenRootNode
+                parent_v = VNode.getRoot(v.context)
             else:
                 parent_v, junk = p.stack[n - 1]
             if len(parent_v.children) > childIndex + 1:
@@ -841,13 +839,13 @@ class Position(object):
     def findRootPosition(self):
         # 2011/02/25: always use c.rootPosition
         p = self
-        c = p.v.context
-        return c.rootPosition()
+        root = VNode.getRoot(p.v.context)
+        return Position(root.children[0], 0)
     #@+node:ekr.20080416161551.194: *4* p.isAncestorOf
     def isAncestorOf(self, p2):
         '''Return True if p is one of the direct ancestors of p2.'''
         p = self
-        c = p.v.context
+        c = getCommander(p.v.context)
         if not c.positionExists(p2):
             return False
         for z in p2.stack:
@@ -1051,13 +1049,12 @@ class Position(object):
         """Link self as the root node."""
         p = self
         assert(p.v)
-        hiddenRootNode = p.v.context.hiddenRootNode
         # if oldRoot: oldRootNode = oldRoot.v
         # else:       oldRootNode = None
         # Init the ivars.
         p.stack = []
         p._childIndex = 0
-        parent_v = hiddenRootNode
+        parent_v = VNode.getRoot(p.v.context)
         child = p.v
         if not oldRoot: parent_v.children = []
         child._addLink(0, parent_v)
@@ -1073,7 +1070,7 @@ class Position(object):
                 v, junk = data
                 return v
             else:
-                return p.v.context.hiddenRootNode
+                return VNode.getRoot(p.v.context)
         else:
             return None
     #@+node:ekr.20131219220412.16582: *4* p._relinkAsCloneOf
@@ -1296,7 +1293,7 @@ class Position(object):
     def checkVisBackLimit(self, limit, limitIsVisible, p):
         '''Return done, p or None'''
         trace = False and not g.unitTesting
-        c = p.v.context
+        c = getCommander(p.v.context)
         if limit == p:
             if trace: g.trace('at limit', p)
             if limitIsVisible and p.isVisible(c):
@@ -1447,7 +1444,7 @@ class Position(object):
                           If True, will create nodes regardless of existing nodes
             returns the final position ('baz' in the above example)
         '''
-        c = self.v.context
+        c = getCommander(self.v.context)
         return c.createNodeHierarchy(heads, parent=self, forcecreate=forcecreate)
     #@+node:ekr.20131230090121.16552: *4* p.deleteAllChildren
     def deleteAllChildren(self):
@@ -1533,7 +1530,7 @@ class Position(object):
             node = p.parent()
         else:
             node = p
-        p.v.context.alert("invalid outline: %s\n%s" % (message, node))
+        getCommander(p.v.context).alert("invalid outline: %s\n%s" % (message, node))
     #@+node:ekr.20040303175026.10: *4* p.moveAfter
     def moveAfter(self, a):
         """Move a position after position a."""
@@ -1651,7 +1648,7 @@ class Position(object):
         cff, replace-all and recursive import. In such situations, code should
         use p.v.b instead of p.b.
         '''
-        p = self; c = p.v and p.v.context
+        p = self; c = getCommander(p.v and p.v.context)
         if c:
             c.setBodyString(p, val)
             # Warning: c.setBodyString is *expensive*.
@@ -1679,7 +1676,7 @@ class Position(object):
         cff, replace-all and recursive import. In such situations, code should
         use p.v.h instead of p.h.
         '''
-        p = self; c = p.v and p.v.context
+        p = self; c = getCommander(p.v and p.v.context)
         if c:
             c.setHeadString(p, val)
             # Warning: c.setHeadString is *expensive*.
@@ -1698,7 +1695,7 @@ class Position(object):
     #@+node:ekr.20140203082618.15486: *4* p.script property
     def __get_script(self):
         p = self
-        return g.getScript(p.v.context, p,
+        return g.getScript(getCommander(p.v.context), p,
             useSelectedText=False, # Always return the entire expansion.
             forcePythonSentinels=True,
             useSentinels=False)
@@ -1755,7 +1752,7 @@ class Position(object):
     def isExpanded(self):
         p = self
         if p.isCloned():
-            c = p.v.context
+            c = getCommander(p.v.context)
             return c.shouldBeExpanded(p)
         else:
             return p.v.isExpanded()
@@ -2003,6 +2000,41 @@ class VNodeBase(object):
     orphanBit = 0x800 # True: error in @<file> tree prevented it from being written.
     #@-<< VNode constants >>
     #@+others
+    #@+node:vitalije.20180430155906.1: *3* VNode statics
+    # keys are contexts i.e. c.fileName()
+    # values are gnxDicts for corresponding commander
+    _pool = defaultdict(dict)
+
+
+    # keys are contexts i.e. c.fileName()
+    # values are hiddenRootNode of corresponding commander
+    _roots = {}
+
+    @staticmethod
+    def getGnxDict(context):
+        return VNode._pool[context]
+
+    @staticmethod
+    def getRoot(context):
+        return VNode._roots.get(context)
+
+    @staticmethod
+    def forgetContext(context):
+        VNode._pool[context] = dict()
+        VNode._roots.pop(context, None)
+
+    @staticmethod
+    def dumpKeys():
+        print(list(VNode._pool.keys()))
+        print(list(VNode._roots.keys()))
+
+    @staticmethod
+    def renameContext(src, dest):
+        VNode._roots[dest] = v = VNode._roots.pop(src)
+        v.context = dest
+        VNode._pool[dest] = VNode._pool.pop(src, dict())
+        for v in VNode._pool[dest].values():
+            v.context = dest
     #@+node:ekr.20031218072017.3342: *3* v.Birth & death
     #@+node:ekr.20031218072017.3344: *4* v.__init
     def __init__(self, context, gnx=None):
@@ -2020,13 +2052,15 @@ class VNodeBase(object):
         self.parents = []
             # Unordered list of all parents of this node.
         # Other essential data...
-        self.fileIndex = None
+        self.fileIndex = gnx
             # The immutable fileIndex (gnx) for this node. Set below.
         self.iconVal = 0
             # The present value of the node's icon.
         self.statusBits = 0
             # status bits
         # Information that is never written to any file...
+        if hasattr(context, 'fileName'):
+            context = context.fileName()
         self.context = context # The context containing context.hiddenRootNode.
             # Required so we can compute top-level siblings.
             # It is named .context rather than .c to emphasize its limited usage.
@@ -2046,7 +2080,13 @@ class VNodeBase(object):
         #   def allocate_vnode(c,gnx):
         #       v = VNode(c)
         #       g.app.nodeIndices.new_vnode_helper(c,gnx,v)
-        g.app.nodeIndices.new_vnode_helper(context, gnx, self)
+        if gnx == 'hidden-root-vnode-gnx':
+            # commander creates hiddenRootNode
+            VNode._roots[context] = self
+            VNode._pool[context] = {}
+        else:
+            g.app.nodeIndices.new_vnode_helper(context, gnx, self)
+            VNode._pool[context][self.fileIndex] = self
         assert self.fileIndex, g.callers()
     #@+node:ekr.20031218072017.3345: *4* v.__repr__ & v.__str__
     def __repr__(self):
@@ -2365,7 +2405,7 @@ class VNodeBase(object):
     #@+node:ekr.20090830051712.6153: *5* v.findAllPotentiallyDirtyNodes
     def findAllPotentiallyDirtyNodes(self):
         trace = False and not g.unitTesting
-        v = self; c = v.context
+        v = self
         # Set the starting nodes.
         nodes = []
         newNodes = [v]
@@ -2379,9 +2419,10 @@ class VNodeBase(object):
                         addedNodes.append(v2)
             newNodes = addedNodes[:]
         # Remove the hidden VNode.
-        if c.hiddenRootNode in nodes:
-            if trace: g.trace('removing hidden root', c.hiddenRootNode)
-            nodes.remove(c.hiddenRootNode)
+        root = VNode.getRoot(self.context)
+        if root in nodes:
+            if trace: g.trace('removing hidden root', root)
+            nodes.remove(root)
         if trace: g.trace(nodes)
         return nodes
     #@+node:ekr.20090830051712.6157: *5* v.setAllAncestorAtFileNodesDirty
@@ -2500,7 +2541,9 @@ class VNodeBase(object):
         ins = v.insertSpot
         # start, n = v.selectionStart, v.selectionLength
         spot = v.scrollBarSpot
-        body = self.context.frame.body
+        c = getCommander(self.context)
+        if not c: return
+        body = c.frame.body
         w = body.wrapper
         # Fix bug 981849: incorrect body content shown.
         if ins is None: ins = 0
@@ -2521,7 +2564,9 @@ class VNodeBase(object):
     #@+node:ekr.20100303074003.5638: *4* v.saveCursorAndScroll
     def saveCursorAndScroll(self):
         trace = (False or g.trace_scroll) and not g.unitTesting
-        v = self; c = v.context
+        v = self;
+        c = getCommander(self.context)
+        if not c: return
         w = c.frame.body
         if not w: return
         try:
@@ -2608,7 +2653,9 @@ class VNodeBase(object):
         trace = False and not g.unitTesting
         v = self
         # g.trace(v.context.frame.tree)
-        v.context.frame.tree.generation += 1
+        c = getCommander(v.context)
+        if c:
+            c.frame.tree.generation += 1
         parent_v.childrenModified()
         # Update parent_v.children & v.parents.
         parent_v.children.insert(childIndex, v)
@@ -2641,7 +2688,9 @@ class VNodeBase(object):
     def _cutLink(self, childIndex, parent_v):
         '''Adjust links after cutting a link to v.'''
         v = self
-        v.context.frame.tree.generation += 1
+        c = getCommander(v.context)
+        if c:
+            c.frame.tree.generation += 1
         parent_v.childrenModified()
         assert parent_v.children[childIndex] == v
         del parent_v.children[childIndex]

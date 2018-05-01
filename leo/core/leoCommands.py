@@ -53,6 +53,7 @@ class Commands(object):
         tag = 'Commands.__init__ %s' % (g.shortFileName(fileName))
         if trace: g.trace('(Commands)', g.shortFileName(fileName))
         c = self
+        leoNodes.VNode.forgetContext(fileName)
         if trace:
             t1 = time.time()
         # Official ivars.
@@ -250,7 +251,8 @@ class Commands(object):
                 self.gnxDict = {}
 
         c.fileCommands = DummyFileCommands()
-        self.hiddenRootNode = leoNodes.VNode(context=c, gnx=gnx)
+        self.hiddenRootNode = leoNodes.VNode(context=c.fileName(), gnx=gnx)
+        assert leoNodes.VNode.getRoot(c.fileName()) is c.hiddenRootNode
         self.hiddenRootNode.h = "<hidden root vnode>"
         c.fileCommands = None
         # Create the gui frame.
@@ -451,6 +453,9 @@ class Commands(object):
             return c.os_path_finalize(c.mFileName).lower()
         else:
             return 0
+    #@+node:vitalije.20180430215753.1: *4* c.renameVnodesContext
+    def renameVnodesContext(self):
+        leoNodes.VNode.renameContext(self.hiddenRootNode.context, self.fileName())
     #@+node:ekr.20110509064011.14563: *4* c.idle_focus_helper & helpers
     idle_focus_count = 0
 
@@ -1147,7 +1152,7 @@ class Commands(object):
         '''
         c = self
         context = v.context # v's commander.
-        assert(c == context)
+        assert(c.fileName() == context)
         stack = []
         while v.parents:
             parent = v.parents[0]

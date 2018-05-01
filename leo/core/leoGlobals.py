@@ -7428,7 +7428,7 @@ def handleScriptException(c, p, script, script1):
     full = c.config.getBool('show_full_tracebacks_in_scripts')
     fileName, n = g.es_exception(full=full)
     # Careful: this test is no longer guaranteed.
-    if p.v.context == c:
+    if p.v.context == c.fileName():
         try:
             c.goToScriptLineNumber(n, p)
             #@+<< dump the lines near the error >>

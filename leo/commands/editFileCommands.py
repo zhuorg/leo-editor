@@ -182,7 +182,7 @@ class EditFileCommandsClass(BaseEditCommandsClass):
                 if not kind.endswith('.leo') and p.isAnyAtFileNode():
                     # Don't make clones of @<file> nodes for wrapped files.
                     pass
-                elif p.v.context == c:
+                elif p.v.context == c.fileName():
                     clone = p.clone()
                     clone.moveToLastChildOf(parent)
                 else:

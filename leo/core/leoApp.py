@@ -2166,6 +2166,7 @@ class LoadManager(object):
         # Changing g.app.gui here is a major hack.  It is necessary.
         oldGui = g.app.gui
         g.app.gui = g.app.nullGui
+
         c = g.app.newCommander(fn)
         frame = c.frame
         frame.log.enable(False)
@@ -3154,6 +3155,7 @@ class LoadManager(object):
         # For .leo files (and zipped .leo files) this pre-reads the file in a null gui.
         # Otherwise, get settings from leoSettings.leo, myLeoSettings.leo, or default settings.
         previousSettings = lm.getPreviousSettings(fn)
+
         # Step 2: open the outline in the requested gui.
         # For .leo files (and zipped .leo file) this opens the file a second time.
         c = lm.openFileByName(fn, gui, old_c, previousSettings)
@@ -3304,6 +3306,8 @@ class LoadManager(object):
         # Fix smallish bug 1226816 Command line "leo xxx.leo" creates file xxx.leo.leo.
         c.mFileName = fn if fn.endswith('.leo') else '%s.leo' % (fn)
         c.wrappedFileName = fn
+        if c.mFileName != fn:
+            c.renameVnodesContext()
         c.frame.title = c.computeWindowTitle(c.mFileName)
         c.frame.setTitle(c.frame.title)
         # chapterController.finishCreate must be called after the first real redraw
