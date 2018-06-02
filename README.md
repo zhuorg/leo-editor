@@ -1,20 +1,21 @@
-Leo 5.7.1 April 6, 2018
-
-Leo 5.7.1, http://leoeditor.com, is now available on
+May 28, 2018
+Leo 5.7.3, http://leoeditor.com, is now available on
 [GitHub](https://github.com/leo-editor/leo-editor).
 
 Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
 
-**The highlights of Leo 5.7.1**
+**The highlights of Leo 5.7.3**
 
-- Improved support for themes, including the open-theme-file command.
-    - Added --theme=<name> command-line option.
-    - Added @string theme-name setting.
-    - Leo warns if stylesheets contain undefined @-constants.
-- Replaced 5 vs-* commands by corresponding eval* commands.
-- Support @file x.md using html sentinels.
-- Allow @path in @<file> nodes, and optionally generate same in recursive imports.
-- Improved menus.
+- Added support for Jedi autocompletion.
+- Much improved python_terminal plugin.
+- Much improved recursive import script.
+- New leo_babel plugin.
+- Leo's pylint command writes clickable links.
+- Smart searches for functions and methods.
+- Allow separate bindings for numeric keypad keys
+- Added easy-to-use diff-related wrappers for scripts.
+- Allow local overrides of all abbreviations.
+- Improved TypeScript importer.
 - The usual minor bug fixes.
 
 **Links**
