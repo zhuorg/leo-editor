@@ -34,6 +34,7 @@ def onCreate (tag, key):
     c = key.get('c')
     DockManager(c)
     ToolManager(c)
+    CorePaneToolProvider(c)
 def create_commands():
     """create_commands - add commands"""
     cmds = [
@@ -120,7 +121,9 @@ class DockManager(object):
             dw = QtWidgets.QDockWidget(tw.tabText(1), mw)
             w = tw.widget(1)
             if not wid(w):
-                wid(w, '_leo_tab:%s' % tw.tabText(1))
+                wid(w, tw.tabText(1))
+            c._corepanetoolprovider.add_tab_pane(wid(w))
+
             dw.setWidget(w)
             dw.setObjectName("_dw:%s" % wid(w))
             mw.tabifyDockWidget(log_dock, dw)
@@ -191,6 +194,7 @@ class DockManager(object):
             main_window = self.c.frame.top
             new_dock = QtWidgets.QDockWidget(name, main_window)
             new_dock.setWidget(w)
+            new_dock.setObjectName("_dw:%s" % wid(w))
             main_window.addDockWidget(QtConst.TopDockWidgetArea, new_dock)
         else:
             g.log("Could not find tool: %s" % id_, color='error')
@@ -309,3 +313,24 @@ class ToolManager(object):
                     g.log("Provided %s" % id_)
                     return w
         g.log("Couldn't provide %s" % id_, color='warning')
+class CorePaneToolProvider:
+    def __init__(self, c):
+        self.c = c
+        c._corepanetoolprovider = self
+        c.user_dict.setdefault('_tool_providers', []).append(self)
+        self.core_panes = [
+            ('outlineFrame', 'Tree pane'),
+            ('logFrame', 'Log pane'),
+            ('bodyFrame', 'Body pane'),
+        ]
+    def add_tab_pane(self, name):
+        self.core_panes.append((name, name))
+    def tm_provides(self):
+        return self.core_panes
+    def tm_provide(self, id_, state):
+        w = self.c.frame.top.findChild(QtWidgets.QWidget, id_)
+        if w and isinstance(w.parent(), QtWidgets.QDockWidget):
+            w.parent().deleteLater()
+        return w
+    def tm_save_state(self, w):
+        return {}
