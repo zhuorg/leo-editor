@@ -127,11 +127,12 @@ class DockManager(object):
         wid(c.frame.top.findChild(QtWidgets.QWidget, "logFrame"), '_leo_pane:logFrame')
         wid(c.frame.top.findChild(QtWidgets.QWidget, "bodyFrame"), '_leo_pane:bodyFrame')
 
-        def load(timer, self=self):
-            timer.stop()
-            self.load()
-        timer = g.IdleTime(load, delay=1000)
-        timer.start()
+        if os.environ.get('USE_QDOCKS'):
+            def load(timer, self=self):
+                timer.stop()
+                self.load()
+            timer = g.IdleTime(load, delay=1000)
+            timer.start()
     @staticmethod
     def area_span(widget, bbox):
         """area_span - find max. proportion of area width/height spanned
