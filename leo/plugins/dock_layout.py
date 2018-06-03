@@ -156,9 +156,11 @@ class DockManager(object):
             data (dict): dict describing layout
         """
         for widget in data['widgets']:
+            # creates panes that don't exist
             self.find_dock(widget['id'], state=widget['state'], title=widget['title'])
+        # restores geometry (not state) of panes
         self.c.frame.top.restoreState(binascii.a2b_base64(data['QtLayout']))
-
+        self.toggle_titles(data['title_mode'])
     def load(self):
         """load - load layout on idle after load"""
         self.dockify()
@@ -260,22 +262,26 @@ class DockManager(object):
                     'state': self.c._tool_manager.save_state(i.widget()),
                 }
                 for i in self.c.frame.top.findChildren(QtWidgets.QDockWidget)
-            ]
+            ],
+            'title_mode': 'off' if self.titles_hidden() else 'on'
         }
-    def toggle_titles(self):
+    def titles_hidden(self):
+        # find the first QDockWidget and see if titles are hidden
+        return self.c.frame.top.findChild(QtWidgets.QDockWidget).titleBarWidget() is not None
+
+    def toggle_titles(self, mode=None):
         c = self.c
         mw = c.frame.top
         # find the first QDockWidget and see if titles are hidden
-        if mw.findChild(QtWidgets.QDockWidget).titleBarWidget() is None:
-            # default, not hidden, so hide with blank widget
-            widget_factory = lambda: QtWidgets.QWidget()
-        else:
-            # hidden, so revert to default, not hidden
+        if mode == 'on' or self.titles_hidden():
+            # hidden, so revert to not hidden
             widget_factory = lambda: None
+        else:
+            # not hidden, so hide with blank widget
+            widget_factory = lambda: QtWidgets.QWidget()
         # apply to all QDockWidgets
         for child in mw.findChildren(QtWidgets.QDockWidget):
             child.setTitleBarWidget(widget_factory())
-
 class ToolManager(object):
     """ToolManager - manage tools (panes, widgets)
 
