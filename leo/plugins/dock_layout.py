@@ -8,13 +8,14 @@ in a single dock area, and the QMainWindow's main widget is not used.
 Nested docking is enabled, allowing almost any layout to be created. The
 Minibuffer is moved to the toolbar.
 """
+import binascii
 import json
 import os
 
 from collections import defaultdict, namedtuple
 
 import leo.core.leoGlobals as g
-from leo.core.leoQt import QtCore, QtWidgets, QtGui
+from leo.core.leoQt import QtCore, QtWidgets, QtGui, QString
 QtConst = QtCore.Qt
 
 DockAreas = (
@@ -145,6 +146,14 @@ class DockManager(object):
             dock.setWidget(w)
             return dock
         g.log("Didn't find %s" % id_, color='warning')
+    def from_dict(self, data):
+        """from_dict - load from dict
+
+        Args:
+            data (dict): dict describing layout
+        """
+        self.c.frame.top.restoreState(binascii.a2b_base64(data['QtLayout']))
+
     def load(self):
         """load - load layout on idle after load"""
         self.dockify()
@@ -152,7 +161,7 @@ class DockManager(object):
             timer.stop()
             g.es('loading layout')
             self.load_layout_file(g.os_path_finalize_join(
-                g.computeHomeDir(), '.leo', 'layouts', 'default.layout'))
+                g.computeHomeDir(), '.leo', 'layouts', 'default.json'))
         timer = g.IdleTime(delayed_layout, delay=1000)
         timer.start()
     def load_layout(self):
@@ -161,7 +170,7 @@ class DockManager(object):
         if not g.os_path_exists(layouts):
             os.makedirs(layouts)
         file = g.app.gui.runOpenFileDialog(self.c, "Pick a layout",
-            [("Layout files", '*.layout'), ("All files", '*')], startpath=layouts)
+            [("Layout files", '*.json'), ("All files", '*')], startpath=layouts)
         if file:
             self.load_layout_file(file)
     def load_layout_file(self, file):
@@ -170,8 +179,8 @@ class DockManager(object):
         Args:
             file (str): path to file
         """
-        with open(file, 'rb') as in_:
-            self.c.frame.top.restoreState(in_.read())
+        with open(file) as in_:
+            self.from_dict(json.load(in_))
 
     def open_dock_menu(self, pos=None):
         """open_dock_menu - open a dock"""
@@ -207,7 +216,7 @@ class DockManager(object):
         old_cwd = os.getcwd()
         os.chdir(layouts)
         file = g.app.gui.runSaveFileDialog(self.c, title="Save a layout",
-            filetypes=[("Layout files", '*.layout'), ("All files", '*')],
+            filetypes=[("Layout files", '*.json'), ("All files", '*')],
             initialfile=layouts)
         os.chdir(old_cwd)
         if file:
@@ -218,9 +227,8 @@ class DockManager(object):
         Args:
             file (str): path to file
         """
-        with open(file, 'wb') as out:
-            out.write(self.c.frame.top.saveState())
-
+        with open(file, 'w') as out:
+            json.dump(self.to_dict(), out)
     @staticmethod
     def swap_dock(a, b):
         """swap_dock - swap contents / titles of a pair of dock widgets
@@ -235,6 +243,13 @@ class DockManager(object):
         a.setWindowTitle(b.windowTitle())
         b.setWidget(w)
         b.setWindowTitle(a_txt)
+    def to_dict(self):
+        """to_dict - return dict representing layout"""
+
+        x = binascii.b2a_base64(self.c.frame.top.saveState())
+        return {
+            'QtLayout': x.decode('utf-8')
+        }
     def toggle_titles(self):
         c = self.c
         mw = c.frame.top
