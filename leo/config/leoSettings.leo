@@ -6446,7 +6446,6 @@ False: start-find commands puts focus in Find panel.</t>
 <t tx="ekr.20131213135427.22320"></t>
 <t tx="ekr.20131213135427.22321"></t>
 <t tx="ekr.20131213135427.22322"></t>
-<t tx="ekr.20131213135427.22323"></t>
 <t tx="ekr.20131213135427.22325"></t>
 <t tx="ekr.20131213135427.22326"></t>
 <t tx="ekr.20131213135427.22327"></t>
@@ -11781,7 +11780,6 @@ False: Legacy operation.
 True:  Replace the Meta key with the Alt Key.
        This allows Windows Keyboards to be used without changing key bindings.
 </t>
-<t tx="ekr.20180511075115.1"></t>
 <t tx="ekr.20180525053145.1">True: use jedi for autocompletion if available.
 See https://jedi.readthedocs.io/en/latest/index.html
 </t>

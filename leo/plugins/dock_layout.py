@@ -12,10 +12,8 @@ import binascii
 import json
 import os
 
-from collections import defaultdict, namedtuple
-
 import leo.core.leoGlobals as g
-from leo.core.leoQt import QtCore, QtWidgets, QtGui, QString
+from leo.core.leoQt import QtCore, QtWidgets, QtGui
 QtConst = QtCore.Qt
 
 DockAreas = (
@@ -62,6 +60,18 @@ def wid(w, value=None):
     else:
         w.setObjectName(value)
 
+class LeoDockWidget(QtWidgets.QDockWidget):
+    """LeoDockWidget - special close event etc.
+    """
+
+    def __init__(self, *args, **kwargs):
+        QtWidgets.QDockWidget.__init__(self, *args, **kwargs)
+    def closeEvent(self, event):
+        w = self.widget()
+        if w and wid(w) in ('outlineFrame', 'logFrame', 'bodyFrame'):
+            return QtWidgets.QDockWidget.closeEvent(self, event)
+        w.close()
+        self.deleteLater()
 class DockManager(object):
     """DockManager - manage QDockWidget layouts
     
@@ -78,12 +88,17 @@ class DockManager(object):
         self.c = c
         c._dock_manager = self
 
-        if os.environ.get('USE_QDOCKS'):
+        try:
+            # check the default layout's loadable
+            json.load(open(g.os_path_finalize_join(
+                g.computeHomeDir(), '.leo', 'layouts', 'default.json')))
             def load(timer, self=self):
                 timer.stop()
                 self.load()
             timer = g.IdleTime(load, delay=1000)
             timer.start()
+        except:
+            g.log("Couldn't open default layout")
     def dockify(self):
         """dockify - Move UI elements into docks"""
         c = self.c
@@ -99,7 +114,7 @@ class DockManager(object):
                 childs.append(child)
 
         for child in childs:
-            w = QtWidgets.QDockWidget(child.objectName(), mw)
+            w = LeoDockWidget(child.objectName(), mw)
             w.setWidget(child)
             w.setObjectName(("_dw:%s" % wid(child)))
             mw.addDockWidget(QtConst.TopDockWidgetArea, w)
@@ -107,6 +122,7 @@ class DockManager(object):
         tb = QtWidgets.QToolBar()
         mw.addToolBar(QtConst.BottomToolBarArea, tb)
         tb.addWidget(c.frame.miniBufferWidget.widget.parent())
+        tb.setWindowTitle("Minibuffer")
 
         mw.centralWidget().close()
 
@@ -119,7 +135,7 @@ class DockManager(object):
 
         tw = c.frame.log.tabWidget
         while tw.count() > 1:
-            dw = QtWidgets.QDockWidget(tw.tabText(1), mw)
+            dw = LeoDockWidget(tw.tabText(1), mw)
             w = tw.widget(1)
             if not wid(w):
                 wid(w, tw.tabText(1))
@@ -142,7 +158,7 @@ class DockManager(object):
                 return child
         w = self.c._tool_manager.provide(id_, state=state)
         if w:
-            dock = QtWidgets.QDockWidget()# self.c.frame.top)
+            dock = LeoDockWidget()# self.c.frame.top)
             dock.setWidget(w)
             dock.setObjectName(("_dw:%s" % wid(w)))
             dock.setWindowTitle(title or wid(w))
@@ -208,7 +224,7 @@ class DockManager(object):
         if w:
             wid(w, id_)
             main_window = self.c.frame.top
-            new_dock = QtWidgets.QDockWidget(name, main_window)
+            new_dock = LeoDockWidget(name, main_window)
             new_dock.setWidget(w)
             new_dock.setObjectName("_dw:%s" % wid(w))
             main_window.addDockWidget(QtConst.TopDockWidgetArea, new_dock)
