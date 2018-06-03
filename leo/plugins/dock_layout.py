@@ -129,7 +129,7 @@ class DockManager(object):
             dw.setObjectName("_dw:%s" % wid(w))
             mw.tabifyDockWidget(log_dock, dw)
 
-    def find_dock(self, id_):
+    def find_dock(self, id_, state=None, title=None):
         """find_dock - find a dock widget
 
         Args:
@@ -140,10 +140,13 @@ class DockManager(object):
         for child in self.c.frame.top.findChildren(QtWidgets.QDockWidget):
             if wid(child.widget()) == id_:
                 return child
-        w = self.c._tool_manager.provide(id_)
+        w = self.c._tool_manager.provide(id_, state=state)
         if w:
             dock = QtWidgets.QDockWidget()# self.c.frame.top)
             dock.setWidget(w)
+            dock.setObjectName(("_dw:%s" % wid(w)))
+            dock.setWindowTitle(title or wid(w))
+            self.c.frame.top.addDockWidget(QtConst.TopDockWidgetArea, dock)
             return dock
         g.log("Didn't find %s" % id_, color='warning')
     def from_dict(self, data):
@@ -152,6 +155,8 @@ class DockManager(object):
         Args:
             data (dict): dict describing layout
         """
+        for widget in data['widgets']:
+            self.find_dock(widget['id'], state=widget['state'], title=widget['title'])
         self.c.frame.top.restoreState(binascii.a2b_base64(data['QtLayout']))
 
     def load(self):
@@ -246,9 +251,16 @@ class DockManager(object):
     def to_dict(self):
         """to_dict - return dict representing layout"""
 
-        x = binascii.b2a_base64(self.c.frame.top.saveState())
         return {
-            'QtLayout': x.decode('utf-8')
+            'QtLayout': binascii.b2a_base64(self.c.frame.top.saveState()).decode('utf-8'),
+            'widgets': [
+                {
+                    'title': i.windowTitle(),
+                    'id': wid(i.widget()),
+                    'state': self.c._tool_manager.save_state(i.widget()),
+                }
+                for i in self.c.frame.top.findChildren(QtWidgets.QDockWidget)
+            ]
         }
     def toggle_titles(self):
         c = self.c
@@ -328,6 +340,13 @@ class ToolManager(object):
                     g.log("Provided %s" % id_)
                     return w
         g.log("Couldn't provide %s" % id_, color='warning')
+    def save_state(self, w):
+        """find provider for w and call save_state() on it"""
+        for provider in self.providers:
+            ids = [i[0] for i in provider.tm_provides()]
+            if wid(w) in ids:
+                return provider.tm_save_state(w)
+        return {}
 class CorePaneToolProvider:
     def __init__(self, c):
         self.c = c
