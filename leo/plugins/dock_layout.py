@@ -11,6 +11,7 @@ Minibuffer is moved to the toolbar.
 import binascii
 import json
 import os
+import types
 
 import leo.core.leoGlobals as g
 from leo.core.leoQt import QtCore, QtWidgets, QtGui
@@ -87,6 +88,7 @@ class DockManager(object):
         """
         self.c = c
         c._dock_manager = self
+        self.tab2id = {}
 
         try:
             # check the default layout's loadable
@@ -97,6 +99,7 @@ class DockManager(object):
                 self.load()
             timer = g.IdleTime(load, delay=1000)
             timer.start()
+            self.patch_things()
         except:
             g.log("Couldn't open default layout")
     def dockify(self):
@@ -139,6 +142,7 @@ class DockManager(object):
             w = tw.widget(1)
             if not wid(w):
                 wid(w, tw.tabText(1))
+            self.tab2id[tw.tabText(1)] = wid(w)
             c._corepanetoolprovider.add_tab_pane(wid(w))
 
             dw.setWidget(w)
@@ -230,6 +234,17 @@ class DockManager(object):
             main_window.addDockWidget(QtConst.TopDockWidgetArea, new_dock)
         else:
             g.log("Could not find tool: %s" % id_, color='error')
+    def patch_things(self):
+        """patch_things - patch core"""
+        def selectTab(self, tabName, createText=True, widget=None, wrap='none', dc=self, rec=[]):
+            if rec:
+                return
+            rec.append(1)
+            w = dc.find_dock(dc.tab2id[tabName])
+            w.raise_()
+            del rec[0]
+
+        self.c.frame.log.selectTab = types.MethodType(selectTab, self.c.frame.log)
     def save_layout(self):
         """save_layout - save a layout"""
         # FIXME: startpath option here?  cwd doesn't work
