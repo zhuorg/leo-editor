@@ -622,6 +622,7 @@
 <v t="ekr.20060915112109"><vh>How can I enable and disable support for psyco?</vh></v>
 <v t="ekr.20141108064630.16"><vh>How can I put background images in the body pane?</vh></v>
 <v t="ekr.20180529064307.1"><vh>How can I run code at startup?</vh></v>
+<v t="ekr.20180619051649.1"><vh>How can I sync settings across .leo files?</vh></v>
 <v t="ekr.20160304081437.3"><vh>How can I use a dark theme in Leo?</vh></v>
 <v t="ekr.20060805094325"><vh>How can I use Leo's legacy key bindings?</vh></v>
 <v t="ekr.20050830120844"><vh>How do I add a new menu item from a plugin?</vh></v>
@@ -2136,10 +2137,16 @@
 <v t="ekr.20180601095122.1"><vh>Bugs</vh>
 <v t="ekr.20180601095134.1"><vh>#917: System keys on Microsoft keyboard insert unwanted text</vh></v>
 </v>
+<v t="ekr.20180608054147.1"><vh>Code</vh>
+<v t="ekr.20180608054151.1"><vh>fast-read branch</vh></v>
+<v t="ekr.20180608054356.1"><vh>perf branch (copy kwarg to generators)</vh></v>
+</v>
 <v t="ekr.20180528114740.1"><vh>Features</vh>
+<v t="ekr.20180608055318.1"><vh>Added print-stats command &amp; improved tracing</vh></v>
 <v t="ekr.20180528114754.1"><vh>#871: A setting to position the icon bar </vh></v>
 </v>
 </v>
+<v t="ekr.20180619051649.1"></v>
 </vnodes>
 <tnodes>
 <t tx="EKR.20040524104904.140">Leo stores options in **@settings trees**, outlines whose headline is @settings. When opening a .leo file, Leo looks for @settings trees not only in the outline being opened but also in various leoSettings.leo files. This scheme allows for the following kinds of settings:
@@ -28158,6 +28165,80 @@ Alternatively, the plugin could run code at 'start2' time, after all plugins hav
 <t tx="ekr.20180601095122.1"></t>
 <t tx="ekr.20180601095134.1">https://github.com/leo-editor/leo-editor/issues/917
 </t>
+<t tx="ekr.20180608054147.1"></t>
+<t tx="ekr.20180608054151.1">This branch incorporates Vitalije's great new read code.  This code reads external files (from @file nodes) almost exactly as fast as when using the cacher.
+
+As a result, caching is no longer needed, and the the --no-cache option does nothing.</t>
+<t tx="ekr.20180608054356.1">This branch greatly reduces overhead during startup.
+
+1. All generators yielding positions now accept a "copy" kwarg.
+
+   The default value is True, for compatibility with user scripts.
+   
+   When True, these generators yield *copies* of all positions.
+
+   Leo's core sets copy=False in several places, greatly reducing
+   unnecessary positions.
+
+2. g.isUnicode and g.toUnicode are simpler and faster.
+
+3. Rewrote g.is_special, greatly reduced calls to g.match_words.</t>
+<t tx="ekr.20180608055318.1">This command just calls g.printStats, which prints the contents of g.app.statsDict.
+
+Put the following snippet at the start of any function/method you wish to profile:
+
+@language python
+
+    if not g.app.statsLockout:
+        g.app.statsLockout = True
+        try:
+            d = g.app.statsDict
+            key = 'g.isUnicode:' + g.callers()
+            d [key] = d.get(key, 0) + 1
+        finally:
+            g.app.statsLockout = False
+            
+@language rest
+@wrap
+
+To see the stats, restart Leo, then do print-stats.
+
+This pattern produces superb statistics that show how many times the *callers* of a routine called the routine.  Here are before/after statistics for g.match_word:
+
+@language python
+
+# Yikes: createAllButtons takes a long time.
+244179 g.match_word:createAllButtons,isAtIgnoreNode,isAtIgnoreNode,is_special
+ 76017 g.match_word:doHandlersForTag,callTagHandler,onCreate,createAllButtons
+ 16801 g.match_word:onCreate,createAllButtons,isAtIgnoreNode,isAtIgnoreNode
+  
+# Nothing else matters much...
+7540 g.match_word:writeFromString,writeOpenFile,putBody,directiveKind4
+2861 g.match_word:readAll,isAtIgnoreNode,isAtIgnoreNode,is_special
+2572 g.match_word:putVnode,isAtIgnoreNode,isAtIgnoreNode,is_special
+1824 g.match_word:fullPath,anyAtFileNodeName,anyAtFileNodeName,findAtFileName
+1646 g.match_word:putLine,putAtOthersLine,putBody,directiveKind4
+1089 g.match_word:isAnyAtFileNode,isAnyAtFileNode,anyAtFileNodeName,findAtFileName
+   
+# After improvements...
+
+7540 g.match_word:writeFromString,writeOpenFile,putBody,directiveKind4
+1646 g.match_word:putLine,putAtOthersLine,putBody,directiveKind4
+1645 g.match_word:fullPath,anyAtFileNodeName,anyAtFileNodeName,findAtFileName
+</t>
+<t tx="ekr.20180619051649.1">Organize your myLeoSettings.leo file like this::
+
+    @settings
+         -my settings &lt;clone&gt;
+              -@bool .... = True
+              -@data fldsdf
+    
+    @file mysettings.txt
+          my settings &lt;clone&gt;
+          
+Syncing mySettings.txt will synchronize your settings across your .leo files.
+
+**Note**: Changed settings will not be available in other open outlines until you reload settings. You can do this with the reload-all-settings command.</t>
 <t tx="peckj.20130813123907.6841" str_ctime="1376412039.0" str_mtime="1376412039.0" str_atime="1376414164.0">Documenting new plugins is important for users to be able understand and use the features they add. To that effect, there are a few documentation steps that should not be overlooked.
 
 - Document the plugin thoroughly in the plugin's docstring. This allows the documentation to be accessed from the Plugins menu.

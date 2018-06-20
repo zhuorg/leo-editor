@@ -163,6 +163,8 @@ class LeoApp(object):
             # Set by p.safeMoveToThreadNext.
         self.statsDict = {}
             # dict used by g.stat, g.clear_stats, g.print_stats.
+        self.statsLockout = False
+            # A lockout to prevent unbound recursion while gathering stats.
         self.validate_outline = False
             # True: enables c.validate_outline. (slow)
         #@-<< LeoApp: Debugging & statistics >>
@@ -960,11 +962,11 @@ class LeoApp(object):
                 pass
         else: sysVersion = sys.platform
         branch, commit = g.gitInfo()
-        if not branch or not commit:
+        if not commit:
             app.signon1 = 'Not running from a git repo'
         else:
             app.signon1 = 'Git repo info: branch = %s, commit = %s' % (
-                branch, commit)
+                branch or '(none)', commit)
         app.signon = 'Leo %s' % leoVer
         if build:
             app.signon += ', build '+build
@@ -2675,6 +2677,7 @@ class LoadManager(object):
         add_bool('--silent',        'disable all log messages')
         add_other('--theme',        'use the named theme file', m='NAME')
         add_other('--trace-binding', 'trace commands bound to a key', m='KEY')
+        add_bool('--trace-cache',   'trace caching in .leo/db')
         add_bool('--trace-coloring', 'trace syntax coloring')
         add_bool('--trace-events',  'trace non-key events')
         add_bool('--trace-focus',   'trace changes of focus')
@@ -2793,6 +2796,7 @@ class LoadManager(object):
         #
         # Most --trace- options append items to g.app.debug.
         table = (
+            ('cache', options.trace_cache),
             ('coloring', options.trace_coloring),
             ('events', options.trace_events), # New
             ('focus', options.trace_focus),

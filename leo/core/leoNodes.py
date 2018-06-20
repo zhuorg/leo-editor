@@ -294,8 +294,6 @@ class Position(object):
     def __str__(self):
         p = self
         if p.v:
-            # return "<pos %d childIndex: %d lvl: %d [%d] %s>" % (
-                # id(p),p._childIndex,p.level(),len(p.stack),p.cleanHeadString())
             return "<pos %d childIndex: %d lvl: %d key: %s %s>" % (
                 id(p), p._childIndex, p.level(), p.key(), p.cleanHeadString())
         else:
@@ -393,29 +391,29 @@ class Position(object):
         return '\n'.join(array)
     #@+node:ekr.20091001141621.6060: *3* p.generators
     #@+node:ekr.20091001141621.6055: *4* p.children
-    def children(self):
+    def children(self, copy=True):
         '''Yield all child positions of p.'''
         p = self
         p = p.firstChild()
         while p:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToNext()
 
     # Compatibility with old code...
     children_iter = children
     #@+node:ekr.20091002083910.6102: *4* p.following_siblings
-    def following_siblings(self):
+    def following_siblings(self, copy=True):
         '''Yield all siblings positions that follow p, not including p.'''
         p = self
         p = p.next()
         while p:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToNext()
 
     # Compatibility with old code...
     following_siblings_iter = following_siblings
     #@+node:ekr.20161120105707.1: *4* p.nearest_roots
-    def nearest_roots(self, predicate=None):
+    def nearest_roots(self, copy=True, predicate=None):
         '''
         A generator yielding all the root positions "near" p1 = self that
         satisfy the given predicate. p.isAnyAtFileNode is the default
@@ -437,20 +435,20 @@ class Position(object):
         p1 = self
         for p in p1.self_and_parents():
             if predicate(p):
-                yield p.copy() # 2017/02/19
+                yield p.copy() if copy else p
                 return
         # Next, look for all .md files in the tree.
         after = p1.nodeAfterTree()
         p = p1
         while p and p != after:
             if predicate(p):
-                yield p.copy() # 2017/02/19
+                yield p.copy() if copy else p
                 p.moveToNodeAfterTree()
             else:
                 p.moveToThreadNext()
 
     #@+node:ekr.20161120163203.1: *4* p.nearest_unique_roots (aka p.nearest)
-    def nearest_unique_roots(self, predicate=None):
+    def nearest_unique_roots(self, copy=True, predicate=None):
         '''
         A generator yielding all unique root positions "near" p1 = self that
         satisfy the given predicate. p.isAnyAtFileNode is the default
@@ -473,7 +471,7 @@ class Position(object):
         p1 = self
         for p in p1.self_and_parents():
             if predicate(p):
-                yield p.copy() # 2017/02/19
+                yield p.copy() if copy else p
                 return
         # Next, look for all unique .md files in the tree.
         seen = set()
@@ -483,7 +481,7 @@ class Position(object):
             if predicate(p):
                 if p.v not in seen:
                     seen.add(p.v)
-                    yield p.copy() # 2017/02/19
+                    yield p.copy() if copy else p
                 p.moveToNodeAfterTree()
             else:
                 p.moveToThreadNext()
@@ -503,61 +501,61 @@ class Position(object):
     tnodes_iter = nodes
     vnodes_iter = nodes
     #@+node:ekr.20091001141621.6058: *4* p.parents
-    def parents(self):
+    def parents(self, copy=True):
         '''Yield all parent positions of p.'''
         p = self
         p = p.parent()
         while p:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToParent()
 
     # Compatibility with old code...
     parents_iter = parents
     #@+node:ekr.20091002083910.6099: *4* p.self_and_parents
-    def self_and_parents(self):
+    def self_and_parents(self, copy=True):
         '''Yield p and all parent positions of p.'''
         p = self
         p = p.copy()
         while p:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToParent()
 
     # Compatibility with old code...
     self_and_parents_iter = self_and_parents
     #@+node:ekr.20091001141621.6057: *4* p.self_and_siblings
-    def self_and_siblings(self):
+    def self_and_siblings(self, copy=True):
         '''Yield all sibling positions of p including p.'''
         p = self
         p = p.copy()
         while p.hasBack():
             p.moveToBack()
         while p:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToNext()
 
     # Compatibility with old code...
     self_and_siblings_iter = self_and_siblings
     #@+node:ekr.20091001141621.6066: *4* p.self_and_subtree
-    def self_and_subtree(self):
+    def self_and_subtree(self, copy=True):
         '''Yield p and all positions in p's subtree.'''
         p = self
         p = p.copy()
         after = p.nodeAfterTree()
         while p and p != after:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToThreadNext()
 
     # Compatibility with old code...
     self_and_subtree_iter = self_and_subtree
     #@+node:ekr.20091001141621.6056: *4* p.subtree
-    def subtree(self):
+    def subtree(self, copy=True):
         '''Yield all positions in p's subtree, but not p.'''
         p = self
         p = p.copy()
         after = p.nodeAfterTree()
         p.moveToThreadNext()
         while p and p != after:
-            yield p.copy()
+            yield p.copy() if copy else p
             p.moveToThreadNext()
 
     # Compatibility with old code...
@@ -576,7 +574,7 @@ class Position(object):
     unique_tnodes_iter = unique_nodes
     unique_vnodes_iter = unique_nodes
     #@+node:ekr.20091002083910.6103: *4* p.unique_subtree
-    def unique_subtree(self):
+    def unique_subtree(self, copy=True):
         '''Yield p and all other unique positions in p's subtree.'''
         p = self
         seen = set()
@@ -584,7 +582,7 @@ class Position(object):
             if p.v not in seen:
                 seen.add(p.v)
                 # Fixed bug 1255208: p.unique_subtree returns vnodes, not positions.
-                yield p.copy()
+                yield p.copy() if copy else p
 
     # Compatibility with old code...
     subtree_with_unique_tnodes_iter = unique_subtree
@@ -745,15 +743,16 @@ class Position(object):
         with_count - include ',x,y' at end where y zero based count of same headlines
         """
         aList = []
-        for i in self.self_and_parents():
+        for i in self.self_and_parents(copy=False): ###
             if with_index or with_count:
-                i = i.copy()
+                ### i = i.copy()
                 count = 0
                 ind = 0
                 p = i.copy()
                 while p.hasBack():
                     ind = ind + 1
-                    p = p.back().copy()
+                    ### p = p.back().copy()
+                    p.moveToBack()
                     if i.h == p.h:
                         count = count + 1
                 aList.append(i.h.replace('-->', '--%3E') + ":" + str(ind))
@@ -1288,7 +1287,7 @@ class Position(object):
         if p.v:
             child_v = p.v.children and p.v.children[0]
             if child_v:
-                for parent in p.self_and_parents():
+                for parent in p.self_and_parents(copy=False): ###
                     if child_v == parent.v:
                         g.app.structure_errors += 1
                         g.error('vnode: %s is its own parent' % child_v)
@@ -1973,7 +1972,6 @@ class VNodeBase(object):
         assert self.fileIndex, g.callers()
     #@+node:ekr.20031218072017.3345: *4* v.__repr__ & v.__str__
     def __repr__(self):
-        # return "<VNode %7x %s>" % (id(self), self.cleanHeadString())
         return "<VNode %s %s>" % (self.gnx, self.cleanHeadString())
 
     __str__ = __repr__
@@ -2069,7 +2067,7 @@ class VNodeBase(object):
     #@+node:EKR.20040430152000: *4* v.isAtAllNode
     def isAtAllNode(self):
         """Returns True if the receiver contains @others in its body at the start of a line."""
-        flag, i = g.is_special(self._bodyString, 0, "@all")
+        flag, i = g.is_special(self._bodyString, "@all")
         return flag
     #@+node:ekr.20040326031436: *4* v.isAnyAtFileNode
     def isAnyAtFileNode(self):
@@ -2122,12 +2120,12 @@ class VNodeBase(object):
         if g.match_word(self._headString, 0, '@ignore'):
             return True
         else:
-            flag, i = g.is_special(self._bodyString, 0, "@ignore")
+            flag, i = g.is_special(self._bodyString, "@ignore")
             return flag
     #@+node:ekr.20031218072017.3352: *4* v.isAtOthersNode
     def isAtOthersNode(self):
         """Returns True if the receiver contains @others in its body at the start of a line."""
-        flag, i = g.is_special(self._bodyString, 0, "@others")
+        flag, i = g.is_special(self._bodyString, "@others")
         return flag
     #@+node:ekr.20031218072017.3353: *4* v.matchHeadline
     def matchHeadline(self, pattern):

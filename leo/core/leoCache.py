@@ -57,6 +57,7 @@ class Cacher(object):
         if not fn: return
         pth, bname = split(fn)
         if pth and bname:
+            sfn = g.shortFileName(fn) # For dumps.
             fn = fn.lower()
             fn = g.toEncodedString(fn) # Required for Python 3.x.
             # Important: this creates a top-level directory of the form x_y.
@@ -69,6 +70,7 @@ class Cacher(object):
             # Fixes bug 670108.
             self.c.db = self.db
             self.inited = True
+            self.dump(self.db, 'c.db: %s' % sfn)
     #@+node:ekr.20100208082353.5920: *4* cacher.initGlobalDb
     def initGlobalDB(self):
 
@@ -79,15 +81,10 @@ class Cacher(object):
             db = SqlitePickleShare(dbdirname) if SQLITE else PickleShareDB(dbdirname)
             self.db = db
             self.inited = True
+            self.dump(self.db, 'g.app.db')
             return db
         except Exception:
             return {} # Use a plain dict as a dummy.
-    #@+node:ekr.20100210163813.5747: *4* cacher.save
-    def save(self, fn, changeName):
-        if SQLITE:
-            self.commit(True)
-        if changeName or not self.inited:
-            self.initFileDB(fn)
     #@+node:ekr.20100209160132.5759: *3* cacher.clearCache & clearAllCaches
     def clearCache(self):
         '''Clear the cache for the open window.'''
@@ -112,6 +109,40 @@ class Cacher(object):
             if c.cacher:
                 c.cacher.clearCache()
         g.es('done', color='blue')
+    #@+node:ekr.20180611054447.1: *3* cacher.dump
+    def dump(self, db, tag):
+        '''Dump the indicated cache.'''
+        
+        def dump_list(aList, result, indent=0):
+            head, body, gnx, children = tuple(aList)
+            assert isinstance(children, list)
+            result.append('%6s%s %20s %s' % (len(body), ' '*indent, gnx, head))
+            for child in children:
+                dump_list(child, result, indent=indent+2)
+
+        if 'cache' not in g.app.debug:
+            return
+        print('\n===== %s =====\n' % tag)
+        for key in db.keys():
+            key = key[0]
+            val = db.get(key)
+            print('%s:' % key)
+            if key.startswith('fcache/'):
+                assert isinstance(val, list), val.__class__.__name__
+                result = ['list of nodes...']
+                dump_list(val, result)
+                if 1: # Brief
+                    n = len(result)-1
+                    print('%s node%s in %s' % (n, g.plural(n), val[0].strip()))
+                else:
+                    g.printObj(result)
+            elif g.isString(val):
+                print(val)
+            elif isinstance(val, (int, float)):
+                print(val)
+            else:
+                g.printObj(val)
+            print('')
     #@+node:ekr.20100208071151.5907: *3* cacher.fileKey
     def fileKey(self, fileName, content, requireEncodedString=False):
         '''
@@ -444,6 +475,12 @@ class Cacher(object):
         return [
             p.h, p.b, p.gnx,
             [self.makeCacheList(p2) for p2 in p.children()]]
+    #@+node:ekr.20100210163813.5747: *4* cacher.save
+    def save(self, fn, changeName):
+        if SQLITE:
+            self.commit(True)
+        if changeName or not self.inited:
+            self.initFileDB(fn)
     #@+node:ekr.20100208082353.5929: *4* cacher.setCachedGlobalsElement
     def setCachedGlobalsElement(self, fn):
 
