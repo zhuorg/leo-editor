@@ -83,8 +83,8 @@ class DockManager(object):
     def __init__(self, c):
         """bind to Leo context
 
-    Args:
-        c (context): Leo outline
+        Args:
+            c (context): Leo outline
         """
         self.c = c
         c._dock_manager = self
@@ -92,8 +92,9 @@ class DockManager(object):
 
         try:
             # check the default layout's loadable
-            json.load(open(g.os_path_finalize_join(
-                g.computeHomeDir(), '.leo', 'layouts', 'default.json')))
+            path = g.os_path_finalize_join(
+                g.computeHomeDir(), '.leo', 'layouts', 'default.json')
+            json.load(open(path))
             def load(timer, self=self):
                 timer.stop()
                 self.load()
@@ -101,7 +102,7 @@ class DockManager(object):
             timer.start()
             self.patch_things()
         except:
-            g.log("Couldn't open default layout")
+            g.log("Couldn't open default layout '%s'" % path)
     def dockify(self):
         """dockify - Move UI elements into docks"""
         c = self.c
@@ -240,6 +241,10 @@ class DockManager(object):
             if rec:
                 return
             rec.append(1)
+            if tabName not in dc.tab2id:
+                g.log("Didn't find tab: %s" % tabName)
+                del rec[0]
+                return
             w = dc.find_dock(dc.tab2id[tabName])
             w.raise_()
             del rec[0]
@@ -257,6 +262,8 @@ class DockManager(object):
             filetypes=[("Layout files", '*.json'), ("All files", '*')],
             initialfile=layouts)
         os.chdir(old_cwd)
+        if not file.endswith('.json'):
+            file += '.json'
         if file:
             self.save_layout_file(file)
     def save_layout_file(self, file):
