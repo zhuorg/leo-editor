@@ -138,7 +138,7 @@ class DockManager(object):
             raise Exception("Can't find logFrame")
 
         tw = c.frame.log.tabWidget
-        while tw.count() > 1:
+        while tw.count() > 0:
             dw = LeoDockWidget(tw.tabText(1), mw)
             w = tw.widget(1)
             if not wid(w):
