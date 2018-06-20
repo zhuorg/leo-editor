@@ -138,23 +138,28 @@ class DockManager(object):
             raise Exception("Can't find logFrame")
 
         tw = c.frame.log.tabWidget
-        while tw.count() > 0:
-            dw = LeoDockWidget(tw.tabText(1), mw)
-            w = tw.widget(1)
+        take_from = 1
+        while tw.count() > take_from:
+            w = tw.widget(take_from)
+            dw = LeoDockWidget(tw.tabText(take_from), mw)
             if not wid(w):
-                wid(w, tw.tabText(1))
-            self.tab2id[tw.tabText(1)] = wid(w)
+                wid(w, tw.tabText(take_from))
+            self.tab2id[tw.tabText(take_from)] = wid(w)
             c._corepanetoolprovider.add_tab_pane(wid(w))
-
             dw.setWidget(w)
             dw.setObjectName("_dw:%s" % wid(w))
             mw.tabifyDockWidget(log_dock, dw)
+
+        self.tab2id['logFrame'] = 'logFrame'
+        print("===", tw.tabText(0))
+
+        print(self.tab2id)
 
     def find_dock(self, id_, state=None, title=None):
         """find_dock - find a dock widget
 
         Args:
-            ns_id (str): the ID for the widget
+            id_ (str): the ID for the widget
         Returns:
             QWidget: the widget
         """
@@ -241,6 +246,10 @@ class DockManager(object):
             if rec:
                 return
             rec.append(1)
+
+            if tabName == 'Log':
+                tabName = 'logFrame'
+
             if tabName not in dc.tab2id:
                 g.log("Didn't find tab: %s" % tabName)
                 del rec[0]
