@@ -1,3 +1,18 @@
+July 11, 2018
+The original README.md of Leo is bellow.
+
+# Puting the new Leo tree model in use
+
+This branch aimes to show how to incorporate new data model in Leo and use its
+features with minimal set of changes to Leo itself.
+
+Theory of new model can be find [here](https://computingart.net/category/leo.html)
+
+Source code of new data model can be found [here](https://github.com/leo-editor/new-leo-model)
+
+Let the coding begin!
+
+
 May 28, 2018
 Leo 5.7.3, http://leoeditor.com, is now available on
 [GitHub](https://github.com/leo-editor/leo-editor).
