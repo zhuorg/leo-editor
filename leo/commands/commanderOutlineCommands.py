@@ -176,6 +176,7 @@ def dumpOutline(self, event=None):
 #@+node:ekr.20031218072017.2898: ** c_oc.Expand & contract commands
 #@+node:ekr.20031218072017.2900: *3* c_oc.contract-all
 @g.commander_command('contract-all')
+@g.ltm_tree_will_do('contract_all')
 def contractAllHeadlinesCommand(self, event=None, redrawFlag=True):
     '''Contract all nodes in the outline.'''
     # The helper does all the work.
@@ -215,6 +216,7 @@ def contractNode(self, event=None):
         c.redraw_after_contract(p=p, setFocus=True)
 #@+node:ekr.20040930064232: *3* c_oc.contractNodeOrGoToParent
 @g.commander_command('contract-or-go-left')
+@g.ltm_tree_will_do('contract_or_go_left')
 def contractNodeOrGoToParent(self, event=None):
     """Simulate the left Arrow Key in folder of Windows Explorer."""
     c, cc, p = self, self.chapterController, self.p
@@ -255,6 +257,7 @@ def contractParent(self, event=None):
     c.redraw_after_contract(p=parent)
 #@+node:ekr.20031218072017.2903: *3* c_oc.expandAllHeadlines
 @g.commander_command('expand-all')
+@g.ltm_tree_will_do('expand_all')
 def expandAllHeadlines(self, event=None):
     '''Expand all headlines.
     Warning: this can take a long time for large outlines.'''
@@ -345,6 +348,7 @@ def expandNode(self, event=None):
         c.redraw_after_expand(p, setFocus=True)
 #@+node:ekr.20040930064232.1: *3* c_oc.expandNodeAndGoToFirstChild
 @g.commander_command('expand-and-go-right')
+@g.ltm_tree_will_do('expand_or_go_right')
 def expandNodeAndGoToFirstChild(self, event=None):
     """If a node has children, expand it if needed and go to the first child."""
     c = self; p = c.p
@@ -359,6 +363,7 @@ def expandNodeAndGoToFirstChild(self, event=None):
     c.treeFocusHelper()
 #@+node:ekr.20171125082744.1: *3* c_oc.expandNodeOrGoToFirstChild
 @g.commander_command('expand-or-go-right')
+@g.ltm_tree_will_do('expand_or_go_right')
 def expandNodeOrGoToFirstChild(self, event=None):
     """Simulate the Right Arrow Key in folder of Windows Explorer."""
     c = self; p = c.p
@@ -609,6 +614,7 @@ def goToNextSibling(self, event=None):
     c.treeSelectHelper(p and p.next())
 #@+node:ekr.20031218072017.2920: *3* c_oc.goToParent
 @g.commander_command('goto-parent')
+@g.ltm_will_do('select_node_left', 'p')
 def goToParent(self, event=None):
     '''Select the parent of the selected node.'''
     c = self; p = c.p
@@ -621,6 +627,7 @@ def goToPrevSibling(self, event=None):
     c.treeSelectHelper(p and p.back())
 #@+node:ekr.20031218072017.2993: *3* c_oc.selectThreadBack
 @g.commander_command('goto-prev-node')
+@g.ltm_will_do('select_prev_node', 'p')
 def selectThreadBack(self, event=None):
     '''Select the node preceding the selected node in outline order.'''
     c = self; p = c.p
@@ -629,6 +636,7 @@ def selectThreadBack(self, event=None):
     c.treeSelectHelper(p)
 #@+node:ekr.20031218072017.2994: *3* c_oc.selectThreadNext
 @g.commander_command('goto-next-node')
+@g.ltm_will_do('select_next_node', 'p')
 def selectThreadNext(self, event=None):
     '''Select the node following the selected node in outline order.'''
     c = self; p = c.p
@@ -637,6 +645,7 @@ def selectThreadNext(self, event=None):
     c.treeSelectHelper(p)
 #@+node:ekr.20031218072017.2995: *3* c_oc.selectVisBack
 @g.commander_command('goto-prev-visible')
+@g.ltm_tree_will_do('select_prev_node')
 def selectVisBack(self, event=None):
     '''Select the visible node preceding the presently selected node.'''
     # This has an up arrow for a control key.
@@ -650,6 +659,7 @@ def selectVisBack(self, event=None):
         c.endEditing() # 2011/05/28: A special case.
 #@+node:ekr.20031218072017.2996: *3* c_oc.selectVisNext
 @g.commander_command('goto-next-visible')
+@g.ltm_tree_will_do('select_next_node')
 def selectVisNext(self, event=None):
     '''Select the visible node following the presently selected node.'''
     c, p = self, self.p
@@ -717,6 +727,7 @@ def hoist(self, event=None):
 #@+node:ekr.20031218072017.1759: ** c_oc.Insert, Delete & Clone commands
 #@+node:ekr.20031218072017.1762: *3* c_oc.clone
 @g.commander_command('clone-node')
+@g.ltm_will_do('clone_node', 'p')
 def clone(self, event=None):
     '''Create a clone of the selected outline.'''
     c = self; u = c.undoer; p = c.p
@@ -798,6 +809,7 @@ def cloneToLastNode(self, event=None):
     # return clone # For mod_labels and chapters plugins.
 #@+node:ekr.20031218072017.1193: *3* c_oc.deleteOutline
 @g.commander_command('delete-node')
+@g.ltm_will_do('delete_node', 'p')
 def deleteOutline(self, event=None, op_name="Delete Node"):
     """Deletes the selected outline."""
     c, u = self, self.undoer
@@ -1170,6 +1182,7 @@ def unmarkAll(self, event=None):
 #@+node:ekr.20031218072017.1766: ** c_oc.Move commands
 #@+node:ekr.20031218072017.1767: *3* c_oc.demote
 @g.commander_command('demote')
+@g.ltm_will_do('promote', 'p')
 def demote(self, event=None):
     '''Make all following siblings children of the selected node.'''
     c = self; u = c.undoer
@@ -1206,6 +1219,7 @@ def demote(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1768: *3* c_oc.moveOutlineDown
 @g.commander_command('move-outline-down')
+@g.ltm_will_do('move_node_down', 'p')
 def moveOutlineDown(self, event=None):
     '''Move the selected node down.'''
     # Moving down is more tricky than moving up because we can't 
@@ -1263,6 +1277,7 @@ def moveOutlineDown(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1770: *3* c_oc.moveOutlineLeft
 @g.commander_command('move-outline-left')
+@g.ltm_will_do('dedent_node', 'p')
 def moveOutlineLeft(self, event=None):
     '''Move the selected node left if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1295,6 +1310,7 @@ def moveOutlineLeft(self, event=None):
     c.recolor() # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1771: *3* c_oc.moveOutlineRight
 @g.commander_command('move-outline-right')
+@g.ltm_will_do('indent_node', 'p')
 def moveOutlineRight(self, event=None):
     '''Move the selected node right if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1324,6 +1340,7 @@ def moveOutlineRight(self, event=None):
     c.recolor()
 #@+node:ekr.20031218072017.1772: *3* c_oc.moveOutlineUp
 @g.commander_command('move-outline-up')
+@g.ltm_will_do('move_node_up', 'p')
 def moveOutlineUp(self, event=None):
     '''Move the selected node up if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1384,6 +1401,7 @@ def moveOutlineUp(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1774: *3* c_oc.promote
 @g.commander_command('promote')
+@g.ltm_will_do('promote_children', 'p')
 def promote(self, event=None, undoFlag=True, redrawFlag=True):
     '''Make all children of the selected nodes siblings of the selected node.'''
     c = self; u = c.undoer; p = c.p

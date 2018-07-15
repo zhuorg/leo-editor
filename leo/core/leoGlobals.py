@@ -22,6 +22,10 @@ in_bridge = False
     # This tells leoApp to load a null Gui.
 SQLITE = True
     # True: Enable SQLite DB.
+
+NEW_MODEL_ENABLED = True
+    # True: Enable new data model
+
 #@-<< global switches >>
 #@+<< imports >>
 #@+node:ekr.20050208101229: ** << imports >> (leoGlobals)
@@ -90,6 +94,7 @@ import binascii
     # import tempfile
     # import traceback
     # import types
+from functools import wraps
 #@-<< imports >>
 #@+<< define g.globalDirectiveList >>
 #@+node:EKR.20040610094819: ** << define g.globalDirectiveList >>
@@ -331,6 +336,52 @@ def new_cmd_decorator(name, ivars):
             # The decorator must return the func itself.
 
     return _decorator
+#@+node:vitalije.20180715201812.1: *3* g.ltm_will_do
+class LtmWillDo(object):
+
+    def __init__(self, name, arg):
+        self.name = name
+        self.arg = arg
+
+    def __call__(self, f):
+        if self.arg == 'p':
+            @wraps(f)
+            def wrapper(c, *args, **kw):
+                if c.USE_NEW_MODEL:
+                    rv = getattr(c.ltm, self.name)(c.ltm.selectedPosition)
+                    c.ltm.invalidate_visual()
+                    c.frame.top.newTreeWidget.update()
+                    return rv
+                return f(c, *args, **kw)
+        else:
+            @wraps(f)
+            def wrapper(c, *args, **kw):
+                if c.USE_NEW_MODEL:
+                    rv = getattr(c.ltm, self.name)(*args, **kw)
+                    c.ltm.invalidate_visual()
+                    c.frame.top.newTreeWidget.update()
+                    return rv
+                return f(c, *args, **kw)
+        return wrapper
+
+ltm_will_do = LtmWillDo
+#@+node:vitalije.20180715203745.1: *3* g.ltm_tree_will_do
+class LtmTreeWillDo(object):
+
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, f):
+        @wraps(f)
+        def wrapper(c, *args, **kw):
+            if c.USE_NEW_MODEL:
+                print('cmd %s'%self.name)
+                ntw = c.frame.top.newTreeWidget
+                return getattr(ntw, self.name)()
+            return f(c, *args, **kw)
+        return wrapper
+
+ltm_tree_will_do = LtmTreeWillDo
 #@-others
 #@-<< define g.decorators >>
 tree_popup_handlers = [] # Set later.

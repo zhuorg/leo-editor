@@ -3302,7 +3302,7 @@ class KeyHandlerClass(object):
         return True
     #@+node:ekr.20091230094319.6240: *5* k.getPaneBinding & helper
     def getPaneBinding(self, stroke, w):
-       
+
         k = self
         if not g.assert_is(stroke, g.KeyStroke):
             return None
@@ -3316,6 +3316,7 @@ class KeyHandlerClass(object):
             ('text', 'head'), # Important: text bindings in head before tree bindings.
             ('tree', 'head'),
             ('tree', 'canvas'),
+            ('tree', 'newtree'),
             ('log', 'log'),
             ('text', 'log'),
             ('text', None),

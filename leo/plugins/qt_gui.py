@@ -719,7 +719,7 @@ class LeoQtGui(leoGui.LeoGui):
         else:
             # Leo 5.6: Recover from missing focus.
             # c.idle_focus_handler can't do this.
-            if w and w_name in ('log-widget', 'richTextEdit', 'treeWidget'):
+            if w and w_name in ('log-widget', 'richTextEdit', 'treeWidget', 'newtree'):
                 # Restore focus **only** to body or tree
                 if trace: g.trace('==>', w_name)
                 c.widgetWantsFocusNow(w)

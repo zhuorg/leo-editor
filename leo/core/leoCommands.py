@@ -22,6 +22,7 @@ try:
     import tabnanny # for Check Python command # Does not exist in jython
 except ImportError:
     tabnanny = None
+import leo.core.leoDataModel as leoDataModel
 #@-<< imports >>
 
 def cmd(name):
@@ -119,6 +120,13 @@ class Commands(object):
         self.navTime = None
 
         self.sqlite_connection = None
+        self._ltm = None
+        self.USE_NEW_MODEL = True
+            # True: use new data model to store and manipulate outline
+            # False: use c.hiddenRootNode to store and manipulate outline
+            #
+            # this switch can be temporarily turned on and off to change
+            # Leo behavior.
     #@+node:ekr.20120217070122.10466: *5* c.initDebugIvars
     def initDebugIvars(self):
         '''Init Commander debugging ivars.'''
@@ -533,7 +541,10 @@ class Commands(object):
     #@+node:ekr.20081005065934.1: *4* c.initAfterLoad
     def initAfterLoad(self):
         '''Provide an offical hook for late inits of the commander.'''
-        pass
+        if self.USE_NEW_MODEL:
+            self._ltm = leoDataModel.vnode2treemodel(self.hiddenRootNode)
+            self.frame.top.ltm_updated(self._ltm)
+
     #@+node:ekr.20090213065933.6: *4* c.initConfigSettings
     def initConfigSettings(self):
         '''Init all cached commander config settings.'''
@@ -583,6 +594,12 @@ class Commands(object):
                     repr(self.fixedWindowPosition))
         else:
             c.windowPosition = 500, 700, 50, 50 # width,height,left,top.
+    #@+node:vitalije.20180711215926.1: *4* c.ltm
+    @property
+    def ltm(self):
+        if self._ltm is None:
+            self._ltm = leoDataModel.vnode2treemodel(self.hiddenRootNode)
+        return self._ltm
     #@+node:ekr.20171123135625.4: *3* @cmd c.executeScript & public helpers
     @cmd('execute-script')
     def executeScript(self, event=None,
@@ -2967,7 +2984,10 @@ class Commands(object):
 
     def treeWantsFocus(self):
         c = self; tree = c.frame.tree
-        c.request_focus(tree and tree.canvas)
+        if c.USE_NEW_MODEL and hasattr(c.frame.top, 'newTreeWidget'):
+            c.request_focus(c.frame.top.newTreeWidget)
+        else:
+            c.request_focus(tree and tree.canvas)
 
     def widgetWantsFocus(self, w):
         c = self; c.request_focus(w)
@@ -2995,7 +3015,10 @@ class Commands(object):
 
     def treeWantsFocusNow(self):
         c = self; tree = c.frame.tree
-        c.widgetWantsFocusNow(tree and tree.canvas)
+        if c.USE_NEW_MODEL:
+            c.widgetWantsFocusNow(c.frame.top.newTreeWidget)
+        else:
+            c.widgetWantsFocusNow(tree and tree.canvas)
     #@+node:ekr.20031218072017.2955: *4* c.Menus
     #@+node:ekr.20080610085158.2: *5* c.add_command
     def add_command(self, menu, **keys):

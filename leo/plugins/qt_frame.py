@@ -11,7 +11,7 @@ import leo.core.leoColorizer as leoColorizer
 import leo.core.leoFrame as leoFrame
 import leo.core.leoMenu as leoMenu
 import leo.commands.gotoCommands as gotoCommands
-from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets
+from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets, QtConst
 from leo.core.leoQt import Qsci
 import leo.plugins.qt_events as qt_events
 import leo.plugins.qt_text as qt_text
@@ -31,6 +31,245 @@ except ImportError:
     splitter_class = QtWidgets.QSplitter
 #@-<< imports >>
 #@+others
+#@+node:vitalije.20180711214706.1: ** NewLeoTree
+class NewLeoTree(QtWidgets.QFrame):
+    def __init__(self, c, parent):
+        self.HR = 24
+        self.MAX_W = 1000
+        QtWidgets.QFrame.__init__(self)
+        self.grid = grid = QtWidgets.QGridLayout(parent)
+        parent.setLayout(grid)
+        grid.addWidget(self, 0, 0, 1, 1)
+        grid.setRowStretch(0, 1)
+        grid.setColumnStretch(0, 1)
+        self.vbar = QtWidgets.QScrollBar(QtConst.Vertical, self)
+        grid.addWidget(self.vbar, 0, 1, 1,1)
+        self.hbar = QtWidgets.QScrollBar(QtConst.Horizontal, self)
+        grid.addWidget(self.hbar, 1, 0, 1,1)
+        self.c = c
+        self.vpositions = []
+        self.setAttribute(QtConst.WA_DeleteOnClose)
+        self.icons = [g.app.gui.getImageImage('box%02d.png'%i) for i in range(16)]
+        self.plusic = g.app.gui.getImageImage('plusnode.gif')
+        self.minusic = g.app.gui.getImageImage('minusnode.gif')
+        self.setFocusPolicy(QtConst.WheelFocus)
+
+    def qwe_resizeEvent(self, ev):
+        print('resize', ev.size())
+        return super(QtWidgets.QFrame, self).resizeEvent(ev)
+    def wheelEvent(self, ev):
+        np = ev.pixelDelta()
+        if ev.modifiers() & 0x08000000:
+            self.hbar.wheelEvent(ev)
+        else:
+            self.vbar.wheelEvent(ev)
+        self.update()
+        ev.accept()
+    #@+others
+    #@+node:vitalije.20180711214706.2: *3* draw_tree
+    def draw_tree(self, painter, ltm):
+        HR = self.HR
+        self.top_index =  self.vbar.value()
+        X0 = self.hbar.value()
+        LW = 2 * HR
+        W = self.width()
+        count = self.row_count(HR)
+        pen_1 = painter.pen()
+        pen_2 = QtGui.QColor('#000000')
+        f = painter.font()
+        f.setPixelSize(HR-4)
+        painter.setFont(f)
+        fm = painter.fontMetrics()
+        vpositions = self.vpositions
+        del vpositions[:]
+        MW = 100
+
+        for j, dd in enumerate(ltm.display_items(self.top_index, count+1)):
+            p, gnx, h, lev, pm, iconVal, sel = dd
+            x = lev * LW - 20 - X0
+            y = j * HR + 2
+            vpositions.append((p, gnx, x))
+            MW = max(MW, fm.boundingRect(h).width() + x + 24 + LW)
+            if sel:
+                painter.fillRect(0, y, W, HR + 2, QtGui.QColor('#77cccc'))
+                painter.setPen(pen_2)
+                painter.drawText(x + 24 + LW, y + HR - 4, h)
+                painter.setPen(pen_1)
+            else:
+                painter.drawText(x + 24 + LW, y + HR - 4, h)
+            if pm != 'none':
+                pmicon = self.plusic if pm == 'plus' else self.minusic
+                painter.drawPixmap(x, y + HR//2 - pmicon.height()//2, pmicon)
+            painter.drawPixmap(x + 20, y, LW, HR, self.icons[iconVal])
+        self.MAX_W = MW + X0
+        self.upd_width()
+        self.upd_height()
+    #@+node:vitalije.20180715132346.1: *3* upd_width
+    def upd_width(self):
+        wM = self.MAX_W - self.width()
+        self.hbar.setRange(0, max(0, wM))
+        self.hbar.setVisible(wM > 0)
+        x = self.hbar.value()
+        if x > wM:
+            self.hbar.setValue(wM)
+        self.hbar.setSingleStep(16)
+        self.hbar.setPageStep(80)
+    #@+node:vitalije.20180715132327.1: *3* upd_height
+    def upd_height(self):
+        self.MAX_H = hM = len(self.ltm.visible_positions)
+        h1 = self.height() // self.HR
+        hM -= h1
+        self.vbar.setRange(0, max(0, hM))
+        self.vbar.setVisible(hM > 0)
+        self.vbar.setSingleStep(1)
+        self.vbar.setPageStep(min(3, h1 - 2))
+        if self.vbar.value() > hM:
+            self.vbar.setValue(hM)
+    #@+node:vitalije.20180711214706.3: *3* row_count
+    def row_count(self, h):
+        return max(1, self.height() // h)
+    #@+node:vitalije.20180711214706.4: *3* paintEvent
+    def paintEvent(self, event):
+        '''
+        Enhance QFrame.paintEvent.
+        '''
+        painter = QtGui.QPainter(self)
+        try:
+            self.draw_tree(painter, self.ltm)
+            dtr = painter.combinedTransform()
+            self.dtr = dtr.dx(), dtr.dy()
+        except Exception:
+            if not hasattr(self, 'error_reported'):
+                g.es_exception(True, self.c)
+                self.error_reported = True
+    #@+node:vitalije.20180711214706.5: *3* upd_size
+    def upd_size(self):
+        self.upd_width()
+        self.upd_height()
+    #@+node:vitalije.20180711214706.6: *3* mousePressEvent
+    def mousePressEvent(self, ev):
+        x = ev.x()
+        y = ev.y()
+        wb = hb = 8
+        if x >= self.width() - wb:
+            return self.click_vscroll(y, wb, ev.modifiers())
+        elif y + hb >= self.height():
+            return self.click_hscroll(x, hb, ev.modifier())
+
+        HR = self.HR
+        LW = 2 * HR
+        row = (y - 2)//HR
+        if row < len(self.vpositions):
+            p, gnx, x0 = self.vpositions[row]
+        else:
+            g.es('click outside')
+            return
+        if abs(x - x0) < HR / 2:
+            self.click_in_pm_icon(p)
+        elif abs(x - x0 - 20 - LW/2) < LW / 2:
+            self.click_in_icon(p)
+        elif x >= x0 + 24 + LW:
+            self.click_in_head(p, gnx)
+
+    def click_vscroll(self, y, wb, mdf):
+        y1, h1 = self.y_h_vbar(wb)
+        H = self.height() - wb
+        if mdf & 0x08000000:
+            m, v, M = self.vbardata
+            i = y*(M-m)//H + m
+            self.vbardata[1] = i
+            self.update()
+            return
+        pg = 15
+        if y < wb:
+            dy = -1
+        elif y < y1:
+            dy = -pg
+        elif y + wb < H:
+            dy = pg
+        else:
+            dy = 1
+        self.vbardata[1] = max(0, self.vbardata[1] + dy)
+        self.vbardata[1] = min(self.vbardata[1:])
+        self.update()
+
+    def click_hscroll(self, x, hb, mdf):
+        x1, w1 = self.x_w_hbar(hb)
+        pg = 80
+        W = self.width() - hb
+        if mdf & 0x08000000:
+            m, v, M = self.hbardata
+            i = x*(M-m)//W + m
+            self.hbardata[1] = i
+            self.update()
+            return
+        if x < hb:
+            dx = -16
+        elif x < x1:
+            dx = -pg
+        elif x + hb < W:
+            dx = pg
+        else:
+            dx = 16
+        self.hbardata[1] = max(0, self.hbardata[1] + dx)
+        self.hbardata[1] = min(self.hbardata[1:])
+        self.update()
+    #@+node:vitalije.20180715224941.1: *3* select_from_leo
+    def select_from_leo(self):
+        self.ltm.select_leo_pos(self.c.p)
+        self.update()
+    #@+node:vitalije.20180711214706.7: *3* click_in_pm_icon
+    def click_in_pm_icon(self, p):
+        self.ltm.toggle(p)
+        self.ltm.invalidate_visual()
+        if not self.ltm.selectedPosition in self.ltm.visible_positions:
+            self.ltm.selectedPosition = p
+        self.upd_size()
+        self.update()
+
+    #@+node:vitalije.20180711214706.8: *4* expand_all
+    def expand_all(self):
+        self.ltm.expand_all()
+        self.ltm.invalidate_visual()
+        self.update()
+
+    #@+node:vitalije.20180715210512.1: *4* contract_or_go_left
+    def contract_or_go_left(self):
+        self.ltm.select_node_left()
+        self.ltm.invalidate_visual()
+        self.update()
+    #@+node:vitalije.20180715210516.1: *4* expand_or_go_right
+    def expand_or_go_right(self):
+        self.ltm.select_node_right()
+        self.ltm.invalidate_visual()
+        self.update()
+
+    #@+node:vitalije.20180715211345.1: *4* select_prev_node
+    def select_prev_node(self):
+        self.ltm.select_prev_node()
+        self.update()
+    #@+node:vitalije.20180715211351.1: *4* select_next_node
+    def select_next_node(self):
+        self.ltm.select_next_node()
+        self.update()
+    #@+node:vitalije.20180711214706.9: *3* click_in_head
+    def click_in_head(self, p, gnx):
+        self.click_in_icon(p)
+    #@+node:vitalije.20180711214706.10: *3* click_in_icon
+    def click_in_icon(self, p):
+        self.ltm.selectedPosition = p
+        self.update()
+        self.c.selectPosition(self.to_leo_pos(p))
+    #@+node:vitalije.20180711214706.11: *3* to_leo_pos
+    def to_leo_pos(self, p):
+        try:
+            return self.ltm.to_leo_pos(p, self.c)
+        except Exception:
+            g.es_exception(True, self.c)
+    #@-others
+    @property
+    def ltm(self):
+        return self.c._ltm
 #@+node:ekr.20110605121601.18137: ** class  DynamicWindow (QtWidgets.QMainWindow)
 class DynamicWindow(QtWidgets.QMainWindow):
     '''
@@ -349,10 +588,28 @@ class DynamicWindow(QtWidgets.QMainWindow):
         grid = self.createGrid(treeFrame, 'outlineGrid')
         grid.addWidget(innerFrame, 0, 0, 1, 1)
         innerGrid = self.createGrid(innerFrame, 'outlineInnerGrid')
-        innerGrid.addWidget(treeWidget, 0, 0, 1, 1)
+        if g.NEW_MODEL_ENABLED:
+            newTreeWidget = self.addNewTreeWidget(innerFrame,
+                     innerGrid, treeWidget)
+        else:
+            innerGrid.addWidget(treeWidget, 0, 0, 1, 1)
+            newTreeWidget = None
         # Official ivars...
         self.treeWidget = treeWidget
+        self.newTreeWidget = newTreeWidget
         return treeFrame
+    #@+node:vitalije.20180711214122.1: *6* addNewTreeWidget
+    def addNewTreeWidget(self, parent, grid, treeWidget):
+        sl = QtWidgets.QStackedLayout()
+        sl.setObjectName('treeStackLayout')
+        grid.addLayout(sl, 0, 0, 1, 1)
+        sl.addWidget(treeWidget)
+        sca = QtWidgets.QWidget()
+        sl.addWidget(sca)
+        ntw = NewLeoTree(self.leo_c, sca)
+        ntw.setObjectName('newtree')
+        g.app.gui.setFilter(self.leo_c, ntw, ntw, tag='newtree')
+        return ntw
     #@+node:ekr.20110605121601.18150: *5* dw.createStatusBar
     def createStatusBar(self, parent):
         '''Create the widgets and ivars for Leo's status area.'''
@@ -371,6 +628,14 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw.setDockOptions(
             QtWidgets.QMainWindow.AllowTabbedDocks |
             QtWidgets.QMainWindow.AnimatedDocks)
+    #@+node:vitalije.20180711223046.1: *5* ltm_updated
+    def ltm_updated(self, ltm):
+        self.newTreeWidget.select_from_leo()
+        self.newTreeWidget.vpositions[:] = ltm.visible_positions
+        self.newTreeWidget.upd_size()
+        sl = self.findChildren(QtWidgets.QStackedLayout, 'treeStackLayout')[0]
+        sl.setCurrentIndex(1)
+        self.newTreeWidget.update()
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
     #@+node:ekr.20110605121601.18153: *5* dw.createButton
     def createButton(self, parent, name, label):

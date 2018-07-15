@@ -153,6 +153,8 @@ class LeoQtTree(leoFrame.LeoTree):
         Preserve the vertical scrolling unless scroll is True.
         '''
         c = self.c
+        if c.USE_NEW_MODEL:
+            return
         if g.app.disable_redraw:
             return
         if self.busy():
@@ -356,6 +358,8 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20110605121601.17876: *5* qtree.drawTopTree
     def drawTopTree(self, p):
         '''Draw the tree rooted at p.'''
+        if self.c.USE_NEW_MODEL:
+            return
         c = self.c
         hPos, vPos = self.getScroll()
         self.clear()
@@ -381,6 +385,8 @@ class LeoQtTree(leoFrame.LeoTree):
         self.repaint()
     #@+node:ekr.20110605121601.17877: *5* qtree.drawTree
     def drawTree(self, p, parent_item=None):
+        if self.c.USE_NEW_MODEL:
+            return
         if g.app.gui.isNullGui:
             return
         # Draw the (visible) parent node.
@@ -455,6 +461,8 @@ class LeoQtTree(leoFrame.LeoTree):
         return None
     #@+node:ekr.20110605121601.17880: *4* qtree.redraw_after_contract
     def redraw_after_contract(self, p=None):
+        if self.c.USE_NEW_MODEL:
+            return
 
         if self.redrawing:
             return
@@ -467,10 +475,14 @@ class LeoQtTree(leoFrame.LeoTree):
             self.full_redraw(scroll=False)
     #@+node:ekr.20110605121601.17881: *4* qtree.redraw_after_expand
     def redraw_after_expand(self, p=None):
+        if self.c.USE_NEW_MODEL:
+            return
         # Important, setting scrolling to False makes the problem *worse*
         self.full_redraw(p, scroll=True)
     #@+node:ekr.20110605121601.17882: *4* qtree.redraw_after_head_changed
     def redraw_after_head_changed(self):
+        if self.c.USE_NEW_MODEL:
+            return
 
         if self.busy(): return
         p = self.c.p
@@ -485,6 +497,8 @@ class LeoQtTree(leoFrame.LeoTree):
         self.redraw_after_icons_changed()
     #@+node:ekr.20110605121601.17883: *4* qtree.redraw_after_icons_changed
     def redraw_after_icons_changed(self):
+        if self.c.USE_NEW_MODEL:
+            return
 
         if self.busy():
             return
@@ -503,6 +517,8 @@ class LeoQtTree(leoFrame.LeoTree):
     # Important: this can not replace before/afterSelectHint.
 
     def redraw_after_select(self, p=None):
+        if self.c.USE_NEW_MODEL:
+            return
         '''Redraw the entire tree when an invisible node is selected.'''
         # Prevent the selecting lockout from disabling the redraw.
         oldSelecting = self.selecting
@@ -517,6 +533,8 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20140907201613.18986: *4* qtree.repaint
     def repaint(self):
         '''Repaint the widget.'''
+        if self.c.USE_NEW_MODEL:
+            return
         w = self.treeWidget
         w.repaint()
         w.resizeColumnToContents(0) # 2009/12/22
