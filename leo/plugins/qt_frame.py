@@ -299,7 +299,6 @@ class NewLeoTree(QtWidgets.QFrame):
             c.undoer.setUndoType(extra.kind)
     #@+node:vitalije.20180716151115.1: *4* undo
     def undo(self):
-        g.es(self.ltm._undopos, len(self.ltm._undostack))
         extra = self.ltm.undo()
         if extra:
             c = self.c
@@ -326,7 +325,6 @@ class NewLeoTree(QtWidgets.QFrame):
             self.set_undo_redo_labels()
     #@+node:vitalije.20180716160426.1: *4* redo
     def redo(self):
-        g.es(self.ltm._undopos, len(self.ltm._undostack))
         extra = self.ltm.redo()
         if extra:
             c = self.c
