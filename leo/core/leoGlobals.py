@@ -339,29 +339,19 @@ def new_cmd_decorator(name, ivars):
 #@+node:vitalije.20180715201812.1: *3* g.ltm_will_do
 class LtmWillDo(object):
 
-    def __init__(self, name, arg):
+    def __init__(self, name):
         self.name = name
-        self.arg = arg
 
     def __call__(self, f):
-        if self.arg == 'p':
-            @wraps(f)
-            def wrapper(c, *args, **kw):
-                if c.USE_NEW_MODEL:
-                    rv = getattr(c.ltm, self.name)(c.ltm.selectedPosition)
-                    c.ltm.invalidate_visual()
-                    c.frame.top.newTreeWidget.update()
-                    return rv
-                return f(c, *args, **kw)
-        else:
-            @wraps(f)
-            def wrapper(c, *args, **kw):
-                if c.USE_NEW_MODEL:
-                    rv = getattr(c.ltm, self.name)(*args, **kw)
-                    c.ltm.invalidate_visual()
-                    c.frame.top.newTreeWidget.update()
-                    return rv
-                return f(c, *args, **kw)
+        @wraps(f)
+        def wrapper(c, *args, **kw):
+            if c.USE_NEW_MODEL:
+                rv = getattr(c.ltm, self.name)(c.ltm.selectedPosition)
+                c.ltm.invalidate_visual()
+                c.frame.top.newTreeWidget.update()
+                c.treeWantsFocus()
+                return rv
+            return f(c, *args, **kw)
         return wrapper
 
 ltm_will_do = LtmWillDo
@@ -374,6 +364,8 @@ class LtmTreeWillDo(object):
     def __call__(self, f):
         @wraps(f)
         def wrapper(c, *args, **kw):
+            if hasattr(c, 'c'):
+                c = c.c
             if c.USE_NEW_MODEL:
                 print('cmd %s'%self.name)
                 ntw = c.frame.top.newTreeWidget

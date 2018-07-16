@@ -1162,6 +1162,7 @@ class Undoer(object):
         return bunch # Never used.
     #@+node:ekr.20031218072017.2030: *3* u.redo
     @cmd('redo')
+    @g.ltm_tree_will_do('redo')
     def redo(self, event=None):
         '''Redo the operation undone by the last undo.'''
         u = self; c = u.c
@@ -1437,6 +1438,7 @@ class Undoer(object):
             w.setYScrollPosition(u.yview)
     #@+node:ekr.20031218072017.2039: *3* u.undo
     @cmd('undo')
+    @g.ltm_tree_will_do('undo')
     def undo(self, event=None):
         """Undo the operation described by the undo parameters."""
         u = self; c = u.c

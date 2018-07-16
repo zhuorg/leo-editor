@@ -614,7 +614,7 @@ def goToNextSibling(self, event=None):
     c.treeSelectHelper(p and p.next())
 #@+node:ekr.20031218072017.2920: *3* c_oc.goToParent
 @g.commander_command('goto-parent')
-@g.ltm_will_do('select_node_left', 'p')
+@g.ltm_will_do('select_node_left')
 def goToParent(self, event=None):
     '''Select the parent of the selected node.'''
     c = self; p = c.p
@@ -627,7 +627,7 @@ def goToPrevSibling(self, event=None):
     c.treeSelectHelper(p and p.back())
 #@+node:ekr.20031218072017.2993: *3* c_oc.selectThreadBack
 @g.commander_command('goto-prev-node')
-@g.ltm_will_do('select_prev_node', 'p')
+@g.ltm_will_do('select_prev_node')
 def selectThreadBack(self, event=None):
     '''Select the node preceding the selected node in outline order.'''
     c = self; p = c.p
@@ -636,7 +636,7 @@ def selectThreadBack(self, event=None):
     c.treeSelectHelper(p)
 #@+node:ekr.20031218072017.2994: *3* c_oc.selectThreadNext
 @g.commander_command('goto-next-node')
-@g.ltm_will_do('select_next_node', 'p')
+@g.ltm_will_do('select_next_node')
 def selectThreadNext(self, event=None):
     '''Select the node following the selected node in outline order.'''
     c = self; p = c.p
@@ -727,7 +727,7 @@ def hoist(self, event=None):
 #@+node:ekr.20031218072017.1759: ** c_oc.Insert, Delete & Clone commands
 #@+node:ekr.20031218072017.1762: *3* c_oc.clone
 @g.commander_command('clone-node')
-@g.ltm_will_do('clone_node', 'p')
+@g.ltm_tree_will_do('clone_node')
 def clone(self, event=None):
     '''Create a clone of the selected outline.'''
     c = self; u = c.undoer; p = c.p
@@ -809,7 +809,7 @@ def cloneToLastNode(self, event=None):
     # return clone # For mod_labels and chapters plugins.
 #@+node:ekr.20031218072017.1193: *3* c_oc.deleteOutline
 @g.commander_command('delete-node')
-@g.ltm_will_do('delete_node', 'p')
+@g.ltm_tree_will_do('delete_node')
 def deleteOutline(self, event=None, op_name="Delete Node"):
     """Deletes the selected outline."""
     c, u = self, self.undoer
@@ -1182,7 +1182,7 @@ def unmarkAll(self, event=None):
 #@+node:ekr.20031218072017.1766: ** c_oc.Move commands
 #@+node:ekr.20031218072017.1767: *3* c_oc.demote
 @g.commander_command('demote')
-@g.ltm_will_do('promote', 'p')
+@g.ltm_tree_will_do('promote')
 def demote(self, event=None):
     '''Make all following siblings children of the selected node.'''
     c = self; u = c.undoer
@@ -1219,7 +1219,7 @@ def demote(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1768: *3* c_oc.moveOutlineDown
 @g.commander_command('move-outline-down')
-@g.ltm_will_do('move_node_down', 'p')
+@g.ltm_tree_will_do('move_node_down')
 def moveOutlineDown(self, event=None):
     '''Move the selected node down.'''
     # Moving down is more tricky than moving up because we can't 
@@ -1277,7 +1277,7 @@ def moveOutlineDown(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1770: *3* c_oc.moveOutlineLeft
 @g.commander_command('move-outline-left')
-@g.ltm_will_do('dedent_node', 'p')
+@g.ltm_tree_will_do('move_node_left')
 def moveOutlineLeft(self, event=None):
     '''Move the selected node left if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1310,7 +1310,7 @@ def moveOutlineLeft(self, event=None):
     c.recolor() # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1771: *3* c_oc.moveOutlineRight
 @g.commander_command('move-outline-right')
-@g.ltm_will_do('indent_node', 'p')
+@g.ltm_tree_will_do('move_node_right')
 def moveOutlineRight(self, event=None):
     '''Move the selected node right if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1340,7 +1340,7 @@ def moveOutlineRight(self, event=None):
     c.recolor()
 #@+node:ekr.20031218072017.1772: *3* c_oc.moveOutlineUp
 @g.commander_command('move-outline-up')
-@g.ltm_will_do('move_node_up', 'p')
+@g.ltm_tree_will_do('move_node_up')
 def moveOutlineUp(self, event=None):
     '''Move the selected node up if possible.'''
     c = self; u = c.undoer; p = c.p
@@ -1401,7 +1401,7 @@ def moveOutlineUp(self, event=None):
     c.updateSyntaxColorer(p) # Moving can change syntax coloring.
 #@+node:ekr.20031218072017.1774: *3* c_oc.promote
 @g.commander_command('promote')
-@g.ltm_will_do('promote_children', 'p')
+@g.ltm_tree_will_do('promote_children')
 def promote(self, event=None, undoFlag=True, redrawFlag=True):
     '''Make all children of the selected nodes siblings of the selected node.'''
     c = self; u = c.undoer; p = c.p

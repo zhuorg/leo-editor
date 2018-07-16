@@ -54,19 +54,9 @@ class NewLeoTree(QtWidgets.QFrame):
         self.minusic = g.app.gui.getImageImage('minusnode.gif')
         self.setFocusPolicy(QtConst.WheelFocus)
 
-    def qwe_resizeEvent(self, ev):
-        print('resize', ev.size())
-        return super(QtWidgets.QFrame, self).resizeEvent(ev)
-    def wheelEvent(self, ev):
-        np = ev.pixelDelta()
-        if ev.modifiers() & 0x08000000:
-            self.hbar.wheelEvent(ev)
-        else:
-            self.vbar.wheelEvent(ev)
-        self.update()
-        ev.accept()
     #@+others
-    #@+node:vitalije.20180711214706.2: *3* draw_tree
+    #@+node:vitalije.20180716141123.1: *3* drawing
+    #@+node:vitalije.20180711214706.2: *4* draw_tree
     def draw_tree(self, painter, ltm):
         HR = self.HR
         self.top_index =  self.vbar.value()
@@ -104,7 +94,7 @@ class NewLeoTree(QtWidgets.QFrame):
         self.MAX_W = MW + X0
         self.upd_width()
         self.upd_height()
-    #@+node:vitalije.20180715132346.1: *3* upd_width
+    #@+node:vitalije.20180715132346.1: *4* upd_width
     def upd_width(self):
         wM = self.MAX_W - self.width()
         self.hbar.setRange(0, max(0, wM))
@@ -114,7 +104,7 @@ class NewLeoTree(QtWidgets.QFrame):
             self.hbar.setValue(wM)
         self.hbar.setSingleStep(16)
         self.hbar.setPageStep(80)
-    #@+node:vitalije.20180715132327.1: *3* upd_height
+    #@+node:vitalije.20180715132327.1: *4* upd_height
     def upd_height(self):
         self.MAX_H = hM = len(self.ltm.visible_positions)
         h1 = self.height() // self.HR
@@ -125,10 +115,14 @@ class NewLeoTree(QtWidgets.QFrame):
         self.vbar.setPageStep(min(3, h1 - 2))
         if self.vbar.value() > hM:
             self.vbar.setValue(hM)
-    #@+node:vitalije.20180711214706.3: *3* row_count
+    #@+node:vitalije.20180711214706.5: *4* upd_size
+    def upd_size(self):
+        self.upd_width()
+        self.upd_height()
+    #@+node:vitalije.20180711214706.3: *4* row_count
     def row_count(self, h):
         return max(1, self.height() // h)
-    #@+node:vitalije.20180711214706.4: *3* paintEvent
+    #@+node:vitalije.20180711214706.4: *4* paintEvent
     def paintEvent(self, event):
         '''
         Enhance QFrame.paintEvent.
@@ -142,19 +136,24 @@ class NewLeoTree(QtWidgets.QFrame):
             if not hasattr(self, 'error_reported'):
                 g.es_exception(True, self.c)
                 self.error_reported = True
-    #@+node:vitalije.20180711214706.5: *3* upd_size
-    def upd_size(self):
-        self.upd_width()
-        self.upd_height()
-    #@+node:vitalije.20180711214706.6: *3* mousePressEvent
+    #@+node:vitalije.20180716141046.1: *3* ev handlers
+    #@+node:vitalije.20180716141024.1: *4* resizeEvent
+    def resizeEvent(self, ev):
+        rv = super(QtWidgets.QFrame, self).resizeEvent(ev)
+        self.upd_size()
+        return rv
+    def wheelEvent(self, ev):
+        np = ev.pixelDelta()
+        if ev.modifiers() & 0x08000000:
+            self.hbar.wheelEvent(ev)
+        else:
+            self.vbar.wheelEvent(ev)
+        self.update()
+        ev.accept()
+    #@+node:vitalije.20180711214706.6: *4* mousePressEvent
     def mousePressEvent(self, ev):
         x = ev.x()
         y = ev.y()
-        wb = hb = 8
-        if x >= self.width() - wb:
-            return self.click_vscroll(y, wb, ev.modifiers())
-        elif y + hb >= self.height():
-            return self.click_hscroll(x, hb, ev.modifier())
 
         HR = self.HR
         LW = 2 * HR
@@ -162,7 +161,6 @@ class NewLeoTree(QtWidgets.QFrame):
         if row < len(self.vpositions):
             p, gnx, x0 = self.vpositions[row]
         else:
-            g.es('click outside')
             return
         if abs(x - x0) < HR / 2:
             self.click_in_pm_icon(p)
@@ -171,95 +169,188 @@ class NewLeoTree(QtWidgets.QFrame):
         elif x >= x0 + 24 + LW:
             self.click_in_head(p, gnx)
 
-    def click_vscroll(self, y, wb, mdf):
-        y1, h1 = self.y_h_vbar(wb)
-        H = self.height() - wb
-        if mdf & 0x08000000:
-            m, v, M = self.vbardata
-            i = y*(M-m)//H + m
-            self.vbardata[1] = i
-            self.update()
-            return
-        pg = 15
-        if y < wb:
-            dy = -1
-        elif y < y1:
-            dy = -pg
-        elif y + wb < H:
-            dy = pg
-        else:
-            dy = 1
-        self.vbardata[1] = max(0, self.vbardata[1] + dy)
-        self.vbardata[1] = min(self.vbardata[1:])
-        self.update()
-
-    def click_hscroll(self, x, hb, mdf):
-        x1, w1 = self.x_w_hbar(hb)
-        pg = 80
-        W = self.width() - hb
-        if mdf & 0x08000000:
-            m, v, M = self.hbardata
-            i = x*(M-m)//W + m
-            self.hbardata[1] = i
-            self.update()
-            return
-        if x < hb:
-            dx = -16
-        elif x < x1:
-            dx = -pg
-        elif x + hb < W:
-            dx = pg
-        else:
-            dx = 16
-        self.hbardata[1] = max(0, self.hbardata[1] + dx)
-        self.hbardata[1] = min(self.hbardata[1:])
-        self.update()
-    #@+node:vitalije.20180715224941.1: *3* select_from_leo
+    #@+node:vitalije.20180716141155.1: *3* view commands
+    #@+node:vitalije.20180715224941.1: *4* select_from_leo
     def select_from_leo(self):
         self.ltm.select_leo_pos(self.c.p)
         self.update()
-    #@+node:vitalije.20180711214706.7: *3* click_in_pm_icon
-    def click_in_pm_icon(self, p):
+    #@+node:vitalije.20180711214706.7: *4* click_in_pm_icon
+    def toggle_position(self, p):
         self.ltm.toggle(p)
         self.ltm.invalidate_visual()
         if not self.ltm.selectedPosition in self.ltm.visible_positions:
             self.ltm.selectedPosition = p
-        self.upd_size()
         self.update()
 
-    #@+node:vitalije.20180711214706.8: *4* expand_all
+    #@+node:vitalije.20180711214706.8: *5* expand_all
     def expand_all(self):
         self.ltm.expand_all()
         self.ltm.invalidate_visual()
         self.update()
 
-    #@+node:vitalije.20180715210512.1: *4* contract_or_go_left
+    #@+node:vitalije.20180715210512.1: *5* contract_or_go_left
     def contract_or_go_left(self):
         self.ltm.select_node_left()
         self.ltm.invalidate_visual()
         self.update()
-    #@+node:vitalije.20180715210516.1: *4* expand_or_go_right
+    #@+node:vitalije.20180715210516.1: *5* expand_or_go_right
     def expand_or_go_right(self):
         self.ltm.select_node_right()
         self.ltm.invalidate_visual()
         self.update()
 
-    #@+node:vitalije.20180715211345.1: *4* select_prev_node
+    #@+node:vitalije.20180715211345.1: *5* select_prev_node
     def select_prev_node(self):
         self.ltm.select_prev_node()
         self.update()
-    #@+node:vitalije.20180715211351.1: *4* select_next_node
+    #@+node:vitalije.20180715211351.1: *5* select_next_node
     def select_next_node(self):
         self.ltm.select_next_node()
         self.update()
-    #@+node:vitalije.20180711214706.9: *3* click_in_head
-    def click_in_head(self, p, gnx):
-        self.click_in_icon(p)
-    #@+node:vitalije.20180711214706.10: *3* click_in_icon
-    def click_in_icon(self, p):
+    #@+node:vitalije.20180711214706.10: *4* select_position
+    def select_position(self, p):
         self.ltm.selectedPosition = p
         self.update()
-        self.c.selectPosition(self.to_leo_pos(p))
+        #self.c.selectPosition(self.to_leo_pos(p))
+    #@+node:vitalije.20180711214706.9: *4* click_in_...
+    click_in_icon = select_position
+    click_in_pm_icon = toggle_position
+
+    def click_in_head(self, p, gnx):
+        self.select_position(p)
+    #@+node:vitalije.20180716141527.1: *3* gui commands
+    def extra_data_for_undo(self, kind):
+        w = self.c.frame.body.wrapper
+        scrbardata = lambda sb:(sb.minimum(), sb.value(), sb.maximum())
+        fw = QtWidgets.QApplication.focusWidget()
+        fwname = fw and fw.objectName() or 'body'
+        self.c.user_dict['ltm_all_wnames'] = self.c.user_dict.get('ltm_all_wnames', set())
+        self.c.user_dict['ltm_all_wnames'].add(fwname)
+        return g.Bunch(
+            kind = kind,
+            sel = w.getSelectionRange(),
+            bhb = scrbardata(w.widget.horizontalScrollBar()),
+            bvb = scrbardata(w.widget.verticalScrollBar()),
+            thb = scrbardata(self.hbar),
+            tvb = scrbardata(self.vbar),
+            focus = fwname,
+        )
+
+    def pre_cmd(self, kind):
+        self.ltm.pre_cmd(self.extra_data_for_undo(kind))
+
+    def gui_cmd(self, f, kind, *args, **kwargs):
+        self.pre_cmd(kind)
+        if not f(*args, **kwargs):
+            self.ltm.discard_undo()
+            return
+        self.ltm.invalidate_visual()
+        self.update()
+        self.set_undo_redo_labels()
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180716143659.1: *4* move_node_up
+    def move_node_up(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.move_node_up, 'move-node-up', ltm.selectedPosition)
+    #@+node:vitalije.20180716143709.1: *4* move_node_down
+    def move_node_down(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.move_node_down, 'move-node-down', ltm.selectedPosition)
+    #@+node:vitalije.20180716143753.1: *4* move_node_left
+    def move_node_left(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.dedent_node, 'move-node-left', ltm.selectedPosition)
+    #@+node:vitalije.20180716143905.1: *4* move_node_right
+    def move_node_right(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.indent_node, 'move-node-right', ltm.selectedPosition)
+        if ltm.selectedPosition not in ltm.visible_positions:
+            ltm.ensure_visible(ltm.selectedPosition)
+            ltm.invalidate_visual()
+            self.update()
+    #@+node:vitalije.20180716143924.1: *4* promote_children
+    def promote_children(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.promote_children, 'demote', ltm.selectedPosition)
+    #@+node:vitalije.20180716144340.1: *4* promote
+    def promote(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.promote, 'promote', ltm.selectedPosition)
+    #@+node:vitalije.20180716145504.1: *4* clone_node
+    def clone_node(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.clone_node, 'clone-node', ltm.selectedPosition)
+    #@+node:vitalije.20180716145540.1: *4* delete_node
+    def delete_node(self):
+        ltm = self.ltm
+        self.gui_cmd(ltm.delete_node, 'delete-node', ltm.selectedPosition)
+    #@+node:vitalije.20180716160419.1: *4* set_undo_redo_labels
+    def set_undo_redo_labels(self):
+        c = self.c
+        extra = self.ltm.peek_redo_extra()
+        if not extra:
+            c.undoer.setRedoType("Can't Redo")
+        else:
+            c.undoer.setRedoType(extra.kind)
+        extra = self.ltm.peek_undo_extra()
+        if not extra:
+            c.undoer.setUndoType("Can't Undo")
+        else:
+            c.undoer.setUndoType(extra.kind)
+    #@+node:vitalije.20180716151115.1: *4* undo
+    def undo(self):
+        g.es(self.ltm._undopos, len(self.ltm._undostack))
+        extra = self.ltm.undo()
+        if extra:
+            c = self.c
+            w = c.frame.body.wrapper
+            def updscroll(sb, d):
+                i, j, m = d
+                sb.setRange(i, m)
+                sb.setValue(j)
+            updscroll(self.vbar, extra.tvb)
+            updscroll(self.hbar, extra.thb)
+            i, j = extra.sel
+            w.setSelectionRange(i, j, insert=j)
+            updscroll(w.widget.horizontalScrollBar(), extra.bhb)
+            updscroll(w.widget.verticalScrollBar(), extra.bvb)
+            self.ltm.invalidate_visual()
+            self.update()
+            fwname = extra.focus
+            if fwname == 'body':
+                c.bodyWantsFocus()
+            elif fwname == 'log':
+                c.logWantsFocus()
+            elif fwname in ('canvas', 'newTreeWidget'):
+                c.treeWantsFocus()
+            self.set_undo_redo_labels()
+    #@+node:vitalije.20180716160426.1: *4* redo
+    def redo(self):
+        g.es(self.ltm._undopos, len(self.ltm._undostack))
+        extra = self.ltm.redo()
+        if extra:
+            c = self.c
+            w = c.frame.body.wrapper
+            def updscroll(sb, d):
+                i, j, m = d
+                sb.setRange(i, m)
+                sb.setValue(j)
+            updscroll(self.vbar, extra.tvb)
+            updscroll(self.hbar, extra.thb)
+            i, j = extra.sel
+            w.setSelectionRange(i, j, insert=j)
+            updscroll(w.widget.horizontalScrollBar(), extra.bhb)
+            updscroll(w.widget.verticalScrollBar(), extra.bvb)
+            self.ltm.invalidate_visual()
+            self.update()
+            fwname = extra.focus
+            if fwname == 'body':
+                c.bodyWantsFocus()
+            elif fwname == 'log':
+                c.logWantsFocus()
+            elif fwname in ('canvas', 'newTreeWidget'):
+                c.treeWantsFocus()
+        self.set_undo_redo_labels()
     #@+node:vitalije.20180711214706.11: *3* to_leo_pos
     def to_leo_pos(self, p):
         try:
