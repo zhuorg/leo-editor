@@ -280,6 +280,20 @@ def cmd_show(event):
     if splitter:
         splitter.add_adjacent(bmd.w, 'bodyFrame', 'above')
 
+@g.command('bookmarks-goto-auto')
+def cmd_goto_auto(event):
+    c = event.get('c')
+    if not hasattr(c, '_bookmarks'):
+        g.es("Bookmarks not active for this outline")
+        return
+    bm = c._bookmarks
+    p = bm.v.context.vnode2position(bm.v)
+    auto = g.findNodeInChildren(bm.v.context, p, 'AUTO')
+    if not auto:
+        auto = p.insertAsNthChild(0)
+        auto.h = 'AUTO'
+    bm.current = auto.v
+    bm.update('internal', {'c': c})
 #@+node:tbrown.20131226095537.26309: ** bookmarks-switch
 @g.command('bookmarks-switch')
 def cmd_switch(event):
@@ -1167,6 +1181,7 @@ class BookMarkDisplay(object):
                 key = self.auto_rank[rank][1]
                 self.auto_dict[key] = 0
                 self.auto_rank = [i for i in self.auto_rank if i[1] != key]
+                self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
                 self.auto_update()
             except ValueError:
                 print("Unexpected failure to find bookmark")
@@ -1213,6 +1228,7 @@ class BookMarkDisplay(object):
                 entry[0] = self.auto_dict[key]
                 del self.auto_rank[rank]
                 self.auto_rank[:0] = [entry]
+                self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
                 self.auto_update()
             except ValueError:
                 print("Unexpected failure to find bookmark")
