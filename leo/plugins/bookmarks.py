@@ -758,7 +758,7 @@ class BookMarkDisplay(object):
             target = c.vnode2position(v[1])
             if not target:
                 continue
-            nd.h = target.h
+            nd.h = self.fix_text(target.h)
             nd.b = target.get_UNL()
         if lost_current:
             if self.auto_rank:
