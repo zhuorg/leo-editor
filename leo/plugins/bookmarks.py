@@ -659,6 +659,12 @@ class BookMarkDisplay(object):
         self.show_list(self.current_list)
         g.registerHandler('select1', self.update)
 
+        self.auto_rank = []  # ordered list of [score, vnode] rankings
+        self.auto_dict = {}  # dict of vnode: score
+        self.auto_index = {} # dict of vnode: index (in self.auto_rank)
+        if c.config.getInt('bookmarks-auto'):
+            self.auto_init()
+
     def reloadSettings(self):
         c = self.c
         c.registerReloadSettings(self)
@@ -678,6 +684,75 @@ class BookMarkDisplay(object):
         self.mod_map = dict(i.strip().split() for i in mod_map if i.strip())
 
 
+    #@+node:tbnorth.20180723131541.1: *3* auto_init
+    def auto_init(self):
+        """init_auto_bookmarks - set up automatic bookmarks"""
+
+        timer = g.IdleTime(self.auto_process, delay=500)
+        timer.c = self.c
+        timer.start()
+
+    #@+node:tbnorth.20180723140542.1: *3* auto_process
+    def auto_process(self, timer):
+        """auto_process - process automatic bookmarks"""
+
+        if timer.c != self.c:
+            return
+
+        c = self.c
+
+        key = c.p.v
+
+        # FIXME: score points for changes, not time spent on node?
+        # FIXME: don't score while Leo not focused
+
+        # increment score for this vnode
+        self.auto_dict[key] = self.auto_dict.get(key, 0) + 1
+        if (# list is short
+            len(self.auto_rank) < c.config.getInt('bookmarks-auto') or
+            # this node beats last node in list
+            self.auto_dict[key] > self.auto_rank[-1][0] or
+            # this node is already on list
+            key in self.auto_index
+           ):
+            prev_rank = [i[1] for i in self.auto_rank]
+            if key in self.auto_index:
+                # update current rank
+                self.auto_rank[self.auto_index[key]][0] += 1
+            else:
+                # add rank, either filling list or overtaking last
+                self.auto_rank.append([self.auto_dict[key], key])
+            self.auto_rank.sort(reverse=True)  # sort list, then trim
+            self.auto_rank = self.auto_rank[:c.config.getInt('bookmarks-auto')]
+            # regenerate index
+            self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
+            if [i[1] for i in self.auto_rank] != prev_rank:
+                self.auto_update()
+    #@+node:tbnorth.20180723140619.1: *3* auto_update
+    def auto_update(self, update=True):
+        """auto_update - update automatic bookmarks"""
+
+        c = self.c
+        p = self.v.context.vnode2position(self.v)
+        p = g.findNodeInChildren(self.v.context, p, 'AUTO')
+        if not p:
+            return
+        lost_current = self.current in p.v.children
+        p.deleteAllChildren()
+        for v in self.auto_rank:
+            nd = p.insertAsLastChild()
+            target = c.vnode2position(v[1])
+            if not target:
+                continue
+            nd.h = target.h
+            nd.b = target.get_UNL()
+        if lost_current:
+            if self.auto_rank:
+                self.current = p.v.children[0]
+            else:
+                self.current = None
+        if update:
+            self.update('internal', {'c': c})
     #@+node:tbrown.20131227100801.30379: *3* background_clicked
     def background_clicked(self, event, bookmarks, row_parent):
         """background_clicked - Handle a background click in a bookmark pane
@@ -828,6 +903,11 @@ class BookMarkDisplay(object):
         x = '%02x%02x%02x' % x
         return x
 
+    #@+node:tbnorth.20180723155633.1: *3* current_is_auto
+    def current_is_auto(self, v=None):
+        p = self.v.context.vnode2position(self.v)
+        p = g.findNodeInChildren(self.v.context, p, 'AUTO')
+        return p and (v or self.current) in p.v.children
     #@+node:tbrown.20131227100801.23856: *3* find_node
     def find_node(self, url):
         """find_node - Return position which is a bookmark for url, or None
@@ -1078,7 +1158,25 @@ class BookMarkDisplay(object):
     def delete_bookmark(self, bm):
 
         c = bm.v.context
+        # check if deleting an auto bookmark, requires special handling
+        if self.current_is_auto() or self.current_is_auto(bm.v):
+            rank = [c.vnode2position(i[1]).get_UNL() for i in self.auto_rank]
+            try:
+                rank = rank.index(bm.v.b)
+                # set score equal to zero
+                key = self.auto_rank[rank][1]
+                self.auto_dict[key] = 0
+                self.auto_rank = [i for i in self.auto_rank if i[1] != key]
+                self.auto_update()
+            except ValueError:
+                print("Unexpected failure to find bookmark")
+            return
+
         p = c.vnode2position(bm.v)
+        if not p:
+            g.log("Can't find bookmark")
+            return
+
         u = c.undoer
         if p.hasVisBack(c): newNode = p.visBack(c)
         else: newNode = p.next()
@@ -1097,14 +1195,52 @@ class BookMarkDisplay(object):
         self.show_list(self.get_list())
 
     #@+node:tbrown.20140804215436.30052: *3* promote_bookmark
+
     def promote_bookmark(self, bm):
         """Promote bookmark"""
+
+        c = self.c
+        # check if deleting an auto bookmark, requires special handling
+        if self.current_is_auto() or self.current_is_auto(bm.v):
+            rank = [c.vnode2position(i[1]).get_UNL() for i in self.auto_rank]
+            try:
+                rank = rank.index(bm.v.b)
+                # set score equal to max
+                key = self.auto_rank[rank][1]
+                self.auto_dict[key] = self.auto_rank[0][0]+1
+                # update its entry and move it to start
+                entry = self.auto_rank[rank]
+                entry[0] = self.auto_dict[key]
+                del self.auto_rank[rank]
+                self.auto_rank[:0] = [entry]
+                self.auto_update()
+            except ValueError:
+                print("Unexpected failure to find bookmark")
+            return
+
+        # check if promoting an auto bookmark, requires special handling
+        if self.current_is_auto() or self.current_is_auto(bm.v):
+            rank = [c.vnode2position(i[1]).get_UNL() for i in self.auto_rank]
+            try:
+                rank = rank.index(bm.v.b)
+                # set score equal to higest score
+                self.auto_rank[rank][0] = self.auto_rank[0][0]+1
+                self.auto_update()
+            except ValueError:
+                pass
+            return
+
         p = bm.v.context.vnode2position(bm.v)
+        if not p:
+            g.log("Can't find bookmark")
+            return
+
         p.moveToFirstChildOf(p.parent())
         bm.v.setDirty()
         bm.v.context.setChanged(True)
         bm.v.context.redraw()
         bm.v.context.bodyWantsFocusNow()
+
         self.show_list(self.get_list())
     #@+node:tbrown.20171128173307.1: *3* rename_bookmark
     def rename_bookmark(self, bm):
