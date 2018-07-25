@@ -736,7 +736,12 @@ class BookMarkDisplay(object):
             else:
                 # add rank, either filling list or overtaking last
                 self.auto_rank.append([self.auto_dict[key], key])
-            self.auto_rank.sort(reverse=True)  # sort list, then trim
+            # sort list, then trim.  Sorting fails on vnodes, so restrict to first item
+            self.auto_rank.sort(reverse=True, key=lambda x: x[0])
+            self.auto_rank = [
+                i for i in self.auto_rank
+                if c.vnode2position(i[1])  # drop vanished nodes
+            ]
             self.auto_rank = self.auto_rank[:c.config.getInt('bookmarks-auto')]
             # regenerate index
             self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
