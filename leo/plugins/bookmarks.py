@@ -950,7 +950,7 @@ class BookMarkDisplay(object):
         """
         text = text.strip()
         parts = text.split()
-        if parts[0][0] == '@':
+        if parts and parts[0].startswith('@'):
             if len(parts) > 1:
                 del parts[0]
             elif len(parts[0]) > 1:
