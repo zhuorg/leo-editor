@@ -698,14 +698,34 @@ class BookMarkDisplay(object):
         self.mod_map = dict(i.strip().split() for i in mod_map if i.strip())
 
 
-    #@+node:tbnorth.20180723131541.1: *3* auto_init
+    #@+node:tbnorth.20180730092534.1: *3* auto_init
     def auto_init(self):
         """init_auto_bookmarks - set up automatic bookmarks"""
+
+        # look for old AUTO node and copy scores
+        p = self.v.context.vnode2position(self.v)
+        p = g.findNodeInChildren(self.v.context, p, 'AUTO')
+        scores = []
+        for nd in p.subtree_iter() if p else []:
+            UNL = nd.b.split('\n')[0].split('#', 1)[-1]
+            found, maxdepth, maxp = g.recursiveUNLFind(UNL.split('-->'), self.v.context)
+            if found:
+                scores.append(
+                    (maxp.v, nd.u.setdefault('__bookmarks', {}).get('auto_score', 60))
+                )
+
+        if scores:
+            max_score = max(i[1] for i in scores)
+            # scale scores so that highest score is equal to 5 min.
+            # don't scale scores to less than 1 min.
+            # FIXME: assumes 0.5 second update interval
+            for v, score in scores:
+                self.auto_dict[v] = max(1 * 60 * 2, int(score * (5 * 60 * 2) / max_score))
+                self.auto_rank.append([score, v])
 
         timer = g.IdleTime(self.auto_process, delay=500)
         timer.c = self.c
         timer.start()
-
     #@+node:tbnorth.20180723140542.1: *3* auto_process
     def auto_process(self, timer):
         """auto_process - process automatic bookmarks"""
@@ -758,13 +778,15 @@ class BookMarkDisplay(object):
             return
         lost_current = self.current in p.v.children
         p.deleteAllChildren()
-        for v in self.auto_rank:
+        for score, v in self.auto_rank:
             nd = p.insertAsLastChild()
-            target = c.vnode2position(v[1])
+            target = c.vnode2position(v)
             if not target:
                 continue
             nd.h = self.fix_text(target.h)
             nd.b = target.get_UNL()
+            # for persistence across Leo launches
+            nd.u.setdefault("__bookmarks", {})['auto_score'] = score
         if lost_current:
             if self.auto_rank:
                 self.current = p.v.children[0]
@@ -1059,13 +1081,13 @@ class BookMarkDisplay(object):
             # pylint: disable=undefined-loop-variable
             # pylint bug, fix released: http://www.logilab.org/ticket/89092
             # pylint: disable=undefined-variable
-            top.mouseReleaseEvent = (lambda event, links=links, row_parent=row_parent:
-                self.background_clicked(event, links, row_parent))
-            top.setMinimumSize(10,10)  # so there's something to click when empty
+            top.mouseReleaseEvent = lambda event, links=links, row_parent=row_parent: self.background_clicked(
+                event, links, row_parent
+            )
+            top.setMinimumSize(10, 10)  # so there's something to click when empty
 
             size_policy = QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
             )
             size_policy.setHorizontalStretch(1)
             size_policy.setVerticalStretch(1)
@@ -1082,9 +1104,7 @@ class BookMarkDisplay(object):
 
             for bm in links:
 
-                bm.v.u.setdefault('__bookmarks', {
-                    'is_dupe': False,
-                })
+                bm.v.u.setdefault('__bookmarks', {})['is_dupe'] = False
 
                 but = QtWidgets.QPushButton(bm.head)
                 if bm.url:
@@ -1092,8 +1112,9 @@ class BookMarkDisplay(object):
 
                 # pylint: disable=undefined-variable
                 # 'but' *is* defined.
-                but.mouseReleaseEvent = (lambda event, bm=bm, but=but:
-                    self.button_clicked(event, bm, but))
+                but.mouseReleaseEvent = lambda event, bm=bm, but=but: self.button_clicked(
+                    event, bm, but
+                )
 
                 layout.addWidget(but)
 
@@ -1110,8 +1131,7 @@ class BookMarkDisplay(object):
                 if bm.v.u['__bookmarks']['is_dupe']:
                     style_sheet = "background: red; color: white;"
                 else:
-                    style_sheet = ("background: #%s;" %
-                        self.color(bm.head, dark=self.dark))
+                    style_sheet = "background: #%s;" % self.color(bm.head, dark=self.dark)
 
                 but.setStyleSheet(style_sheet)
                 bm.v.u['__bookmarks']['is_dupe'] = False
@@ -1129,18 +1149,20 @@ class BookMarkDisplay(object):
                 but.setProperty('style_class', ' '.join(classes))
 
         if self.levels:  # drop excess levels
-            if ((
-                not self.second and
-                current_url and
-                current_url.strip() and
-                self.levels == 1 or
-                up or self.upwards
-            ) and
-                current_level < self.w.layout().count() and
-                self.levels < self.w.layout().count()
+            if (
+                (
+                    not self.second
+                    and current_url
+                    and current_url.strip()
+                    and self.levels == 1
+                    or up
+                    or self.upwards
+                )
+                and current_level < self.w.layout().count()
+                and self.levels < self.w.layout().count()
             ):
                 # hide last line, of children, if none are current
-                self.w.layout().takeAt(self.w.layout().count()-1).widget().deleteLater()
+                self.w.layout().takeAt(self.w.layout().count() - 1).widget().deleteLater()
 
             while self.w.layout().count() > self.levels:
 
@@ -1161,7 +1183,6 @@ class BookMarkDisplay(object):
                 self.w.layout().takeAt(0).widget().deleteLater()
 
         w.layout().addStretch()
-
     #@+node:tbrown.20110712100955.39218: *3* update
     def update(self, tag, keywords):
         """re-show the current list of bookmarks"""
