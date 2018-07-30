@@ -43,6 +43,21 @@ General bookmark commands
   Add the current node as a child of the current bookmark, if there is
   a current bookmark.  Another keyboard friendly alternative.
 
+AUTO bookmarks
+--------------
+
+If you set @settings -> @int bookmarks-auto = 10, bookmarks.py will start
+tracking the time you spend looking at each node. If you add a top level
+bookmark folder called `AUTO` (right-click the bookmarks pane background and
+select `Add bookmark folder`), bookmarks.py will will list the top 10 nodes as
+child bookmarks for the AUTO organizer bookmark. The list will dynamically
+update. When you save and exit and restart Leo, the list will be restored, but
+the accumulated scores of the bookmarked nodes will be scaled down to a maximum
+of five minutes worth of viewing, to make it easy for new nodes of interest to
+get onto the list - you can also delete auto bookmarks (resets their score to
+put them at the bottom of the list) and promote auto bookmarks (sets their score
+equal to the highest score+1).
+
 Cross file bookmark commands
 ----------------------------
 
