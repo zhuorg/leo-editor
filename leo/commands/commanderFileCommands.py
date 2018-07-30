@@ -745,6 +745,9 @@ def readOutlineOnly(self, event=None):
         frame.deiconify()
         frame.lift()
         c.fileCommands.readOutlineOnly(theFile, fileName) # closes file.
+        if c.USE_NEW_MODEL:
+            c._ltm = leoDataModel.vnode2treemodel(c.hiddenRootNode)
+            c.initAfterLoad()
     except Exception:
         g.es("can not open:", fileName)
 #@+node:ekr.20070915142635: *3* c_file.writeFileFromNode

@@ -12,6 +12,16 @@ Source code of new data model can be found [here](https://github.com/leo-editor/
 
 Let the coding begin!
 
+July 30th,
+All unit tests pass with `c.USE_NEW_MODEL = True` and with `c.USE_NEW_MODEL = False`.
+This is the global switch and it is located in leo/core/leoCommands.py line 125.
+
+TODO:
+
+- selecting chapter in combobox is broken (selecting with minibuffer command is ok)
+- clean up code. There are lots of unused methods and functions everywhere
+- declutter is not working at the moment and likely all plugins that depend on the old tree
+
 
 ### old content of README.md
 

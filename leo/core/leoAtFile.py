@@ -1223,6 +1223,7 @@ class AtFile(object):
             root = c.rootPosition()
             p = c.rootPosition()
             after = None
+
         at.clearAllOrphanBits(p)
         # Leo 5.6: write files only once.
         seen = set()

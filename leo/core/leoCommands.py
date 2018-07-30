@@ -23,6 +23,7 @@ try:
 except ImportError:
     tabnanny = None
 import leo.core.leoDataModel as leoDataModel
+import operator
 #@-<< imports >>
 
 def cmd(name):
@@ -542,8 +543,7 @@ class Commands(object):
     def initAfterLoad(self):
         '''Provide an offical hook for late inits of the commander.'''
         if self.USE_NEW_MODEL:
-            self._ltm = leoDataModel.vnode2treemodel(self.hiddenRootNode)
-            self.frame.top.ltm_updated(self._ltm)
+            self.ltm_updated(self._ltm)
 
     #@+node:ekr.20090213065933.6: *4* c.initConfigSettings
     def initConfigSettings(self):
@@ -745,8 +745,13 @@ class Commands(object):
     def all_nodes(self):
         '''A generator returning all vnodes in the outline, in outline order.'''
         c = self
-        for p in c.all_positions():
-            yield p.v
+        if c.USE_NEW_MODEL:
+            nodes = c._ltm.data.nodes
+            for x in nodes[1:]:
+                yield c.get_node(x)
+        else:
+            for p in c.all_positions():
+                yield p.v
 
     def all_unique_nodes(self):
         '''A generator returning each vnode of the outline.'''
@@ -763,10 +768,15 @@ class Commands(object):
     def all_positions(self, copy=True):
         '''A generator return all positions of the outline, in outline order.'''
         c = self
-        p = c.rootPosition()
-        while p:
-            yield p.copy() if copy else p
-            p.moveToThreadNext()
+        if c.USE_NEW_MODEL:
+            N = len(c.ltm.data.positions)
+            for i in range(1, N):
+                yield leoNodes.Position2(c, i)
+        else:
+            p = c.rootPosition()
+            while p:
+                yield p.copy() if copy else p
+                p.moveToThreadNext()
 
     # Compatibility with old code...
     all_positions_iter = all_positions
@@ -788,13 +798,28 @@ class Commands(object):
             def predicate(p):
                 return p.isAnyAtFileNode()
 
-        p = c.rootPosition()
-        while p:
-            if predicate(p):
-                yield p.copy() # 2017/02/19
-                p.moveToNodeAfterTree()
-            else:
-                p.moveToThreadNext()
+        if c.USE_NEW_MODEL:
+            d = c.ltm.data
+            nodes = d.nodes
+            attrs = d.attrs
+            N = len(d.positions)
+            i = 1
+            while i < N:
+                p = leoNodes.Position2(c, i)
+                if predicate(p):
+                    yield p
+                    gnx = nodes[i]
+                    i += attrs[gnx].size
+                else:
+                    i += 1
+        else:
+            p = c.rootPosition()
+            while p:
+                if predicate(p):
+                    yield p.copy() # 2017/02/19
+                    p.moveToNodeAfterTree()
+                else:
+                    p.moveToThreadNext()
 
     #@+node:ekr.20161120125322.1: *5* c.all_unique_roots
     def all_unique_roots(self, copy=True, predicate=None):
@@ -812,16 +837,20 @@ class Commands(object):
             # pylint: disable=function-redefined
             def predicate(p):
                 return p.isAnyAtFileNode()
-
-        seen = set()
-        p = c.rootPosition()
-        while p:
-            if p.v not in seen and predicate(p):
-                seen.add(p.v)
-                yield p.copy() if copy else p
-                p.moveToNodeAfterTree()
-            else:
-                p.moveToThreadNext()
+        if c.USE_NEW_MODEL:
+            for p in c.all_unique_positions():
+                if predicate(p):
+                    yield p
+        else:
+            seen = set()
+            p = c.rootPosition()
+            while p:
+                if p.v not in seen and predicate(p):
+                    seen.add(p.v)
+                    yield p.copy() if copy else p
+                    p.moveToNodeAfterTree()
+                else:
+                    p.moveToThreadNext()
     #@+node:ekr.20091001141621.6062: *5* c.all_unique_positions
     def all_unique_positions(self, copy=True):
         '''
@@ -829,15 +858,30 @@ class Commands(object):
         Returns only the first position for each vnode.
         '''
         c = self
-        p = c.rootPosition()
         seen = set()
-        while p:
-            if p.v in seen:
-                p.moveToNodeAfterTree()
-            else:
-                seen.add(p.v)
-                yield p.copy() if copy else p
-                p.moveToThreadNext()
+        if c.USE_NEW_MODEL:
+            d = c.ltm.data
+            nodes = d.nodes
+            attrs = d.attrs
+            N = len(d.positions)
+            i = 1
+            while i < N:
+                gnx = nodes[i]
+                if gnx in seen:
+                    i += attrs[gnx].size
+                else:
+                    seen.add(gnx)
+                    yield leoNodes.Position2(c, i)
+                    i += 1
+        else:
+            p = c.rootPosition()
+            while p:
+                if p.v in seen:
+                    p.moveToNodeAfterTree()
+                else:
+                    seen.add(p.v)
+                    yield p.copy() if copy else p
+                    p.moveToThreadNext()
 
     # Compatibility with old code...
     all_positions_with_unique_tnodes_iter = all_unique_positions
@@ -872,6 +916,8 @@ class Commands(object):
     #@+node:ekr.20040306220230.1: *5* c.edit_widget
     def edit_widget(self, p):
         c = self
+        if c.USE_NEW_MODEL:
+            return g.ltm_get_new_tree(c).edit_widget(p)
         return p and c.frame.tree.edit_widget(p)
     #@+node:ekr.20031218072017.2986: *5* c.fileName & relativeFileName & shortFileName
     # Compatibility with scripts
@@ -1006,6 +1052,8 @@ class Commands(object):
         """Return True if a position exists in c's tree"""
         # Important: do not call p.isAncestorOf here.
         c = self
+        if c.USE_NEW_MODEL:
+            return p.exists(root)
         if not p or not p.v:
             return False
         if root and p == root:
@@ -1040,6 +1088,8 @@ class Commands(object):
         top level positions are siblings of this node.
         """
         c = self
+        if c.USE_NEW_MODEL:
+            return leoNodes.Position2(self, 1)
         # 2011/02/25: Compute the position directly.
         if c.hiddenRootNode.children:
             v = c.hiddenRootNode.children[0]
@@ -1236,7 +1286,9 @@ class Commands(object):
         if not p:
             g.trace('===== no p', g.callers())
             return
-        if c.positionExists(p):
+        if c.USE_NEW_MODEL:
+            c._currentPosition = self.ltm_normalize(p.copy())
+        elif c.positionExists(p):
             if c._currentPosition and p == c._currentPosition:
                 pass # We have already made a copy.
             else: # Make a copy _now_
@@ -1257,11 +1309,13 @@ class Commands(object):
 
         This is used in by unit tests to restore the outline.'''
         c = self
+
         p.initHeadString(s)
         p.setDirty()
         # Change the actual tree widget so
         # A later call to c.endEditing or c.redraw will use s.
-        c.frame.tree.setHeadline(p, s)
+        if not c.USE_NEW_MODEL:
+            c.frame.tree.setHeadline(p, s)
     #@+node:ekr.20060109164136: *5* c.setLog
     def setLog(self):
         c = self
@@ -2688,6 +2742,10 @@ class Commands(object):
     def redraw(self, p=None, setFocus=False):
         '''Redraw the screen immediately.'''
         c = self
+        if c.USE_NEW_MODEL:
+            if p:
+                c.selectPosition(p)
+            return
         # New in Leo 5.6: clear the redraw request.
         c.requestLaterRedraw = False
         if not p:
@@ -2713,6 +2771,7 @@ class Commands(object):
     force_redraw = redraw
     redraw_now = redraw
     #@+node:ekr.20090110073010.3: *6* c.redraw_afer_icons_changed
+    @g.ltm_tree_will_do('noop')
     def redraw_after_icons_changed(self):
         '''Update the icon for the presently selected node'''
         c = self
@@ -2722,6 +2781,7 @@ class Commands(object):
         else:
             c.requestLaterRedraw = True
     #@+node:ekr.20090110131802.2: *6* c.redraw_after_contract
+    @g.ltm_tree_will_do('noop')
     def redraw_after_contract(self, p=None, setFocus=False):
         c = self
         c.endEditing()
@@ -2738,6 +2798,7 @@ class Commands(object):
         else:
             c.requestLaterRedraw = True
     #@+node:ekr.20090112065525.1: *6* c.redraw_after_expand
+    @g.ltm_tree_will_do('noop')
     def redraw_after_expand(self, p=None, setFocus=False):
         c = self
         c.endEditing()
@@ -2754,6 +2815,7 @@ class Commands(object):
         else:
             c.requestLaterRedraw = True
     #@+node:ekr.20090110073010.2: *6* c.redraw_after_head_changed
+    @g.ltm_tree_will_do('update')
     def redraw_after_head_changed(self):
         '''
         Redraw the screen (if needed) when editing ends.
@@ -2765,6 +2827,7 @@ class Commands(object):
         else:
             c.requestLaterRedraw = True
     #@+node:ekr.20090110073010.4: *6* c.redraw_after_select
+    @g.ltm_tree_will_do('noop')
     def redraw_after_select(self, p):
         '''Redraw the screen after node p has been selected.'''
         c = self
@@ -2775,6 +2838,7 @@ class Commands(object):
         else:
             c.requestLaterRedraw = True
     #@+node:ekr.20170908081918.1: *6* c.redraw_later
+    @g.ltm_tree_will_do('noop')
     def redraw_later(self):
         '''
         Ensure that c.redraw() will be called eventually.
@@ -3353,6 +3417,14 @@ class Commands(object):
         if kwargs:
             print('c.selectPosition: all keyword args are ignored', g.callers())
         c = self
+        if c.USE_NEW_MODEL:
+            ntw = g.ltm_get_new_tree(c)
+            if ntw and p:
+                self.setCurrentPosition(p)
+                ntw.select_from_leo()
+                self.ltm_update_current_position()
+            return
+
         cc = c.chapterController
         if not p:
             if not g.app.batchMode: # A serious error.
@@ -3754,6 +3826,8 @@ class Commands(object):
         # faster than the old: there is no need to sort positions.
         #@-<< theory of operation >>
         c = self
+        if c.USE_NEW_MODEL:
+            return c.ltm_delete_positions(aList, callback, redraw)
         # Verify all positions *before* altering the tree.
         aList2 = []
         for p in aList:
@@ -3932,6 +4006,186 @@ class Commands(object):
                 except Exception:
                     g.es_exception()
                     c.configurables.remove(obj)
+    #@+node:vitalije.20180717165421.1: *3* c.NewDataModel
+    #@+node:vitalije.20180718134857.1: *4* ltm_utpos
+    def ltm_utpos(self, pos, i=None):
+        if i is None:
+            i = self.ltm.data.positions.index(pos)
+        return leoNodes.Position2(self, i)
+    #@+node:vitalije.20180728153239.1: *4* ltm_normalize
+    def ltm_normalize(self, p):
+        ltm = self._ltm
+        p._priv = ltm.mkpos(ltm.normalize(p._priv).i)
+        return p
+    #@+node:vitalije.20180717170011.1: *4* ltm_extra_data_for_undo
+    def ltm_extra_data_for_undo(self, kind):
+        c = self
+        w = c.frame.body.wrapper
+        if g.app.gui.isNullGui:
+            return g.Bunch(kind=kind, sel=w.getSelectionRange(), bhb=None, bvb=None, thb=None,
+                tvb=None, focus='body', pi=c.ltm.selectedIndex, pp=c.ltm.selectedPosition)
+        tw = c.frame.top.newTreeWidget
+        scrbardata = lambda sb:(sb.minimum(), sb.value(), sb.maximum())
+        #fw = QtWidgets.QApplication.focusWidget()
+        fw = g.app.gui and g.app.gui.get_focus(c, raw=True)
+        fwname = fw and fw.objectName() or 'body'
+        return g.Bunch(
+            kind = kind,
+            sel = w.getSelectionRange(),
+            bhb = scrbardata(w.widget.horizontalScrollBar()),
+            bvb = scrbardata(w.widget.verticalScrollBar()),
+            thb = tw and scrbardata(tw.hbar),
+            tvb = tw and scrbardata(tw.vbar),
+            focus = fwname,
+            pi = c.ltm.selectedIndex,
+            pp = c.ltm.selectedPosition
+        )
+    #@+node:vitalije.20180717170647.1: *4* ltm_update_view_after_undo_redo
+    def ltm_update_view_after_undo_redo(self, extra):
+        c = self
+        w = c.frame.body.wrapper
+        ltm = self.ltm
+        i, j = extra.sel or (0, 0)
+        c._currentPosition = leoNodes.Position2(c, extra.pi)
+        ltm.selectedPosition = extra.pp
+        w.setAllText(ltm.selectedBody)
+        w.setSelectionRange(i, j, insert=j)
+        c.recolor()
+        if not getattr(g.app.gui, 'isNullGui', True):
+            ntw = g.ltm_get_new_tree(c)
+            def updscroll(sb, d):
+                i, j, m = d
+                sb.setRange(i, m)
+                sb.setValue(j)
+            updscroll(ntw.vbar, extra.tvb)
+            updscroll(ntw.hbar, extra.thb)
+            updscroll(w.widget.horizontalScrollBar(), extra.bhb)
+            updscroll(w.widget.verticalScrollBar(), extra.bvb)
+            c.ltm.invalidate_visual()
+            ntw.update()
+        fwname = extra.focus
+        if fwname == 'body':
+            c.bodyWantsFocus()
+        elif fwname == 'log':
+            c.logWantsFocus()
+        elif fwname in ('canvas', 'newTreeWidget'):
+            c.treeWantsFocus()
+    #@+node:vitalije.20180717170709.1: *4* ltm_undo_redo_labels
+    def ltm_undo_redo_labels(self):
+        c = self
+        extra = c.ltm.peek_redo_extra()
+        if not extra:
+            c.undoer.setRedoType("Can't Redo")
+        else:
+            c.undoer.setRedoType(extra.kind)
+        extra = c.ltm.peek_undo_extra()
+        if not extra:
+            c.undoer.setUndoType("Can't Undo")
+        else:
+            c.undoer.setUndoType(extra.kind)
+    #@+node:vitalije.20180717171555.1: *4* ltm_redo
+    def ltm_redo(self):
+        rextra = self.ltm.peek_redo_extra()
+        if rextra:
+            extra = self.ltm.redo(self.ltm_extra_data_for_undo(rextra.kind))
+            if extra:
+                self.ltm_update_view_after_undo_redo(extra)
+            self.ltm_undo_redo_labels()
+    #@+node:vitalije.20180717171559.1: *4* ltm_undo
+    def ltm_undo(self):
+        uextra = self.ltm.peek_undo_extra()
+        if uextra:
+            extra = self.ltm.undo(self.ltm_extra_data_for_undo(uextra.kind))
+            if extra:
+                self.ltm_update_view_after_undo_redo(extra)
+            self.ltm_undo_redo_labels()
+    #@+node:vitalije.20180717200255.1: *4* ltm_update_current_position
+    def ltm_update_current_position(self):
+        '''Updates current position in c'''
+        c = self
+        if c.p:
+            c.p.v.saveCursorAndScroll()
+        ltm = c.ltm
+        i, gnx, h, b, size = ltm.selection
+        p = leoNodes.Position2(c, i)
+        self._currentPosition = p
+        c.frame.tree.set_status_line(p)
+        self.frame.tree.revertHeadline = p.h
+        self.frame.body.wrapper.setAllText(b)
+        p.v.restoreCursorAndScroll()
+        c.chapterController.selectChapterForPosition(p)
+        while c.hoistStack:
+            p1 = c.hoistStack[-1].p
+            if p.exists(p1):
+                ltm.set_vis_top(p1._priv.i)
+                break
+            else:
+                c.hoistStack.pop()
+        else:
+            ltm.set_vis_top(0)
+        self.recolor()
+    #@+node:vitalije.20180711223046.1: *4* ltm_updated
+    def ltm_updated(self, ltm):
+        self.frame.tree.selecting = True
+        if self.frame.top:
+            top = self.frame.top
+            nwt = top.newTreeWidget
+            nwt.select_from_leo()
+            self.ltm_update_current_position()
+            nwt.upd_size()
+            nwt.vpositions[:] = ltm.visible_positions
+            top.show_new_tree()
+            nwt.update()
+        else:
+            nwt = self.frame.ntree
+            nwt.select_from_leo()
+    #@+node:vitalije.20180717193535.1: *4* get_node
+    def get_node(self, gnx):
+        if self.hiddenRootNode.fileIndex == gnx: return self.hiddenRootNode
+        gdict = self.fileCommands.gnxDict
+        if gnx in gdict:
+            return gdict[gnx]
+        v = leoNodes.vnode(self, gnx)
+        return v
+    #@+node:vitalije.20180717224826.1: *4* ltm_body_has_changed
+    def ltm_body_has_changed(self, newText):
+        c = self
+        gty = c.undoer.granularity
+        ltm = c.ltm
+        if gty == 'char':
+            ltm.pre_cmd(c.ltm_extra_data_for_undo('Typing'))
+        elif gty == 'line':
+            als = newText.splitlines()
+            bb = ltm.selectedBody
+            bls = bb.splitlines()
+            if len(als) != len(bls) or sum(map(operator.ne, als, bls)) > 1:
+                ltm.pre_cmd(c.ltm_extra_data_for_undo('Typing'))
+        c.ltm.body_change(newText)
+        if (bb and not newText) or (newText and not bb):
+            g.ltm_get_new_tree(c).update()
+            c.frame.tree.redrawCount += 1
+
+    #@+node:vitalije.20180723181456.1: *4* ltm_delete_positions
+    def ltm_delete_positions(self, aList, callback=None, redraw=True):
+        ltm = self.ltm
+        positions = ltm.data.positions
+        if callback:
+            for p in aList:
+                pos = p._priv.pos
+                if pos in positions:
+                    callback(p)
+        else:
+            for p in aList:
+                pos = p._priv.pos
+                if pos in positions:
+                    ltm.delete_node(pos)
+        if redraw:
+            ltm.selectedPosition = ltm.data.positions[1]
+            self.ltm_update_current_position()
+    #@+node:vitalije.20180724103915.1: *4* ltm_newgnx
+    def ltm_newgnx(self):
+        v = leoNodes.VNode(self)
+        return v.fileIndex
     #@-others
 #@-others
 #@@language python

@@ -153,6 +153,7 @@ class GeneralTestCase(unittest.TestCase):
         self.c = c
         self.p = p.copy()
         self.setup_script = setup_script
+        self._shortDescription = p.h + '\n'
     #@+node:ekr.20051104075904.7: *3*  fail (GeneralTestCase)
     def fail(self, msg=None):
         """Mark a unit test as having failed."""
@@ -161,10 +162,20 @@ class GeneralTestCase(unittest.TestCase):
     #@+node:ekr.20051104075904.9: *3* tearDown
     def tearDown(self):
         # Restore the outline.
-        self.c.outerUpdate()
+        c = self.c
+        if c.USE_NEW_MODEL:
+            c.ltm.data = self._revert_ltm
+            c.ltm.selectedPosition = self._revert_ltm_pos
+            c.ltm_update_current_position()
+        c.outerUpdate()
     #@+node:ekr.20051104075904.8: *3* setUp
     def setUp(self):
-        self.c.selectPosition(self.p.copy()) # 2010/02/03
+        c = self.c
+        if c.USE_NEW_MODEL:
+            self._revert_ltm = c.ltm.copy_data()
+            self._revert_ltm_pos = c.ltm.selectedPosition
+            self.p.normalize()
+        c.selectPosition(self.p.copy()) # 2010/02/03
     #@+node:ekr.20051104075904.10: *3* runTest (generalTestCase)
     def runTest(self, define_g=True):
         '''Run a Leo GeneralTestCase test.'''
@@ -205,8 +216,7 @@ class GeneralTestCase(unittest.TestCase):
                 g.trace('EXCESSIVE TIME: %5.2f sec. in %s' % (t2-t1, self.p.h))
     #@+node:ekr.20051104075904.11: *3* shortDescription
     def shortDescription(self):
-        s = self.p.h
-        return s + '\n'
+        return self._shortDescription
     #@-others
 #@+node:ekr.20051104075904.79: ** class ImportExportTestCase
 class ImportExportTestCase(unittest.TestCase):
@@ -687,7 +697,7 @@ class TestManager(object):
         finally:
             c.setChanged(changed) # Restore changed state.
             g.unitTesting = g.app.unitTesting = False
-            if True: # g.app.unitTestDict.get('restoreSelectedNode', True):
+            if True and not c.USE_NEW_MODEL: # g.app.unitTestDict.get('restoreSelectedNode', True):
                 # This is more natural, and more useful.
                 c.contractAllHeadlines()
                 c.redraw(p1)
@@ -1323,6 +1333,9 @@ class TestManager(object):
     def compareOutlines(self, root1, root2, compareHeadlines=True, tag='', report=True):
         """Compares two outlines, making sure that their topologies,
         content and join lists are equivalent"""
+        if self.c.USE_NEW_MODEL:
+            root1.normalize()
+            root2.normalize()
         p2 = root2.copy()
         ok = True
         p1 = None
@@ -1376,7 +1389,13 @@ class TestManager(object):
 
         c, tm = self.c, self
         # Bug fix 2016/01/23: Scan entire file if marked.
-        p = c.rootPosition() if all or marked else c.p
+        if c.USE_NEW_MODEL:
+            if all or marked:
+                p = c.ltm_utpos(c.ltm.data.positions[1], 1)
+            else:
+                p = c.ltm_utpos(c.ltm.selectedPosition, c.ltm.selectedIndex)
+        else:
+            p = c.rootPosition() if all or marked else c.p
         limit = None if all or marked else p.nodeAfterTree()
         seen, result = [], []
         # 2012/08/13: Add special cases only after this loop.

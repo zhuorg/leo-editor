@@ -363,17 +363,24 @@ class LtmTreeWillDo(object):
 
     def __call__(self, f):
         @wraps(f)
-        def wrapper(c, *args, **kw):
-            if hasattr(c, 'c'):
-                c = c.c
+        def wrapper(c_orig, *args, **kw):
+            c = c_orig.c if hasattr(c_orig, 'c') else c_orig
             if c.USE_NEW_MODEL:
-                print('cmd %s'%self.name)
-                ntw = c.frame.top.newTreeWidget
-                return getattr(ntw, self.name)()
-            return f(c, *args, **kw)
+                ntw = ltm_get_new_tree(c)
+                if ntw:
+                    return getattr(ntw, self.name)()
+                else:
+                    return
+            return f(c_orig, *args, **kw)
         return wrapper
 
 ltm_tree_will_do = LtmTreeWillDo
+
+def ltm_get_new_tree(c):
+    if getattr(g.app.gui, 'isNullGui', True):
+        return getattr(c.frame, 'ntree', False)
+    else:
+        return getattr(c.frame.top, 'newTreeWidget', False)
 #@-others
 #@-<< define g.decorators >>
 tree_popup_handlers = [] # Set later.

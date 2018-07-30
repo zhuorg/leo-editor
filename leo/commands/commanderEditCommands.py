@@ -335,17 +335,24 @@ def extract(self, event=None):
         h, b, middle = def_h, lines, ''
     else:
         h, b, middle = lines[0].strip(), lines[1:], ''
-    u.beforeChangeGroup(current, undoType)
-    undoData = u.beforeInsertNode(current)
-    p = createLastChildNode(c, current, h, ''.join(b))
-    u.afterInsertNode(p, undoType, undoData)
-    c.updateBodyPane(head, middle, tail,
-        undoType=undoType, oldSel=None, oldYview=oldYview)
-    u.afterChangeGroup(current, undoType=undoType)
+    if c.USE_NEW_MODEL:
+        c._ltm.pre_cmd(c.ltm_extra_data_for_undo('Extract'))
+        p = current.insertAsLastChild()
+        p.h = h
+        p.b = ''.join(b).rstrip()
+        current.b = head + middle + tail
+    else:
+        u.beforeChangeGroup(current, undoType)
+        undoData = u.beforeInsertNode(current)
+        p = createLastChildNode(c, current, h, ''.join(b))
+        u.afterInsertNode(p, undoType, undoData)
+        c.updateBodyPane(head, middle, tail,
+            undoType=undoType, oldSel=None, oldYview=oldYview)
+        u.afterChangeGroup(current, undoType=undoType)
     p.parent().expand()
     c.redraw(p.parent()) # A bit more convenient than p.
     c.bodyWantsFocus()
-    
+
 # Compatibility
 g.command_alias('extractSection', extract)
 g.command_alias('extractPythonMethod', extract)

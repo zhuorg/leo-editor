@@ -1513,7 +1513,8 @@ False:
 # Nov. 2017: 916 tests, 25 skipped.
 
 # Some tests are disabled when g.app.isExternalUnitTest is True.
-# Using self.skipTest(reason) is now preferred.</t>
+# Using self.skipTest(reason) is now preferred.
+</t>
 <t tx="ekr.20110521073115.3494"></t>
 <t tx="ekr.20110521073115.3495">builtins, including cython builtins
 </t>

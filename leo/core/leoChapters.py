@@ -166,6 +166,8 @@ class ChapterController(object):
             if not p:
                 return
         chapter.select()
+        if c.USE_NEW_MODEL:
+            c._ltm.set_vis_top(chapter.p._priv.i)
         c.setCurrentPosition(chapter.p)
         # Clean up, but not initially.
         if collapse and chapter.name == 'main':
@@ -411,6 +413,7 @@ class Chapter(object):
                 self.p = p = p.insertAsLastChild()
                 p.h = 'New Headline'
         c.hoistStack.append(g.Bunch(p=root.copy(), expanded=True))
+
         # Careful: c.selectPosition would pop the hoist stack.
         c.setCurrentPosition(p)
         g.doHook('hoist-changed', c=c)

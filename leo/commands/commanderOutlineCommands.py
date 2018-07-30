@@ -8,6 +8,7 @@ import leo.core.leoGlobals as g
 #@+node:ekr.20031218072017.1548: ** c_oc.Cut & Paste Outlines
 #@+node:ekr.20031218072017.1550: *3* c_oc.copyOutline
 @g.commander_command('copy-node')
+@g.ltm_tree_will_do('copy_node')
 def copyOutline(self, event=None):
     '''Copy the selected outline to the clipboard.'''
     # Copying an outline has no undo consequences.
@@ -18,6 +19,7 @@ def copyOutline(self, event=None):
     g.app.gui.replaceClipboardWith(s)
 #@+node:ekr.20031218072017.1549: *3* c_oc.cutOutline
 @g.commander_command('cut-node')
+@g.ltm_tree_will_do('cut_node')
 def cutOutline(self, event=None):
     '''Delete the selected outline and send it to the clipboard.'''
     c = self
@@ -27,6 +29,7 @@ def cutOutline(self, event=None):
         c.recolor()
 #@+node:ekr.20031218072017.1551: *3* c_oc.pasteOutline
 @g.commander_command('paste-node')
+@g.ltm_tree_will_do('paste_node')
 def pasteOutline(self,
     event=None,
     redrawFlag=True,
@@ -77,6 +80,7 @@ def pasteOutline(self,
     return pasted
 #@+node:EKR.20040610130943: *3* c_oc.pasteOutlineRetainingClones & helpers
 @g.commander_command('paste-retaining-clones')
+@g.ltm_tree_will_do('paste_node_retaining_clones')
 def pasteOutlineRetainingClones(self,
     event=None,
     redrawFlag=True,
@@ -841,6 +845,7 @@ def insertChild(self, event=None):
     return c.insertHeadline(event=event, op_name='Insert Child', as_child=True)
 #@+node:ekr.20031218072017.1761: *3* c_oc.insertHeadline (insert-*)
 @g.commander_command('insert-node')
+@g.ltm_tree_will_do('insert_node')
 def insertHeadline(self, event=None, op_name="Insert Node", as_child=False):
     '''Insert a node after the presently selected node.'''
     c = self
@@ -848,12 +853,14 @@ def insertHeadline(self, event=None, op_name="Insert Node", as_child=False):
     return insertHeadlineHelper(c, event=event, as_child=as_child)
     
 @g.commander_command('insert-as-first-child')
+@g.ltm_tree_will_do('insert_as_first_child')
 def insertNodeAsFirstChild(self, event=None):
     '''Insert a node as the last child of the previous node.'''
     c = self
     return insertHeadlineHelper(c, event=event, as_first_child=True)
 
 @g.commander_command('insert-as-last-child')
+@g.ltm_tree_will_do('insert_as_last_child')
 def insertNodeAsLastChild(self, event=None):
     '''Insert a node as the last child of the previous node.'''
     c = self
@@ -897,6 +904,7 @@ def insertHeadlineHelper(c,
     return p
 #@+node:ekr.20130922133218.11540: *3* c_oc.insertHeadlineBefore
 @g.commander_command('insert-node-before')
+@g.ltm_tree_will_do('insert_before')
 def insertHeadlineBefore(self, event=None):
     '''Insert a node before the presently selected node.'''
     c, current, u = self, self.p, self.undoer
@@ -919,12 +927,14 @@ def insertHeadlineBefore(self, event=None):
 #@+node:ekr.20031218072017.2922: ** c_oc.Mark commands
 #@+node:ekr.20090905110447.6098: *3* c_oc.cloneMarked
 @g.commander_command('clone-marked-nodes')
+@g.ltm_tree_will_do('clone_marked')
 def cloneMarked(self, event=None):
     """Clone all marked nodes as children of a new node."""
     c = self; u = c.undoer; p1 = c.p.copy()
     # Create a new node to hold clones.
     parent = p1.insertAfter()
     parent.h = 'Clones of marked nodes'
+
     cloned, n, p = [], 0, c.rootPosition()
     while p:
         # Careful: don't clone already-cloned nodes.
@@ -989,6 +999,7 @@ def copyMarked(self, event=None):
     c.redraw()
 #@+node:ekr.20111005081134.15540: *3* c_oc.deleteMarked
 @g.commander_command('delete-marked-nodes')
+@g.ltm_tree_will_do('delete_marked')
 def deleteMarked(self, event=None):
     """Delete all marked nodes."""
     c = self; u = c.undoer; p1 = c.p.copy()
@@ -1159,6 +1170,10 @@ def markSubheads(self, event=None):
 def unmarkAll(self, event=None):
     '''Unmark all nodes in the entire outline.'''
     c = self; u = c.undoer; undoType = 'Unmark All'
+    if c.USE_NEW_MODEL:
+        c.ltm.data.marked.clear()
+        g.ltm_get_new_tree(c).update()
+        return
     current = c.p
     if not current: return
     c.endEditing()
@@ -1435,6 +1450,7 @@ def toggleSparseMove(self, event=None):
 #@+node:ekr.20080425060424.1: ** c_oc.Sort commands
 #@+node:ekr.20050415134809: *3* c_oc.sortChildren
 @g.commander_command('sort-children')
+@g.ltm_tree_will_do('sort_children')
 def sortChildren(self, event=None, key=None, reverse=False):
     '''Sort the children of a node.'''
     # This method no longer supports the 'cmp' keyword arg.
@@ -1443,6 +1459,7 @@ def sortChildren(self, event=None, key=None, reverse=False):
         c.sortSiblings(p=p.firstChild(), sortChildren=True, key=key, reverse=reverse)
 #@+node:ekr.20050415134809.1: *3* c_oc.sortSiblings
 @g.commander_command('sort-siblings')
+@g.ltm_tree_will_do('sort_siblings')
 def sortSiblings(self, event=None,
     # cmp keyword is no longer supported.
     key=None,

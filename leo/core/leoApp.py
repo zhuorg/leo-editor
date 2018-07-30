@@ -3283,6 +3283,8 @@ class LoadManager(object):
             c.fileCommands.initIvars()
             c.fileCommands.getLeoFile(theFile, fn, checkOpenFiles=False)
                 # Closes the file.
+            if c.USE_NEW_MODEL:
+                c._ltm = leoDataModel.vnode2treemodel(c.hiddenRootNode)
     #@-others
 #@+node:ekr.20120223062418.10420: ** class PreviousSettings
 class PreviousSettings(object):

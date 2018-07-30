@@ -870,6 +870,8 @@ class Importer(object):
                 if not lines[-1].endswith('\n'):
                     lines[-1] += '\n'
             v._bodyString = g.toUnicode(''.join(lines), reportErrors=True)
+            if self.c.USE_NEW_MODEL:
+                self.c.ltm.set_b(v.fileIndex, v._bodyString)
                 # Bug fix: 2017/01/24: must convert to unicode!
                 # This was the source of the internal error in the p.b getter.
             delattr(v, '_import_lines')

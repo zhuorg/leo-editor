@@ -10,6 +10,7 @@ import leo.core.leoColor as leoColor
 import leo.core.leoColorizer as leoColorizer
 import leo.core.leoFrame as leoFrame
 import leo.core.leoMenu as leoMenu
+import leo.core.leoNodes as leoNodes
 import leo.commands.gotoCommands as gotoCommands
 from leo.core.leoQt import isQt5, QtCore, QtGui, QtWidgets, QtConst
 from leo.core.leoQt import Qsci
@@ -32,7 +33,7 @@ except ImportError:
 #@-<< imports >>
 #@+others
 #@+node:vitalije.20180711214706.1: ** NewLeoTree
-class NewLeoTree(QtWidgets.QFrame):
+class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
     def __init__(self, c, parent):
         self.HR = 24
         self.MAX_W = 1000
@@ -53,7 +54,17 @@ class NewLeoTree(QtWidgets.QFrame):
         self.plusic = g.app.gui.getImageImage('plusnode.gif')
         self.minusic = g.app.gui.getImageImage('minusnode.gif')
         self.setFocusPolicy(QtConst.WheelFocus)
+        self._auto_scroller = QtCore.QTimer()
+        self._auto_scroller.timeout.connect(self.avs_timeout)
+        self._ew = QtWidgets.QLineEdit(self)
+        self._ew.hide()
+        self._ew.textChanged.connect(self.on_edit_head)
+        self._ew.editingFinished.connect(self.on_edit_finish)
+        #g.app.gui.setFilter(c, self._ew, self._ew, tag='head')
 
+    def closeEvent(self, ev):
+        self.auto_vscroll(True)
+        ev.accept()
     #@+others
     #@+node:vitalije.20180716141123.1: *3* drawing
     #@+node:vitalije.20180711214706.2: *4* draw_tree
@@ -73,6 +84,7 @@ class NewLeoTree(QtWidgets.QFrame):
         vpositions = self.vpositions
         del vpositions[:]
         MW = 100
+        sel_is_drawn = False
 
         for j, dd in enumerate(ltm.display_items(self.top_index, count+1)):
             p, gnx, h, lev, pm, iconVal, sel = dd
@@ -81,6 +93,7 @@ class NewLeoTree(QtWidgets.QFrame):
             vpositions.append((p, gnx, x))
             MW = max(MW, fm.boundingRect(h).width() + x + 24 + LW)
             if sel:
+                sel_is_drawn = j < count
                 painter.fillRect(0, y, W, HR + 2, QtGui.QColor('#77cccc'))
                 painter.setPen(pen_2)
                 painter.drawText(x + 24 + LW, y + HR - 4, h)
@@ -94,6 +107,30 @@ class NewLeoTree(QtWidgets.QFrame):
         self.MAX_W = MW + X0
         self.upd_width()
         self.upd_height()
+        self.auto_vscroll(sel_is_drawn)
+    #@+node:vitalije.20180717202124.1: *4* auto_vscroll
+    def auto_vscroll(self, cancel):
+        '''Schedules or cancel automatic vertical scroll adjustment'''
+        if cancel:
+            self._auto_scroller.stop()
+        elif not self._auto_scroller.isActive():
+            self._auto_scroller.start(100)
+
+    def avs_timeout(self):
+        H1 = self.row_count(self.HR)
+        ltm = self.c.ltm
+        p = ltm.selectedPosition
+        top = self.vbar.value()
+        try:
+            i = ltm.visible_positions.index(p)
+            if i - top > H1 - 1:
+                self.vbar.setValue(i + 1 - H1)
+                self.update()
+            elif top > i:
+                self.vbar.setValue(max(0, i - 1))
+                self.update()
+        except ValueError:
+            pass
     #@+node:vitalije.20180715132346.1: *4* upd_width
     def upd_width(self):
         wM = self.MAX_W - self.width()
@@ -106,7 +143,7 @@ class NewLeoTree(QtWidgets.QFrame):
         self.hbar.setPageStep(80)
     #@+node:vitalije.20180715132327.1: *4* upd_height
     def upd_height(self):
-        self.MAX_H = hM = len(self.ltm.visible_positions)
+        self.MAX_H = hM = len(self.c.ltm.visible_positions)
         h1 = self.height() // self.HR
         hM -= h1
         self.vbar.setRange(0, max(0, hM))
@@ -129,7 +166,7 @@ class NewLeoTree(QtWidgets.QFrame):
         '''
         painter = QtGui.QPainter(self)
         try:
-            self.draw_tree(painter, self.ltm)
+            self.draw_tree(painter, self.c.ltm)
             dtr = painter.combinedTransform()
             self.dtr = dtr.dx(), dtr.dy()
         except Exception:
@@ -152,12 +189,14 @@ class NewLeoTree(QtWidgets.QFrame):
         ev.accept()
     #@+node:vitalije.20180711214706.6: *4* mousePressEvent
     def mousePressEvent(self, ev):
+
         x = ev.x()
         y = ev.y()
 
         HR = self.HR
         LW = 2 * HR
         row = (y - 2)//HR
+        self._ew.setVisible(ev.type() == 4)
         if row < len(self.vpositions):
             p, gnx, x0 = self.vpositions[row]
         else:
@@ -166,199 +205,64 @@ class NewLeoTree(QtWidgets.QFrame):
             self.click_in_pm_icon(p)
         elif abs(x - x0 - 20 - LW/2) < LW / 2:
             self.click_in_icon(p)
+            if ev.type() == 4:
+                self.editLabel(self.c.p, True)
         elif x >= x0 + 24 + LW:
             self.click_in_head(p, gnx)
+            if ev.type() == 4:
+                self.editLabel(self.c.p, True)
+                
 
-    #@+node:vitalije.20180716141155.1: *3* view commands
-    #@+node:vitalije.20180715224941.1: *4* select_from_leo
-    def select_from_leo(self):
-        self.ltm.select_leo_pos(self.c.p)
-        self.update()
-    #@+node:vitalije.20180711214706.7: *4* click_in_pm_icon
-    def toggle_position(self, p):
-        self.ltm.toggle(p)
-        self.ltm.invalidate_visual()
-        if not self.ltm.selectedPosition in self.ltm.visible_positions:
-            self.ltm.selectedPosition = p
-        self.update()
+    #@+node:vitalije.20180725171227.1: *4* editLabel
+    def editLabel(self, p, selectAll=False, selection=None):
+        w = self.edit_widget(p)
+        if w:
+            self._ew.setText(p.h)
+            self._ew_revert_h = p.h
 
-    #@+node:vitalije.20180711214706.8: *5* expand_all
-    def expand_all(self):
-        self.ltm.expand_all()
-        self.ltm.invalidate_visual()
-        self.update()
-
-    #@+node:vitalije.20180715210512.1: *5* contract_or_go_left
-    def contract_or_go_left(self):
-        self.ltm.select_node_left()
-        self.ltm.invalidate_visual()
-        self.update()
-    #@+node:vitalije.20180715210516.1: *5* expand_or_go_right
-    def expand_or_go_right(self):
-        self.ltm.select_node_right()
-        self.ltm.invalidate_visual()
-        self.update()
-
-    #@+node:vitalije.20180715211345.1: *5* select_prev_node
-    def select_prev_node(self):
-        self.ltm.select_prev_node()
-        self.update()
-    #@+node:vitalije.20180715211351.1: *5* select_next_node
-    def select_next_node(self):
-        self.ltm.select_next_node()
-        self.update()
-    #@+node:vitalije.20180711214706.10: *4* select_position
-    def select_position(self, p):
-        self.ltm.selectedPosition = p
-        self.update()
-        #self.c.selectPosition(self.to_leo_pos(p))
-    #@+node:vitalije.20180711214706.9: *4* click_in_...
-    click_in_icon = select_position
-    click_in_pm_icon = toggle_position
+            if selectAll:
+                w.setSelection(0, len(p.h))
+            elif selection:
+                i, j = selection
+                w.setSelection(i, j)
+            else:
+                w.setSelection(len(p.h), len(p.h))
+            row = self.vpos_index(p)
+            if row:
+                i, gnx, x = row
+                w.move(x, i * self.HR)
+                w.resize(self.width() - x, w.height())
+                w.show()
+                w.setFocus()
+    #@+node:vitalije.20180725165138.1: *5* edit_widget
+    def edit_widget(self, p):
+        if p:
+            return self._ew
+    #@+node:vitalije.20180725171219.1: *5* on_edit_finish
+    def on_edit_finish(self):
+        self.commit_headline(self._ew.text())
+        self._ew.hide()
+    #@+node:vitalije.20180725171223.1: *5* vpos_index
+    def vpos_index(self, p):
+        pos = p._priv.pos
+        i = 0
+        for _p, gx, x in self.vpositions:
+            if _p == pos:
+                return i, gx, x
+            i += 1
+    #@+node:vitalije.20180725131635.1: *3* click_in_...
+    click_in_icon = leoFrame.NewTreeOps.select_position
+    click_in_pm_icon = leoFrame.NewTreeOps.toggle_position
 
     def click_in_head(self, p, gnx):
         self.select_position(p)
-    #@+node:vitalije.20180716141527.1: *3* gui commands
-    def extra_data_for_undo(self, kind):
-        w = self.c.frame.body.wrapper
-        scrbardata = lambda sb:(sb.minimum(), sb.value(), sb.maximum())
-        fw = QtWidgets.QApplication.focusWidget()
-        fwname = fw and fw.objectName() or 'body'
-        self.c.user_dict['ltm_all_wnames'] = self.c.user_dict.get('ltm_all_wnames', set())
-        self.c.user_dict['ltm_all_wnames'].add(fwname)
-        return g.Bunch(
-            kind = kind,
-            sel = w.getSelectionRange(),
-            bhb = scrbardata(w.widget.horizontalScrollBar()),
-            bvb = scrbardata(w.widget.verticalScrollBar()),
-            thb = scrbardata(self.hbar),
-            tvb = scrbardata(self.vbar),
-            focus = fwname,
-        )
-
-    def pre_cmd(self, kind):
-        self.ltm.pre_cmd(self.extra_data_for_undo(kind))
-
-    def gui_cmd(self, f, kind, *args, **kwargs):
-        self.pre_cmd(kind)
-        if not f(*args, **kwargs):
-            self.ltm.discard_undo()
-            return
-        self.ltm.invalidate_visual()
-        self.update()
-        self.set_undo_redo_labels()
-        self.c.treeWantsFocus()
-    #@+node:vitalije.20180716143659.1: *4* move_node_up
-    def move_node_up(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.move_node_up, 'move-node-up', ltm.selectedPosition)
-    #@+node:vitalije.20180716143709.1: *4* move_node_down
-    def move_node_down(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.move_node_down, 'move-node-down', ltm.selectedPosition)
-    #@+node:vitalije.20180716143753.1: *4* move_node_left
-    def move_node_left(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.dedent_node, 'move-node-left', ltm.selectedPosition)
-    #@+node:vitalije.20180716143905.1: *4* move_node_right
-    def move_node_right(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.indent_node, 'move-node-right', ltm.selectedPosition)
-        if ltm.selectedPosition not in ltm.visible_positions:
-            ltm.ensure_visible(ltm.selectedPosition)
-            ltm.invalidate_visual()
-            self.update()
-    #@+node:vitalije.20180716143924.1: *4* promote_children
-    def promote_children(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.promote_children, 'demote', ltm.selectedPosition)
-    #@+node:vitalije.20180716144340.1: *4* promote
-    def promote(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.promote, 'promote', ltm.selectedPosition)
-    #@+node:vitalije.20180716145504.1: *4* clone_node
-    def clone_node(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.clone_node, 'clone-node', ltm.selectedPosition)
-    #@+node:vitalije.20180716145540.1: *4* delete_node
-    def delete_node(self):
-        ltm = self.ltm
-        self.gui_cmd(ltm.delete_node, 'delete-node', ltm.selectedPosition)
-    #@+node:vitalije.20180716160419.1: *4* set_undo_redo_labels
-    def set_undo_redo_labels(self):
-        c = self.c
-        extra = self.ltm.peek_redo_extra()
-        if not extra:
-            c.undoer.setRedoType("Can't Redo")
-        else:
-            c.undoer.setRedoType(extra.kind)
-        extra = self.ltm.peek_undo_extra()
-        if not extra:
-            c.undoer.setUndoType("Can't Undo")
-        else:
-            c.undoer.setUndoType(extra.kind)
-    #@+node:vitalije.20180716151115.1: *4* undo
-    def undo(self):
-        extra = self.ltm.undo()
-        if extra:
-            c = self.c
-            w = c.frame.body.wrapper
-            def updscroll(sb, d):
-                i, j, m = d
-                sb.setRange(i, m)
-                sb.setValue(j)
-            updscroll(self.vbar, extra.tvb)
-            updscroll(self.hbar, extra.thb)
-            i, j = extra.sel
-            w.setSelectionRange(i, j, insert=j)
-            updscroll(w.widget.horizontalScrollBar(), extra.bhb)
-            updscroll(w.widget.verticalScrollBar(), extra.bvb)
-            self.ltm.invalidate_visual()
-            self.update()
-            fwname = extra.focus
-            if fwname == 'body':
-                c.bodyWantsFocus()
-            elif fwname == 'log':
-                c.logWantsFocus()
-            elif fwname in ('canvas', 'newTreeWidget'):
-                c.treeWantsFocus()
-            self.set_undo_redo_labels()
-    #@+node:vitalije.20180716160426.1: *4* redo
-    def redo(self):
-        extra = self.ltm.redo()
-        if extra:
-            c = self.c
-            w = c.frame.body.wrapper
-            def updscroll(sb, d):
-                i, j, m = d
-                sb.setRange(i, m)
-                sb.setValue(j)
-            updscroll(self.vbar, extra.tvb)
-            updscroll(self.hbar, extra.thb)
-            i, j = extra.sel
-            w.setSelectionRange(i, j, insert=j)
-            updscroll(w.widget.horizontalScrollBar(), extra.bhb)
-            updscroll(w.widget.verticalScrollBar(), extra.bvb)
-            self.ltm.invalidate_visual()
-            self.update()
-            fwname = extra.focus
-            if fwname == 'body':
-                c.bodyWantsFocus()
-            elif fwname == 'log':
-                c.logWantsFocus()
-            elif fwname in ('canvas', 'newTreeWidget'):
-                c.treeWantsFocus()
-        self.set_undo_redo_labels()
-    #@+node:vitalije.20180711214706.11: *3* to_leo_pos
-    def to_leo_pos(self, p):
-        try:
-            return self.ltm.to_leo_pos(p, self.c)
-        except Exception:
-            g.es_exception(True, self.c)
     #@-others
     @property
     def ltm(self):
-        return self.c._ltm
+        return self.c.ltm
+
+    def noop(self, *args, **kw):
+        self.update()
 #@+node:ekr.20110605121601.18137: ** class  DynamicWindow (QtWidgets.QMainWindow)
 class DynamicWindow(QtWidgets.QMainWindow):
     '''
@@ -699,6 +603,11 @@ class DynamicWindow(QtWidgets.QMainWindow):
         ntw.setObjectName('newtree')
         g.app.gui.setFilter(self.leo_c, ntw, ntw, tag='newtree')
         return ntw
+
+    #@+node:vitalije.20180717232632.1: *6* show_new_tree
+    def show_new_tree(self):
+        sl = self.findChildren(QtWidgets.QStackedLayout, 'treeStackLayout')[0]
+        sl.setCurrentIndex(1)
     #@+node:ekr.20110605121601.18150: *5* dw.createStatusBar
     def createStatusBar(self, parent):
         '''Create the widgets and ivars for Leo's status area.'''
@@ -717,14 +626,6 @@ class DynamicWindow(QtWidgets.QMainWindow):
         dw.setDockOptions(
             QtWidgets.QMainWindow.AllowTabbedDocks |
             QtWidgets.QMainWindow.AnimatedDocks)
-    #@+node:vitalije.20180711223046.1: *5* ltm_updated
-    def ltm_updated(self, ltm):
-        self.newTreeWidget.select_from_leo()
-        self.newTreeWidget.vpositions[:] = ltm.visible_positions
-        self.newTreeWidget.upd_size()
-        sl = self.findChildren(QtWidgets.QStackedLayout, 'treeStackLayout')[0]
-        sl.setCurrentIndex(1)
-        self.newTreeWidget.update()
     #@+node:ekr.20110605121601.18152: *4* dw.widgets
     #@+node:ekr.20110605121601.18153: *5* dw.createButton
     def createButton(self, parent, name, label):

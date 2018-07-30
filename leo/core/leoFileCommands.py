@@ -32,6 +32,7 @@ import zipfile
 import sqlite3
 import hashlib
 from contextlib import contextmanager
+import leo.core.leoDataModel as leoDataModel
 #@-<< imports >>
 PRIVAREA = '---begin-private-area---'
 #@+others
@@ -605,6 +606,8 @@ class FileCommands(object):
     def readExternalFiles(self, fileName):
         '''Read all external files.'''
         c, fc = self.c, self
+        unm = c.USE_NEW_MODEL
+        c.USE_NEW_MODEL = False
         c.atFileCommands.readAll(c.rootVnode(), force=False)
         recoveryNode = fc.handleNodeConflicts()
         # Do this after reading external files.
@@ -612,6 +615,10 @@ class FileCommands(object):
         # the @thin nodes!
         fc.restoreDescendentAttributes()
         fc.setPositionsFromVnodes()
+        if unm:
+            c.USE_NEW_MODEL = True
+            c._ltm = leoDataModel.vnode2treemodel(c.hiddenRootNode)
+            c.initAfterLoad()
         return recoveryNode
     #@+node:ekr.20031218072017.1554: *6* fc.warnOnReadOnlyFiles
     def warnOnReadOnlyFiles(self, fileName):
@@ -649,6 +656,9 @@ class FileCommands(object):
         )
         if ok:
             frame.resizePanesToRatio(ratio, frame.secondary_ratio)
+            if c.USE_NEW_MODEL:
+                c._ltm = leoDataModel.vnode2treemodel(c.hiddenRootNode)
+                c.initAfterLoad()
         return ok
     #@+node:ekr.20031218072017.3030: *5* fc.readOutlineOnly
     def readOutlineOnly(self, theFile, fileName):
@@ -1986,6 +1996,7 @@ class FileCommands(object):
             d = root.v.u
             if d: str_pos = d.get('str_leo_pos')
         if str_pos is not None:
+            print('current pos:[%r]'%str_pos)
             current = self.archivedPositionToPosition(str_pos)
         c.setCurrentPosition(current or c.rootPosition())
     #@-others

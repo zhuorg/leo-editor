@@ -630,9 +630,14 @@ class LeoBody(object):
         else:
             changed = oldText != newText
         if not changed: return
-        c.undoer.setUndoTypingParams(p, undoType,
-            oldText=oldText, newText=newText, oldSel=oldSel, newSel=newSel, oldYview=oldYview)
-        p.v.setBodyString(newText)
+        if c.USE_NEW_MODEL:
+            # TODO: fix undo typing granularity
+            c.ltm_body_has_changed(newText)
+        else:
+            c.undoer.setUndoTypingParams(p, undoType,
+                oldText=oldText, newText=newText, oldSel=oldSel, newSel=newSel,
+                oldYview=oldYview)
+            p.v.setBodyString(newText)
         p.v.insertSpot = w.getInsertPoint()
         #@+<< recolor the body >>
         #@+node:ekr.20051026083733.6: *5* << recolor the body >>
@@ -722,6 +727,7 @@ class LeoFrame(object):
         self.stylesheet = None # The contents of <?xml-stylesheet...?> line.
         self.tab_width = 0 # The tab width in effect in this pane.
     #@+node:ekr.20051009045404: *4* frame.createFirstTreeNode
+    @g.ltm_tree_will_do('create_first_tree_node')
     def createFirstTreeNode(self):
         f = self; c = f.c
         v = leoNodes.VNode(context=c)
@@ -1293,6 +1299,13 @@ class LeoTree(object):
         Set the old undo text to the previous revert point.
         '''
         c = self.c; u = c.undoer
+        if c.USE_NEW_MODEL:
+            nwt = g.ltm_get_new_tree(c)
+            changed = nwt._ew_revert_h != c.p.h
+            g.doHook('headkey1', c=c, p=c.p, ch='\n', changed=changed)
+            nwt.commit_headline(c.p.h)
+            g.doHook('headkey2', c=c, p=c.p, ch='\n', changed=changed)
+            return
         w = self.edit_widget(p)
         if c.suppressHeadChanged:
             return
@@ -1416,6 +1429,7 @@ class LeoTree(object):
         '''Update a headline from an event.
 
         The headline officially changes only when editing ends.'''
+
         k = self.c.k
         ch = event.char if event else ''
         i, j = w.getSelectionRange()
@@ -1762,6 +1776,7 @@ class NullFrame(LeoFrame):
         self.log = NullLog(frame=self, parentFrame=None)
         self.menu = LeoMenu.NullMenu(frame=self)
         self.tree = NullTree(frame=self)
+        self.ntree = NullNewTree(c)
         # Default window position.
         self.w = 600
         self.h = 500
@@ -1810,6 +1825,381 @@ class NullFrame(LeoFrame):
         self.createFirstTreeNode()
             # Call the base LeoFrame method.
     #@-others
+#@+node:vitalije.20180725130811.1: ** class NewTreeOps
+class NewTreeOps(object):
+    #@+others
+    #@+node:vitalije.20180725130811.2: *3* view commands
+    #@+node:vitalije.20180725130811.3: *4* select_from_leo
+    def select_from_leo(self):
+        c = self.c
+        ltm = c.ltm
+        p = c.p
+        self.beforeSelectionChange()
+        if p and hasattr(p, '_priv'):
+            ltm.selectedPosition = p._priv.pos
+            ltm.ensure_visible_index(p._priv.i)
+        elif p:
+            ltm.select_leo_pos(p)
+        self._ew_revert_h = p.h
+        c.frame.tree.revertHeadline = p.h
+        self.update()
+    #@+node:vitalije.20180725130811.4: *4* click_in_pm_icon
+    def toggle_position(self, p):
+        c = self.c
+        ltm = c.ltm
+        ltm.toggle(p)
+        ltm.invalidate_visual()
+        if not ltm.selectedPosition in ltm.visible_positions:
+            self.beforeSelectionChange()
+            ltm.selectedPosition = p
+            c.ltm_update_current_position()
+        self.update()
+    #@+node:vitalije.20180725130811.5: *5* expand_all
+    def expand_all(self):
+        ltm = self.c.ltm
+        ltm.expand_all()
+        ltm.invalidate_visual()
+        self.update()
+        self.c.treeWantsFocus()
+
+    #@+node:vitalije.20180725130811.6: *5* contract_or_go_left
+    def contract_or_go_left(self):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        ltm.select_node_left()
+        ltm.invalidate_visual()
+        c.ltm_update_current_position()
+        self.update()
+        c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.7: *5* expand_or_go_right
+    def expand_or_go_right(self):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        ltm.select_node_right()
+        ltm.invalidate_visual()
+        c.ltm_update_current_position()
+        self.update()
+        c.treeWantsFocus()
+
+    #@+node:vitalije.20180725130811.8: *5* select_prev_node
+    def select_prev_node(self):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        ltm.select_prev_node()
+        c.ltm_update_current_position()
+        self.update()
+        c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.9: *5* select_next_node
+    def select_next_node(self):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        ltm.select_next_node()
+        c.ltm_update_current_position()
+        self.update()
+        c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.10: *4* select_position
+    def select_position(self, p):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        ltm.selectedPosition = p
+        c.ltm_update_current_position()
+        self.update()
+        c.bodyWantsFocus()
+    #@+node:vitalije.20180725130811.11: *4* beforeSelectionChange
+    def beforeSelectionChange(self):
+        c = self.c
+        ltm = c.ltm
+        if c.undoer.granularity != 'node':return
+        b1 = ltm.selectedBody
+        b2 = c.frame.body.wrapper.getAllText()
+        if b1 != b2:
+            ltm.pre_cmd(c.ltm_extra_data_for_undo('Typing'))
+    #@+node:vitalije.20180725130811.12: *3* gui commands
+    def pre_cmd(self, kind):
+        self.c.ltm.pre_cmd(self.c.ltm_extra_data_for_undo(kind))
+
+    def gui_cmd(self, f, kind, *args, **kwargs):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        self.pre_cmd(kind)
+        res = f(*args, **kwargs)
+        if res is None:
+            ltm.discard_undo()
+            return
+        ltm.invalidate_visual()
+        self.update()
+        c.ltm_undo_redo_labels()
+        return res
+
+    def create_first_tree_node(self):
+        c = self.c
+        ltm = c.ltm
+        if ltm.size < 2:
+            v = leoNodes.VNode(c)
+            ltm.insert_leaf_i_pi(1, v.fileIndex, v._headString, v._bodyString, 0)
+            return
+    #@+node:vitalije.20180725130811.13: *4* move_node_up
+    def move_node_up(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.move_node_up, 'move-node-up', ltm.selectedPosition)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.14: *4* move_node_down
+    def move_node_down(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.move_node_down, 'move-node-down', ltm.selectedPosition)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.15: *4* move_node_left
+    def move_node_left(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.dedent_node, 'move-node-left', ltm.selectedPosition)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.16: *4* move_node_right
+    def move_node_right(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.indent_node, 'move-node-right', ltm.selectedPosition)
+        if ltm.selectedPosition not in ltm.visible_positions:
+            ltm.ensure_visible(ltm.selectedPosition)
+            ltm.invalidate_visual()
+            self.update()
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.17: *4* promote_children
+    def promote_children(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.promote_children, 'demote', ltm.selectedPosition)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.18: *4* promote
+    def promote(self):
+        ltm = self.c.ltm
+        self.gui_cmd(ltm.promote, 'promote', ltm.selectedPosition)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.19: *4* clone_node
+    def clone_node(self):
+        c = self.c
+        ltm = c.ltm
+        self.gui_cmd(c._currentPosition.clone, 'clone-node')
+        ltm.selectedPosition = c._currentPosition._priv.pos
+        self.c.treeWantsFocus()
+        return c.p
+    #@+node:vitalije.20180725130811.20: *4* clone_marked
+    def clone_marked(self):
+        c = self.c
+        p = c.p
+        ltm = c.ltm
+        if not ltm.data.marked: return
+        self.gui_cmd(ltm.clone_marked, 'clone-marked', c.ltm_newgnx)
+        c.ltm_update_current_position()
+        self.update()
+
+    #@+node:vitalije.20180725130811.21: *4* delete_marked
+    def delete_marked(self):
+        c = self.c
+        ltm = c.ltm
+        if not ltm.data.marked: return
+        self.gui_cmd(ltm.delete_marked, 'delete-marked')
+        self.update()
+    #@+node:vitalije.20180725130811.22: *4* delete_node
+    def delete_node(self):
+        ltm = self.c._ltm
+        newpos = ltm.pos_after_delete_i(ltm.selectedIndex)
+        self.gui_cmd(ltm.delete_node, 'delete-node', ltm.selectedPosition)
+        self.select_position(newpos)
+        self.c.treeWantsFocus()
+    #@+node:vitalije.20180725130811.23: *4* insert_node
+    def insert_node(self):
+        c = self.c
+        p = c.p
+        if not p: return
+        if p.hasChildren() and p._priv.pos in c.ltm.data.expanded:
+            if c.config.getBool('insert_new_nodes_at_end'):
+                meth = p.insertAsLastChild
+            else:
+                meth = p.insertAsFirstChild
+        else:
+            meth = p.insertAfter
+        return self._insert_any(meth, 'Insert Node')
+
+    def insert_as_first_child(self):
+        p = self.c.p
+        if not p: return
+        return self._insert_any(p.insertAsFirstChild, 'Insert Node')
+
+    def insert_as_last_child(self):
+        p = self.c.p
+        if not p: return
+        return self._insert_any(p.insertAsLastChild, 'Insert Node')
+
+    def insert_before(self):
+        p = self.c.p
+        if not p: return
+        return self._insert_any(p.insertBefore, 'Insert Node Before')
+
+    def _insert_any(self, meth, kind):
+        self.beforeSelectionChange()
+        self.pre_cmd(kind)
+        p1 = meth()
+        c = self.c
+        ltm = c.ltm
+        ltm.selectedPosition = p1._priv.pos
+        c.ltm_update_current_position()
+        ltm.invalidate_visual()
+        c.ltm_undo_redo_labels()
+        c.frame.tree.redrawCount += 1
+        self.update()
+        return c.p
+    #@+node:vitalije.20180725130811.24: *4* clipboard
+    #@+node:vitalije.20180725130811.25: *5* copy_node
+    def copy_node(self):
+        ltm = self.c.ltm
+        s = ltm.copy_node(ltm.selectedPosition)
+        g.app.gui.replaceClipboardWith(s)
+    #@+node:vitalije.20180725130811.26: *5* cut_node
+    def cut_node(self):
+        c = self.c
+        ltm = c.ltm
+        self.beforeSelectionChange()
+        self.pre_cmd('cut-outline')
+        s = ltm.cut_node(ltm.selectedPosition)
+        g.app.gui.replaceClipboardWith(s)
+        ltm.invalidate_visual()
+        c.ltm_undo_redo_labels()
+        self.update()
+    #@+node:vitalije.20180725130811.27: *5* paste_node
+    def paste_node(self):
+        c = self.c
+        ltm = c.ltm
+        s = g.app.gui.getTextFromClipboard()
+        i, gnx, h, b, sz = ltm.selection
+        if ltm.selectedPosition in ltm.data.expanded:
+            pi = i
+            dst = i + 1
+        else:
+            dst = i + sz
+            pi = ltm.parent_index(i)
+        res = self.gui_cmd(ltm.paste_as_new, 'paste-outline', s, dst, pi, c.ltm_newgnx)
+        if not res: return
+        ltm.selectedPosition = res
+        c.ltm_update_current_position()
+        self.update()
+        return c.p
+    #@+node:vitalije.20180725130811.28: *5* paste_node_retaining_clones
+    def paste_node_retaining_clones(self):
+        c = self.c
+        ltm = c.ltm
+        s = g.app.gui.getTextFromClipboard()
+        try:
+            t = ltm.read_clipboard(s)
+        except ValueError:
+            return c.p
+        i, gnx, h, b, sz = ltm.selection
+        if ltm.selectedPosition in ltm.data.expanded:
+            ppar = c.p
+            ci = 0
+        else:
+            ppar = c.p.parent()
+            ci = c.p.childIndex()+1
+        if ppar.gnx in t.data.attrs:
+            return c.p
+        self.pre_cmd('Paste Clone')
+        ltm.sync_to_leo(c)
+        pastedgnx = t.data.nodes[0]
+        t.sync_to_leo(c)
+        v = c.get_node(pastedgnx)
+
+        vpar = ppar.v
+        vpar.children.insert(0, v)
+        v.parents.append(vpar)
+        ltm.sync_from_leo(c.hiddenRootNode)
+
+        ltm.selectedPosition = ppar.nthChild(ci)._priv.pos
+        c.ltm_update_current_position()
+        self.update()
+        return c.p
+    #@+node:vitalije.20180725130811.29: *4* sort_children
+    def sort_children(self):
+        c = self.c
+        ltm = c.ltm
+        pos = ltm.selectedPosition
+        self.gui_cmd(ltm.sort_children, 'sort-children', pos)
+        self.update()
+
+    def sort_siblings(self):
+        c = self.c
+        ltm = c.ltm
+        par = c.p.parent()
+        if not par:return
+        pos = par._priv.pos
+        self.gui_cmd(ltm.sort_children, 'sort-siblings', pos)
+        self.update()
+    #@+node:vitalije.20180725130811.30: *4* undo
+    def undo(self):
+        self.c.ltm_undo()
+        
+    #@+node:vitalije.20180725130811.31: *4* redo
+    def redo(self):
+        self.c.ltm_redo()
+    #@+node:vitalije.20180725195847.1: *4* on_edit_head
+    def on_edit_head(self, txt):
+        p = self.c.p
+        if p:
+            p.h = txt
+    #@+node:vitalije.20180725200843.1: *4* commit_headline
+    def commit_headline(self, txt=None):
+        if not g.app.gui:
+            # unfortunately Leo calls c.selectPosition even before creates gui
+            # that is IMO major design flaw but for now let it be that way
+            # 2018-07-26 Vitalije
+            return
+
+        h1 = txt
+        h2 = self._ew_revert_h
+        if h1 != h2:
+            p = self.c.p
+            p.h = h2
+            self.pre_cmd('Edit Headline')
+            p.h = h1
+    #@-others
+    def noop(self, *args, **kw):
+        pass
+#@+node:vitalije.20180717225800.1: ** class NullNewTree
+class NullNewTree(NewTreeOps):
+    def __init__(self, c):
+        self.c = c
+        self.editWidgetsDict = {}
+        self._ew_revert_h = None
+
+    #@+others
+    #@+node:vitalije.20180725163856.1: *3* edit_widget
+    def edit_widget(self, p):
+        d = self.editWidgetsDict
+        if not p or not p.v:
+            return None
+        w = d.get('1')
+        if not w:
+            d['1'] = w = StringTextWrapper(
+                c=self.c,
+                name='head-%d' % (1 + len(list(d.keys()))))
+        w._s = p.h
+        return w
+    #@+node:vitalije.20180725221927.1: *3* editLabel
+    def editLabel(self, p, selectAll=False, selection=None):
+        w = self.edit_widget(p)
+        self._ew_revert_h = p.h
+
+        if selectAll:
+            w.setSelectionRange(0, len(p.h))
+        elif selection:
+            i, j = selection
+            w.setSelectionRange(i, j)
+        else:
+            w.setSelectionRange(len(p.h), len(p.h))
+    #@-others
+    update = NewTreeOps.noop
 #@+node:ekr.20070301164543: ** class NullIconBarClass
 class NullIconBarClass(object):
     '''A class representing the singleton Icon bar'''
@@ -2012,6 +2402,9 @@ class NullTree(LeoTree):
     #@+node:ekr.20070228164730: *3* NullTree.editLabel
     def editLabel(self, p, selectAll=False, selection=None):
         '''Start editing p's headline.'''
+        if self.c.USE_NEW_MODEL:
+            ntw = self.c.frame.ntree
+            return ntw.editLabel(p, selectAll, selection)
         self.endEditLabel()
         if p:
             self.revertHeadline = p.h
@@ -2076,7 +2469,8 @@ class StringTextWrapper(object):
         self.name = name
         self.ins = 0
         self.sel = 0, 0
-        self.s = ''
+        self._s = ''
+        self._active = True
         self.supportsHighLevelInterface = True
         self.widget = None # This ivar must exist, and be None.
 
@@ -2086,6 +2480,16 @@ class StringTextWrapper(object):
     def getName(self):
         '''StringTextWrapper.'''
         return self.name # Essential.
+
+    def _get_s(self):
+        return self._s
+    def _set_s(self, s):
+        self._s = s
+        c = self.c
+        if c.USE_NEW_MODEL:
+            if self.name.startswith('head') and self._active:
+                c.p.h = s
+    s = property(_get_s, _set_s)
     #@+node:ekr.20140903172510.18578: *3* stw.Clipboard
     def clipboard_clear(self):
         g.app.gui.replaceClipboardWith('')

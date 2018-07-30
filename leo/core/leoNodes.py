@@ -6,6 +6,7 @@ use_zodb = False
 #@+node:ekr.20060904165452.1: ** << imports >> (leoNodes)
 import leo.core.leoGlobals as g
 import leo.core.signal_manager as sig
+from collections import namedtuple
 # if g.app and g.app.use_psyco:
     # # g.pr("enabled psyco classes",__file__)
     # try: from psyco.classes import *
@@ -23,6 +24,7 @@ if use_zodb:
         ZODB = None
 else:
     ZODB = None
+import struct
 #@-<< imports >>
 #@+others
 #@+node:ekr.20031218072017.1991: ** class NodeIndices
@@ -1869,6 +1871,1879 @@ class Position(object):
     #@-others
 
 position = Position # compatibility.
+#@+node:vitalije.20180727123621.1: ** Pos2 utils
+#@+node:vitalije.20180718170125.1: *3* class Position2
+class Position2(object):
+    #@+others
+    #@+node:vitalije.20180718170125.3: *4*  p.ctor & other special methods...
+    #@+node:vitalije.20180718170125.4: *5*  p.__init__
+    def __init__(self, c, i, pdata=None):
+        if pdata is None:
+            pdata = c._ltm.mkpos(i)
+        self._priv = pdata
+        self.c = c
+
+    @property
+    def _childIndex(self):
+        ltm = self.c._ltm
+        return ltm.child_index(self._priv)
+
+    @property
+    def v(self):
+        i, pos, gnx, lev, nd = self._priv
+        v = self.c.get_node(gnx)
+        v._headString = nd.h
+        v._bodyString = nd.b
+        return v
+
+    def normalize(self):
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.mkpos(ltm.normalize(self._priv).i)
+        return self
+    #@+node:vitalije.20180718170125.5: *5* p.__eq__ & __ne__
+    def __eq__(self, p2):
+        """Return True if two positions are equivalent."""
+        if hasattr(p2, '_priv'):
+            return self._priv[1] == p2._priv[1]
+
+        if p2 is None or p2.v is None:
+            return self.v is None
+
+    def __ne__(self, p2):
+        """Return True if two postions are not equivalent."""
+        return not self.__eq__(p2) # For possible use in Python 2.x.
+    #@+node:vitalije.20180718170125.6: *5* p.__ge__ & __le__& __lt__
+    def __ge__(self, other):
+        return self.__eq__(other) or self.__gt__(other)
+
+    def __le__(self, other):
+        return self.__eq__(other) or self.__lt__(other)
+
+    def __lt__(self, other):
+        return not self.__eq__(other) and not self.__gt__(other)
+    #@+node:vitalije.20180718170125.7: *5* p.__gt__
+    def __gt__(self, other):
+        '''Return True if self appears after other in outline order.'''
+        if self and other and hasattr(other, '_priv'):
+            return self._priv.i > other._priv.i
+        return False
+    #@+node:vitalije.20180718170125.9: *5* p.__nonzero__ & __bool__
+    #@+at
+    # Tests such as 'if p' or 'if not p' are the _only_ correct ways to test
+    # whether a position p is valid. In particular, tests like 'if p is
+    # None' or 'if p is not None' will not work properly.
+    #@@c
+    if g.isPython3:
+
+        def __bool__(self):
+            """Return True if a position is valid."""
+            # Tracing this appears to cause unbounded prints.
+            # print("__bool__",self.v and self.v.cleanHeadString())
+            return self._priv.i > 0
+
+    else:
+
+        def __nonzero__(self):
+            """Return True if a position is valid."""
+            return self._priv.i > 0
+    #@+node:vitalije.20180718170125.10: *5* p.__str__ and p.__repr__
+    def __str__(self):
+        p = self
+        if p.v:
+            return "<pos %d childIndex: %d lvl: %d key: %s %s>" % (
+                id(p), p._childIndex, p.level(), p.key(), p.cleanHeadString())
+        else:
+            return "<pos %d [%d] None>" % (id(p), p._priv.i)
+
+    __repr__ = __str__
+    #@+node:vitalije.20180718170125.11: *5* p.archivedPosition
+    def archivedPosition(self, root_p=None):
+        '''Return a representation of a position suitable for use in .leo files.'''
+        p = self
+        if root_p is None:
+            aList = [z._childIndex for z in p.self_and_parents()]
+        else:
+            aList = []
+            for z in p.self_and_parents(copy=False):
+                if z == root_p:
+                    aList.append(0)
+                    break
+                else:
+                    aList.append(z._childIndex)
+        aList.reverse()
+        return aList
+    #@+node:vitalije.20180718170125.12: *5* p.dump
+    def dumpLink(self, link):
+        return link if link else "<none>"
+
+    def dump(self, label=""):
+        p = self
+        if p.v:
+            p.v.dump() # Don't print a label
+    #@+node:vitalije.20180718170125.13: *5* p.key & p.sort_key & __hash__
+    def key(self):
+        p = self
+        # For unified nodes we must include a complete key,
+        # so we can distinguish between clones.
+        if g.isPython3:
+            s = b'%05d:'%self._priv.i
+        else:
+            s = '%05d:'%self._priv.i
+        return s + struct.pack('<d', self._priv.pos)
+
+
+    def sort_key(self, p):
+        return p.key()
+    # This has makes positions hashable, at long long last.
+
+    #def __hash__(self):
+    #    return sum([z[1] for z in self.stack])
+    __hash__ = None
+    #@+node:vitalije.20180718170125.14: *4* p.File Conversion
+    #@+at
+    # - convertTreeToString and moreHead can't be VNode methods because they uses level().
+    # - moreBody could be anywhere: it may as well be a postion method.
+    #@+node:vitalije.20180718170125.15: *5* p.convertTreeToString
+    def convertTreeToString(self):
+        """Convert a positions  suboutline to a string in MORE format."""
+        p = self; level1 = p.level()
+        array = []
+        for p in p.self_and_subtree(copy=False):
+            array.append(p.moreHead(level1) + '\n')
+            body = p.moreBody()
+            if body:
+                array.append(body + '\n')
+        return ''.join(array)
+    #@+node:vitalije.20180718170125.16: *5* p.moreHead
+    def moreHead(self, firstLevel, useVerticalBar=False):
+        """Return the headline string in MORE format."""
+        # useVerticalBar is unused, but it would be useful in over-ridden methods.
+        p = self
+        level = self.level() - firstLevel
+        plusMinus = "+" if p.hasChildren() else "-"
+        return "%s%s %s" % ('\t' * level, plusMinus, p.h)
+    #@+node:vitalije.20180718170125.17: *5* p.moreBody
+    #@+at
+    #     + test line
+    #     - test line
+    #     \ test line
+    #     test line +
+    #     test line -
+    #     test line \
+    #     More lines...
+    #@@c
+
+    def moreBody(self):
+        """Returns the body string in MORE format.
+
+        Inserts a backslash before any leading plus, minus or backslash."""
+        p = self; array = []
+        lines = p.b.split('\n')
+        for s in lines:
+            i = g.skip_ws(s, 0)
+            if i < len(s) and s[i] in ('+', '-', '\\'):
+                s = s[: i] + '\\' + s[i:]
+            array.append(s)
+        return '\n'.join(array)
+    #@+node:vitalije.20180718170125.18: *4* p.generators
+    #@+node:vitalije.20180718170125.19: *5* p.children
+    def children(self, copy=True):
+        '''Yield all child positions of p.'''
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.normalize(self._priv)
+        for pdata in ltm.pos_child_iterator(self._priv):
+            yield Position2(c, -1, pdata)
+
+
+    # Compatibility with old code...
+    children_iter = children
+    #@+node:vitalije.20180727131231.1: *5* following_siblings
+    def following_siblings(self, copy=True):
+        '''Yield all siblings positions that follow p, not including p.'''
+        c = self.c
+        ltm = c._ltm
+        for pdata in ltm.following_siblings_pos(self._priv):
+            yield Position2(c, -1, pdata)
+
+    # Compatibility with old code...
+    following_siblings_iter = following_siblings
+
+    #@+node:vitalije.20180718170125.21: *5* p.nearest_roots
+    def nearest_roots(self, copy=True, predicate=None):
+        '''
+        A generator yielding all the root positions "near" p1 = self that
+        satisfy the given predicate. p.isAnyAtFileNode is the default
+        predicate.
+
+        The search first proceeds up the p's tree. If a root is found, this
+        generator yields just that root.
+
+        Otherwise, the generator yields all nodes in p.subtree() that satisfy
+        the predicate. Once a root is found, the generator skips its subtree.
+        '''
+        predicate = predicate or Position2.isAnyAtFileNode
+        c = self.c
+        if predicate(self):
+            yield Position2(c, -1, self._priv)
+            return
+
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        j = i
+        # First, look up the tree.
+        if lev > 1:
+            j = ltm.parent_index(j)
+            p = Position2(c, j)
+            if predicate(p):
+                yield p
+                return
+
+        # Next, look for all .md files in the tree.
+        j  = i + 1
+        B = i + nd.size
+        while j < B:
+            p = Position2(c, j)
+            if predicate(p):
+                yield p
+                j += p._priv.nd.size
+            else:
+                j += 1
+    #@+node:vitalije.20180718170125.22: *5* p.nearest_unique_roots (aka p.nearest)
+    def nearest_unique_roots(self, copy=True, predicate=None):
+        '''
+        A generator yielding all unique root positions "near" p1 = self that
+        satisfy the given predicate. p.isAnyAtFileNode is the default
+        predicate.
+
+        The search first proceeds up the p's tree. If a root is found, this
+        generator yields just that root.
+
+        Otherwise, the generator yields all unique nodes in p.subtree() that
+        satisfy the predicate. Once a root is found, the generator skips its
+        subtree.
+        '''
+        predicate = predicate or Position2.isAnyAtFileNode
+        c = self.c
+        if predicate(self):
+            yield Position2(c, -1, self._priv)
+            return
+
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        j = i
+        # First, look up the tree.
+        if lev > 1:
+            j = ltm.parent_index(j)
+            p = Position2(c, j)
+            if predicate(p):
+                yield p
+                return
+
+        # Next, look for all .md files in the tree.
+        j  = i + 1
+        B = i + nd.size
+        seen = set()
+        while j < B:
+            pdata = ltm.mkpos(j)
+            if pdata.gnx in seen:
+                j += pdata.nd.size
+            else:
+                seen.add(pdata.gnx)
+                p = Position2(c, j, pdata)
+                if predicate(p):
+                    yield p
+                    j += pdata.nd.size
+                else:
+                    j += 1
+    #@+node:vitalije.20180718170125.23: *5* p.nodes
+    def nodes(self):
+        '''Yield p.v and all vnodes in p's subtree.'''
+        p = self
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        yield c.get_node(gnx)
+        nodes = ltm.data.nodes
+        for j in range(i+1, i + nd.size):
+            yield c.get_node(nodes[j])
+
+    # Compatibility with old code.
+
+    tnodes_iter = nodes
+    vnodes_iter = nodes
+    #@+node:vitalije.20180718170125.24: *5* p.parents
+    def parents(self, copy=True):
+        '''Yield all parent positions of p.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if lev > 1:
+            i = ltm.parent_index(i)
+            while i > 0:
+                p = Position2(c, i)
+                yield p
+                i = ltm.parent_index(i)
+
+
+    # Compatibility with old code...
+    parents_iter = parents
+    #@+node:vitalije.20180718170125.25: *5* p.self_and_parents
+    def self_and_parents(self, copy=True):
+        '''Yield p and all parent positions of p.'''
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.normalize(self._priv)
+        i, pos, gnx, lev, nd = self._priv
+        pdata = self._priv
+        while i > 0:
+            yield Position2(c, i, pdata)
+            pdata = None
+            i = ltm.parent_index(i)
+
+    # Compatibility with old code...
+    self_and_parents_iter = self_and_parents
+    #@+node:vitalije.20180727134531.1: *5* getParent
+    def getParent(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        pi = ltm.parent_index(i)
+        return Position2(c, pi)
+    #@+node:vitalije.20180718170125.26: *5* p.self_and_siblings
+    def self_and_siblings(self, copy=True):
+        '''Yield all sibling positions of p including p.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        pi = ltm.parent_index(i)
+        for pdata in ltm.pos_child_iterator(ltm.mkpos(pi)):
+            yield Position2(c, -1, pdata)
+
+    # Compatibility with old code...
+    self_and_siblings_iter = self_and_siblings
+    #@+node:vitalije.20180718170125.27: *5* p.self_and_subtree
+    def self_and_subtree(self, copy=True):
+        '''Yield p and all positions in p's subtree.'''
+        p = self
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        yield self
+        nodes = ltm.data.nodes
+        for j in range(i+1, i + nd.size):
+            yield Position2(c, j)
+
+
+    # Compatibility with old code...
+    self_and_subtree_iter = self_and_subtree
+    #@+node:vitalije.20180718170125.28: *5* p.subtree
+    def subtree(self, copy=True):
+        '''Yield all positions in p's subtree, but not p.'''
+        p = self
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        for j in range(i+1, i + nd.size):
+            yield Position2(c, j)
+
+    # Compatibility with old code...
+    subtree_iter = subtree
+    #@+node:vitalije.20180718170125.29: *5* p.unique_nodes
+    def unique_nodes(self):
+        '''Yield p.v and all unique vnodes in p's subtree.'''
+        seen = set()
+        for v in self.nodes():
+            if v not in seen:
+                seen.add(v)
+                yield v
+    # Compatibility with old code.
+
+    unique_tnodes_iter = unique_nodes
+    unique_vnodes_iter = unique_nodes
+    #@+node:vitalije.20180718170125.30: *5* p.unique_subtree
+    def unique_subtree(self, copy=True):
+        '''Yield p and all other unique positions in p's subtree.'''
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.normalize(self._priv)
+        for pdata in ltm.pos_unique_subtree(self._priv):
+            yield Position2(c, -1, pdata)
+
+    # Compatibility with old code...
+    subtree_with_unique_tnodes_iter = unique_subtree
+    subtree_with_unique_vnodes_iter = unique_subtree
+    #@+node:vitalije.20180718170125.31: *4* p.Getters
+    #@+node:vitalije.20180718170125.32: *5* p.VNode proxies
+    #@+node:vitalije.20180718170125.33: *6* p.Comparisons
+    def anyAtFileNodeName(self): return self.v.anyAtFileNodeName()
+
+    def atAutoNodeName(self): return self.v.atAutoNodeName()
+
+    def atCleanNodeName(self): return self.v.atCleanNodeName()
+
+    def atEditNodeName(self): return self.v.atEditNodeName()
+
+    def atFileNodeName(self): return self.v.atFileNodeName()
+
+    def atNoSentinelsFileNodeName(self): return self.v.atNoSentinelsFileNodeName()
+    # def atRawFileNodeName         (self): return self.v.atRawFileNodeName()
+
+    def atShadowFileNodeName(self): return self.v.atShadowFileNodeName()
+
+    def atSilentFileNodeName(self): return self.v.atSilentFileNodeName()
+
+    def atThinFileNodeName(self): return self.v.atThinFileNodeName()
+    # New names, less confusing
+    atNoSentFileNodeName = atNoSentinelsFileNodeName
+    atAsisFileNodeName = atSilentFileNodeName
+
+    def isAnyAtFileNode(self): return self.v.isAnyAtFileNode()
+
+    def isAtAllNode(self): return self.v.isAtAllNode()
+
+    def isAtAutoNode(self): return self.v.isAtAutoNode()
+
+    def isAtAutoRstNode(self): return self.v.isAtAutoRstNode()
+
+    def isAtCleanNode(self): return self.v.isAtCleanNode()
+
+    def isAtEditNode(self): return self.v.isAtEditNode()
+
+    def isAtFileNode(self): return self.v.isAtFileNode()
+
+    def isAtIgnoreNode(self): return self.v.isAtIgnoreNode()
+
+    def isAtNoSentinelsFileNode(self): return self.v.isAtNoSentinelsFileNode()
+
+    def isAtOthersNode(self): return self.v.isAtOthersNode()
+
+    def isAtRstFileNode(self): return self.v.isAtRstFileNode()
+
+    def isAtSilentFileNode(self): return self.v.isAtSilentFileNode()
+
+    def isAtShadowFileNode(self): return self.v.isAtShadowFileNode()
+
+    def isAtThinFileNode(self): return self.v.isAtThinFileNode()
+    # New names, less confusing:
+    isAtNoSentFileNode = isAtNoSentinelsFileNode
+    isAtAsisFileNode = isAtSilentFileNode
+    # Utilities.
+
+    def matchHeadline(self, pattern): return self.v.matchHeadline(pattern)
+    #@+node:vitalije.20180728130357.1: *6* p.exists
+    def exists(self, root=None):
+        if root:
+            root = root._priv
+        return self.c._ltm.exists(self._priv, root)
+    #@+node:vitalije.20180718170125.34: *6* p.Headline & body strings
+    def bodyString(self):
+        return self._priv.nd.b
+
+    def headString(self):
+        return self._priv.nd.h
+
+    def cleanHeadString(self):
+        return self.v.cleanHeadString()
+    #@+node:vitalije.20180718170125.35: *6* p.Status bits
+    def isDirty(self): return self.v.isDirty()
+
+    def isMarked(self): return self.v.isMarked()
+
+    def isOrphan(self): return self.v.isOrphan()
+
+    def isSelected(self): return self.v.isSelected()
+
+    def isTopBitSet(self): return self.v.isTopBitSet()
+
+    def isVisited(self): return self.v.isVisited()
+
+    def status(self): return self.v.status()
+    #@+node:vitalije.20180718170125.36: *5* p.children & parents
+    #@+node:vitalije.20180718170125.37: *6* p.childIndex
+    def childIndex(self):
+        c = self.c
+        ltm = c._ltm
+        return ltm.child_index(self._priv)
+    #@+node:vitalije.20180718170125.38: *6* p.directParents
+    def directParents(self):
+        c = self.c
+        return [c.get_node(x) for x in self._priv.nd.parents]
+    #@+node:vitalije.20180718170125.39: *6* p.hasChildren & p.numberOfChildren
+    def hasChildren(self):
+        _p = self._priv
+        return _p.i > 0 and _p.nd.size > 1
+
+    hasFirstChild = hasChildren
+
+    def numberOfChildren(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return len(nd.children) if i > 0 else 0
+    #@+node:vitalije.20180718170125.40: *5* p.getX & VNode compatibility traversal routines
+    #@+others
+    #@+node:vitalije.20180727140519.1: *6* getBack
+    def getBack(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return Position2(c, ltm.prev_sibling_i(i))
+    #@+node:vitalije.20180727140524.1: *6* getFirstChild
+    def getFirstChild(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if nd.size > 1:
+            return Position2(c, i + 1)
+        return Position2(c, 0)
+    #@+node:vitalije.20180727141331.1: *6* getLastChild
+    def getLastChild(self):
+        c = self.c
+        ltm = c._ltm
+        return Position2(c, -1, ltm.last_child_pos(self._priv))
+    #@+node:vitalije.20180727141338.1: *6* getLastNode
+    def getLastNode(self):
+        c = self.c
+        ltm = c._ltm
+        return Position2(c, 0, ltm.last_node_pos(self._priv))
+    #@+node:vitalije.20180727142048.1: *6* getNodeAfterTree
+    def getNodeAfterTree(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        i += nd.size
+        if i >= len(ltm.data.positions): i = 0
+        return Position2(c, i)
+    #@+node:vitalije.20180727142053.1: *6* getNext
+    def getNext(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return Position2(c, ltm.next_sibling_i(i))
+    #@+node:vitalije.20180727142309.1: *6* getNthChild
+    def getNthChild(self, n):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        for j, i, k in ltm._child_iterator(i):
+            if j == n:
+                return Position2(c, i)
+        return Position2(c, 0)
+    #@+node:vitalije.20180728123657.1: *6* getThreadBack
+    def getThreadBack(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return Position2(c, i-1)
+    #@+node:vitalije.20180728123701.1: *6* getThreadNext
+    def getThreadNext(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return Position2(c, i + 1)
+    #@+node:vitalije.20180728123704.1: *6* getVisBack
+    def getVisBack(self, c):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        i = ltm.vis_back_i(i)
+        return Position2(c, i)
+    #@+node:vitalije.20180728123708.1: *6* getVisNext
+    def getVisNext(self, c):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        i = ltm.vis_next_i(i)
+        return Position2(c, i)
+    #@-others
+    # These are efficient enough now that iterators are the normal way to traverse the tree!
+    back = getBack
+    firstChild = getFirstChild
+    lastChild = getLastChild
+    lastNode = getLastNode
+    # lastVisible   = getLastVisible # New in 4.2 (was in tk tree code).
+    next = getNext
+    nodeAfterTree = getNodeAfterTree
+    nthChild = getNthChild
+    parent = getParent
+    threadBack = getThreadBack
+    threadNext = getThreadNext
+    visBack = getVisBack
+    visNext = getVisNext
+    # New in Leo 4.4.3:
+    hasVisBack = visBack
+    hasVisNext = visNext
+    #@+node:vitalije.20180718170125.41: *5* p.get_UNL
+    def get_UNL(self, with_file=True, with_proto=False, with_index=True, with_count=False):
+        """
+        with_file=True - include path to Leo file
+        with_proto=False - include 'file://'
+        with_index - include ',x' at end where x is child index in parent
+        with_count - include ',x,y' at end where y zero based count of same headlines
+        """
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        UNL = ltm.UNL_with_indexes(i) if with_index else ltm.UNL_simple(i)
+        if with_proto:
+            # return ("file://%s#%s" % (self.v.context.fileName(), UNL)).replace(' ', '%20')
+            s = "unl:" + "//%s#%s" % (c.fileName(), UNL)
+            return s.replace(' ', '%20')
+        elif with_file:
+            return ("%s#%s" % (c.fileName(), UNL))
+        else:
+            return UNL
+    #@+node:vitalije.20180718170125.42: *5* p.hasBack/Next/Parent/ThreadBack
+    def hasBack(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if i == 0:
+            return False
+        i = ltm.prev_sibling_i(i)
+        return i > 0
+
+    def hasNext(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        j = i + nd.size
+        levels = ltm.data.levels
+        return j < len(levels) and levels[j] == lev
+
+    def hasParent(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return lev > 1
+
+    def hasThreadBack(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return i > 1
+
+    def hasThreadNext(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return i + 1 < len(ltm.data.positions)
+    #@+node:vitalije.20180718170125.44: *5* p.findRootPosition
+    def findRootPosition(self):
+        return Position2(self.c, 1)
+    #@+node:vitalije.20180718170125.45: *5* p.isAncestorOf
+    def isAncestorOf(self, p2):
+        '''Return True if p is one of the direct ancestors of p2.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return p2._priv.pos in ltm.data.positions[i+1:i+nd.size]
+    #@+node:vitalije.20180718170125.46: *5* p.isCloned
+    def isCloned(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return len(nd.parents) > 1
+    #@+node:vitalije.20180718170125.47: *5* p.isRoot
+    def isRoot(self):
+        self._priv = self.c._ltm.normalize(self._priv)
+        return self._priv.i == 1
+    #@+node:vitalije.20180718170125.48: *5* p.isVisible
+    def isVisible(self, c):
+        '''Return True if p is visible in c's outline.'''
+        ltm = c._ltm
+        self._priv = ltm.normalize(self._priv)
+        return ltm.is_visible_i(self._priv.i)
+    #@+node:vitalije.20180718170125.49: *5* p.level & simpleLevel
+    def level(self):
+        '''Return the number of p's parents.'''
+        i, pos, gnx, lev, nd = self._priv = self.c._ltm.normalize(self._priv)
+        return lev - 1
+
+    simpleLevel = level
+    #@+node:vitalije.20180718170125.50: *5* p.positionAfterDeletedTree
+    positionAfterDeletedTree = nodeAfterTree
+    #@+node:vitalije.20180718170125.51: *5* p.textOffset
+    def textOffset(self):
+        '''
+        Return the fcol offset of self.
+        Return None if p is has no ancestor @<file> node.
+        http://tinyurl.com/5nescw
+        '''
+        p = self
+        found, offset = False, 0
+        for p in p.self_and_parents(copy=False):
+            if p.isAnyAtFileNode():
+                # Ignore parent of @<file> node.
+                found = True
+                break
+            parent = p.parent()
+            if not parent:
+                break
+            # If p is a section definition, search the parent for the reference.
+            # Otherwise, search the parent for @others.
+            h = p.h.strip()
+            i = h.find('<<')
+            j = h.find('>>')
+            target = h[i: j + 2] if -1 < i < j else '@others'
+            for s in parent.b.split('\n'):
+                if s.find(target) > -1:
+                    offset += g.skip_ws(s, 0)
+                    break
+        return offset if found else None
+    #@+node:vitalije.20180718170125.52: *4* p.isOutsideAtFileTree
+    def isOutsideAnyAtFileTree(self):
+        '''Select the first clone of target that is outside any @file node.'''
+        p = self
+        for parent in p.self_and_parents(copy=False):
+            if parent.isAnyAtFileNode():
+                return False
+        return True
+    #@+node:vitalije.20180718170125.53: *4* p.Low level methods
+    # These methods are only for the use of low-level code
+    # in leoNodes.py, leoFileCommands.py and leoUndo.py.
+    #@+node:vitalije.20180718170125.54: *5* p._adjustPositionBeforeUnlink
+    def _adjustPositionBeforeUnlink(self, p2):
+        '''Adjust position p before unlinking p2.'''
+        # p will change if p2 is a previous sibling of p or
+        # p2 is a previous sibling of any ancestor of p.
+        p = self; sib = p.copy()
+        # A special case for previous siblings.
+        # Adjust p._childIndex, not the stack's childIndex.
+        while sib.hasBack():
+            sib.moveToBack()
+            if sib == p2:
+                p._childIndex -= 1
+                return
+        # Adjust p's stack.
+        stack = []; changed = False; i = 0
+        while i < len(p.stack):
+            v, childIndex = p.stack[i]
+            p3 = Position(v=v, childIndex=childIndex, stack=stack[: i])
+            while p3:
+                if p2 == p3:
+                    # 2011/02/25: compare full positions, not just vnodes.
+                    # A match with the to-be-moved node.
+                    stack.append((v, childIndex - 1),)
+                    changed = True
+                    break # terminate only the inner loop.
+                p3.moveToBack()
+            else:
+                stack.append((v, childIndex),)
+            i += 1
+        if changed:
+            p.stack = stack
+    #@+node:vitalije.20180718170125.55: *5* p._linkAfter
+    def _linkAfter(self, p_after):
+        '''Link self after p_after.'''
+        p = self
+        parent_v = p_after._parentVnode()
+        p.stack = p_after.stack[:]
+        p._childIndex = p_after._childIndex + 1
+        child = p.v
+        n = p_after._childIndex + 1
+        child._addLink(n, parent_v)
+    #@+node:vitalije.20180718170125.56: *5* p._linkCopiedAfter
+    def _linkCopiedAfter(self, p_after):
+        '''Link self, a newly copied tree, after p_after.'''
+        p = self
+        parent_v = p_after._parentVnode()
+        p.stack = p_after.stack[:]
+        p._childIndex = p_after._childIndex + 1
+        child = p.v
+        n = p_after._childIndex + 1
+        child._addCopiedLink(n, parent_v)
+    #@+node:vitalije.20180718170125.57: *5* p._linkAsNthChild
+    def _linkAsNthChild(self, parent, n):
+        '''Link self as the n'th child of the parent.'''
+        p = self
+        parent_v = parent.v
+        p.stack = parent.stack[:]
+        p.stack.append((parent_v, parent._childIndex),)
+        p._childIndex = n
+        child = p.v
+        child._addLink(n, parent_v)
+        
+    #@+node:vitalije.20180718170125.58: *5* p._linkCopiedAsNthChild
+    def _linkCopiedAsNthChild(self, parent, n):
+        '''Link a copied self as the n'th child of the parent.'''
+        p = self
+        parent_v = parent.v
+        p.stack = parent.stack[:]
+        p.stack.append((parent_v, parent._childIndex),)
+        p._childIndex = n
+        child = p.v
+        child._addCopiedLink(n, parent_v)
+    #@+node:vitalije.20180718170125.59: *5* p._linkAsRoot
+    def _linkAsRoot(self, oldRoot):
+        """Link self as the root node."""
+        p = self
+        assert(p.v)
+        hiddenRootNode = p.v.context.hiddenRootNode
+        # if oldRoot: oldRootNode = oldRoot.v
+        # else:       oldRootNode = None
+        # Init the ivars.
+        p.stack = []
+        p._childIndex = 0
+        parent_v = hiddenRootNode
+        child = p.v
+        if not oldRoot: parent_v.children = []
+        child._addLink(0, parent_v)
+        return p
+    #@+node:vitalije.20180718170125.60: *5* p._parentVnode
+    def _parentVnode(self):
+        '''Return the parent VNode.
+        Return the hiddenRootNode if there is no other parent.'''
+        p = self
+        if p.v:
+            data = p.stack and p.stack[-1]
+            if data:
+                v, junk = data
+                return v
+            else:
+                return p.v.context.hiddenRootNode
+        else:
+            return None
+    #@+node:vitalije.20180718170125.61: *5* p._relinkAsCloneOf
+    def _relinkAsCloneOf(self, p2):
+        '''A low-level method to replace p.v by a p2.v.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        j = ltm.normalize(p2._priv).i
+        if i * j:
+            ltm.relink_as_clone_of(i, j)
+
+    #@+node:vitalije.20180718170125.62: *5* p._unlink
+    def _unlink(self):
+        '''Unlink the receiver p from the tree.'''
+        p = self; n = p._childIndex
+        parent_v = p._parentVnode()
+            # returns None if p.v is None
+        child = p.v
+        assert(p.v)
+        assert(parent_v)
+        # Delete the child.
+        if (0 <= n < len(parent_v.children) and
+            parent_v.children[n] == child
+        ):
+            # This is the only call to v._cutlink.
+            child._cutLink(n, parent_v)
+        else:
+            self.badUnlink(parent_v, n, child)
+    #@+node:vitalije.20180718170125.63: *6* p.badUnlink
+    def badUnlink(self, parent_v, n, child):
+        
+        if 0 <= n < len(parent_v.children):
+            g.trace('**can not happen: children[%s] != p.v' % (n))
+            g.trace('parent_v.children...\n',
+                g.listToString(parent_v.children))
+            g.trace('parent_v', parent_v)
+            g.trace('parent_v.children[n]', parent_v.children[n])
+            g.trace('child', child)
+            g.trace('** callers:', g.callers())
+            if g.app.unitTesting: assert False, 'children[%s] != p.v'
+        else:
+            g.trace('**can not happen: bad child index: %s, len(children): %s' % (
+                n, len(parent_v.children)))
+            g.trace('parent_v.children...\n',
+                g.listToString(parent_v.children))
+            g.trace('parent_v', parent_v, 'child', child)
+            g.trace('** callers:', g.callers())
+            if g.app.unitTesting: assert False, 'bad child index: %s' % (n)
+    #@+node:vitalije.20180718170125.64: *4* p.moveToX
+    #@+at These routines change self to a new position "in place".
+    # That is, these methods must _never_ call p.copy().
+    # 
+    # When moving to a nonexistent position, these routines simply set p.v = None,
+    # leaving the p.stack unchanged. This allows the caller to "undo" the effect of
+    # the invalid move by simply restoring the previous value of p.v.
+    # 
+    # These routines all return self on exit so the following kind of code will work:
+    #     after = p.copy().moveToNodeAfterTree()
+    #@+node:vitalije.20180718170125.65: *5* p.moveToBack
+    def moveToBack(self):
+        """Move self to its previous sibling."""
+        self._priv = self.back()._priv
+        return self
+    #@+node:vitalije.20180718170125.66: *5* p.moveToFirstChild
+    def moveToFirstChild(self):
+        """Move a position to it's first child's position."""
+        self._priv = self.firstChild()._priv
+        return self
+    #@+node:vitalije.20180718170125.67: *5* p.moveToLastChild
+    def moveToLastChild(self):
+        """Move a position to it's last child's position."""
+        self._priv = self.lastChild()._priv
+        return self
+    #@+node:vitalije.20180718170125.68: *5* p.moveToLastNode
+    def moveToLastNode(self):
+        """Move a position to last node of its tree.
+
+        N.B. Returns p if p has no children."""
+        self._priv = self.lastNode()._priv
+        return self
+    #@+node:vitalije.20180718170125.69: *5* p.moveToNext
+    def moveToNext(self):
+        """Move a position to its next sibling."""
+        self._priv = self.next()._priv
+        return self
+    #@+node:vitalije.20180718170125.70: *5* p.moveToNodeAfterTree
+    def moveToNodeAfterTree(self):
+        """Move a position to the node after the position's tree."""
+        self._priv = self.nodeAfterTree()._priv
+        return self
+    #@+node:vitalije.20180718170125.71: *5* p.moveToNthChild
+    def moveToNthChild(self, n):
+        self._priv = self.nthChild(n)._priv
+        return self
+    #@+node:vitalije.20180718170125.72: *5* p.moveToParent
+    def moveToParent(self):
+        """Move a position to its parent position."""
+        self._priv = self.parent()._priv
+        return self
+    #@+node:vitalije.20180718170125.73: *5* p.moveToThreadBack
+    def moveToThreadBack(self):
+        """Move a position to it's threadBack position."""
+        self._priv = self.threadBack()._priv
+        return self
+    #@+node:vitalije.20180718170125.74: *5* p.moveToThreadNext
+    def moveToThreadNext(self):
+        """Move a position to threadNext position."""
+        self._priv = self.threadNext()._priv
+        return self
+    #@+node:vitalije.20180718170125.75: *5* p.moveToVisBack
+    def moveToVisBack(self, c):
+        """Move a position to the position of the previous visible node."""
+        self._priv = self.visBack(c)._priv
+        return self
+    #@+node:vitalije.20180718170125.77: *5* p.moveToVisNext
+    def moveToVisNext(self, c):
+        """Move a position to the position of the next visible node."""
+        self._priv = self.visNext(c)._priv
+        return self
+    #@+node:vitalije.20180718170125.79: *5* p.safeMoveToThreadNext
+    def safeMoveToThreadNext(self):
+        '''
+        Move a position to threadNext position.
+        Issue an error if any vnode is an ancestor of itself.
+        '''
+        self._priv = self.threadNext()._priv
+        return self
+    #@+node:vitalije.20180718170125.81: *4* p.Moving, Inserting, Deleting, Cloning, Sorting
+    #@+node:vitalije.20180718170125.82: *5* p.clone
+    def clone(self):
+        """Create a clone of back.
+
+        Returns the newly created position."""
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.clone_node(self._priv)
+        return self
+    #@+node:vitalije.20180718170125.83: *5* p.copy
+    def copy(self):
+        """"Return an independent copy of a position."""
+        return Position2(self.c, -1, self._priv)
+    #@+node:vitalije.20180718170125.84: *5* p.copyTreeAfter, copyTreeTo
+    # These used by unit tests, by the group_operations plugin,
+    # and by the files-compare-leo-files command.
+
+    # To do: use v.copyTree instead.
+
+    def copyTreeAfter(self, copyGnxs=False):
+        '''Copy p and insert it after itself.'''
+        p = self.parent()
+        if p: p.setDirty()
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        t = ltm.subtree_new(pos, c.ltm_newgnx)
+        rgnx = t.data.nodes[0]
+        ltm.insert_leaf_i_after(i, rgnx, '', '')
+        ltm.replace_node(t)
+        i = ltm.data.nodes.index(rgnx)
+        return Position2(c, i)
+    #@+node:vitalije.20180718170125.87: *5* p.deleteAllChildren
+    def deleteAllChildren(self):
+        '''
+        Delete all children of the receiver and set p.dirty().
+        '''
+        self.setDirty()
+        ltm = self.c._ltm
+        ltm.delete_all_children(self._priv.pos)
+        ltm.invalidate_visual()
+    #@+node:vitalije.20180718170125.88: *5* p.doDelete
+    def doDelete(self, newNode=None):
+        """
+        Deletes position p from the outline.
+        
+        This is the main delete routine.
+        It deletes the receiver's entire tree from the screen.
+        Because of the undo command we never actually delete vnodes.
+        """
+        c = self.c
+        ltm = c._ltm
+        self.setDirty()
+        ltm.delete_node(self._priv.pos)
+        self._priv = ltm.mkpos(0)
+
+    #@+node:vitalije.20180718170125.89: *5* p.insertAfter
+    def insertAfter(self):
+        """
+        Inserts a new position after self.
+
+        Returns the newly created position.
+        """
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if i > 0:
+            self.setDirty()
+            v = VNode(c)
+            rgnx = v.fileIndex
+            ltm.insert_leaf_i_after(i, rgnx, v._headString, v._bodyString)
+        return self.next()
+    #@+node:vitalije.20180718170125.90: *5* p.insertAsLastChild
+    def insertAsLastChild(self):
+        """Inserts a new VNode as the last child of self.
+
+        Returns the newly created position."""
+        if self._priv.nd.children:
+            return self.lastChild().insertAfter()
+        else:
+            return self.insertAsFirstChild()
+    #@+node:vitalije.20180725220503.1: *5* insertAsFirstChild
+    def insertAsFirstChild(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        v = VNode(c)
+        rgnx = v.fileIndex
+        ltm.insert_leaf_i_pi(i + 1, rgnx, v._headString, v._bodyString, i)
+        return self.firstChild()
+    #@+node:vitalije.20180718170125.91: *5* p.insertAsNthChild
+    def insertAsNthChild(self, n):
+        """
+        Inserts a new node as the the nth child of self.
+        self must have at least n-1 children.
+
+        Returns the newly created position.
+        """
+        if n == 0:
+            return self.insertAsFirstChild()
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        n = min(n, len(nd.children))
+        if n == len(nd.children):
+            xi = i + nd.size
+        else:
+            for j, xi, k in ltm._child_iterator(i):
+                if j == n:
+                    break
+        self.setDirty()
+        v = VNode(c)
+        rgnx = v.fileIndex
+        ltm.insert_leaf_i_pi(xi, rgnx, v._headString, v._bodyString, i)
+        return self.nthChild(n)
+    #@+node:vitalije.20180718170125.92: *5* p.insertBefore (new in Leo 4.11)
+    def insertBefore(self):
+        '''Inserts a new position before self.
+
+        Returns the newly created position.
+
+        '''
+        self.setDirty()
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        v = VNode(c)
+        rgnx = v.fileIndex
+        ltm.insert_leaf_i(i, rgnx, v._headString, v._bodyString)
+        return self.back()
+    #@+node:vitalije.20180718170125.93: *5* p.invalidOutline
+    def invalidOutline(self, message):
+        p = self
+        if p.hasParent():
+            node = p.parent()
+        else:
+            node = p
+        p.v.context.alert("invalid outline: %s\n%s" % (message, node))
+    #@+node:vitalije.20180718170125.94: *5* p.moveAfter
+    def moveAfter(self, a):
+        """Move a position after position a."""
+        c = self.c
+        ltm = c._ltm
+        a._priv = ltm.normalize(a._priv)
+        npi = ltm.parent_index(a._priv.i)
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        dst = a._priv.i + a._priv.nd.size
+        if ltm.move_node_to_index(i, dst, npi):
+            return a.next()
+        return Position2(c, 0)
+    #@+node:vitalije.20180718170125.95: *5* p.moveToFirst/LastChildOf
+    def moveToFirstChildOf(self, parent):
+        """Move a position to the first child of parent."""
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.move_to_nth_child(self._priv, parent._priv, 0)
+        return self
+
+    def moveToLastChildOf(self, parent):
+        """Move a position to the last child of parent."""
+        c = self.c
+        ltm = c._ltm
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.move_to_nth_child(self._priv, parent._priv, -1)
+        return self
+    #@+node:vitalije.20180718170125.96: *5* p.moveToNthChildOf
+    def moveToNthChildOf(self, parent, n):
+        """Move a position to the nth child of parent."""
+        c = self.c
+        ltm = c._ltm
+        self._priv = ltm.move_to_nth_child(self._priv, parent._priv, n)
+        return self
+    #@+node:vitalije.20180718170125.97: *5* p.moveToRoot
+    def moveToRoot(self, oldRoot=None):
+        '''Moves a position to the root position.
+
+        Important: oldRoot must the previous root position if it exists.'''
+        c = self.c
+        ltm = c._ltm
+        rpos = ltm.mkpos(0)
+        self._priv = ltm.move_to_nth_child(self._priv, rpos, 0)
+        return self
+
+
+    #@+node:vitalije.20180718170125.98: *5* p.promote
+    def promote(self):
+        '''A low-level promote helper.'''
+        if self.c._ltm.promote_children(self._priv.pos):
+            self.setDirty()
+        return self
+    #@+node:vitalije.20180718170125.99: *5* p.validateOutlineWithParent
+    # This routine checks the structure of the receiver's tree.
+
+    def validateOutlineWithParent(self, pv):
+        p = self
+        result = True # optimists get only unpleasant surprises.
+        parent = p.getParent()
+        childIndex = p._childIndex
+        #@+<< validate parent ivar >>
+        #@+node:vitalije.20180718170125.100: *6* << validate parent ivar >>
+        if parent != pv:
+            p.invalidOutline("Invalid parent link: " + repr(parent))
+        #@-<< validate parent ivar >>
+        #@+<< validate childIndex ivar >>
+        #@+node:vitalije.20180718170125.101: *6* << validate childIndex ivar >>
+        if pv:
+            if childIndex < 0:
+                p.invalidOutline("missing childIndex" + childIndex)
+            elif childIndex >= pv.numberOfChildren():
+                p.invalidOutline("missing children entry for index: " + childIndex)
+        elif childIndex < 0:
+            p.invalidOutline("negative childIndex" + childIndex)
+        #@-<< validate childIndex ivar >>
+        #@+<< validate x ivar >>
+        #@+node:vitalije.20180718170125.102: *6* << validate x ivar >>
+        if not p.v and pv:
+            self.invalidOutline("Empty t")
+        #@-<< validate x ivar >>
+        # Recursively validate all the children.
+        for child in p.children():
+            r = child.validateOutlineWithParent(p)
+            if not r: result = False
+        return result
+    #@+node:vitalije.20180718170125.103: *4* p.Properties
+    #@+node:vitalije.20180718170125.104: *5* p.b property
+    def __get_b(self):
+        '''Return the body text of a position.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return nd.b
+
+    def __set_b(self, val):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if val != nd.b:
+            nd.b = val
+            self.setDirty()
+        if c.p == self:
+            c.frame.body.setSelectionAreas(val, None, None)
+            w = c.frame.body.wrapper
+            i = w.getInsertPoint()
+            w.setSelectionRange(i, i)
+            c.recolor()
+    b = property(
+        __get_b, __set_b,
+        doc="position body string property")
+    #@+node:vitalije.20180718170125.105: *5* p.h property
+    def _get_h(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        return nd.h
+
+    def _set_h(self, val):
+        val = val.replace('\n', '')
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        if val != nd.h:
+            nd.h = val
+            self.setDirty()
+
+    h = property(
+        _get_h, _set_h,
+        doc="position property returning the headline string")
+    #@+node:vitalije.20180718170125.106: *5* p.gnx property
+    def _get_gnx(self):
+        return self._priv.gnx
+
+    gnx = property(
+        _get_gnx, # __set_gnx,
+        doc="position gnx property")
+    #@+node:vitalije.20180718170125.107: *5* p.script property
+    def __get_script(self):
+        c = self.c
+        ltm = c._ltm
+        return ltm.p_to_string(self.pos, '#', '')
+
+    script = property(
+        __get_script, # __set_script,
+        doc="position property returning the script formed by p and its descendants")
+    #@+node:vitalije.20180718170125.108: *5* p.nosentinels property
+    def __get_nosentinels(self):
+        b = self._priv.nd.b
+        return ''.join([z for z in g.splitLines(b) if not g.isDirective(z)])
+
+    nosentinels = property(
+        __get_nosentinels, # __set_nosentinels
+        doc="position property returning the body text without sentinels")
+    #@+node:vitalije.20180718170125.109: *5* p.u Property (new)
+    def __get_u(self):
+        p = self
+        return p.v.u
+
+    def __set_u(self, val):
+        p = self
+        p.v.u = val
+
+    u = property(
+        __get_u, __set_u,
+        doc="p.u property")
+    #@+node:vitalije.20180718170125.110: *4* p.Setters
+    #@+node:vitalije.20180718170125.111: *5* p.VNode proxies
+    #@+node:vitalije.20180718170125.112: *6* p.contract/expand/isExpanded
+    def contract(self):
+        '''Contract p.v and clear p.v.expandedPositions list.'''
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv
+        #v = c.get_node(gnx)
+        #v.expandedPositions = [z for z in v.expandedPositions if z != self]
+        #v.contract()
+        ltm.collapse_node(pos)
+        ltm.invalidate_visual()
+
+    def expand(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv
+        #p = self
+        #v = self.v
+        #v.expandedPositions = [z for z in v.expandedPositions if z != p]
+        #for p2 in v.expandedPositions:
+        #    if p == p2:
+        #        break
+        #else:
+        #    v.expandedPositions.append(p.copy())
+        #v.expand()
+        ltm.expand_node(pos)
+        ltm.invalidate_visual()
+
+
+    def isExpanded(self):
+        ltm = self.c._ltm
+        return ltm.is_expanded(self._priv.pos)
+    #@+node:vitalije.20180718170125.113: *6* p.Status bits
+    # Clone bits are no longer used.
+    # Dirty bits are handled carefully by the position class.
+
+    def clearMarked(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv
+        ltm.data.marked.discard(gnx)
+        return self.v.clearMarked()
+
+
+    def clearOrphan(self): return self.v.clearOrphan()
+
+    def clearVisited(self): return self.v.clearVisited()
+
+    def initExpandedBit(self): return self.v.initExpandedBit()
+
+    def initMarkedBit(self): return self.v.initMarkedBit()
+
+    def initStatus(self, status): return self.v.initStatus(status)
+
+    def setMarked(self):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv
+        ltm.data.marked.add(gnx)
+        return self.v.setMarked()
+
+    def setOrphan(self): return self.v.setOrphan()
+
+    def setSelected(self): return self.v.setSelected()
+
+    def setVisited(self): return self.v.setVisited()
+    #@+node:vitalije.20180718170125.114: *6* p.computeIcon & p.setIcon
+    def computeIcon(self):
+        return self.v.computeIcon()
+
+    def setIcon(self):
+        pass # Compatibility routine for old scripts
+    #@+node:vitalije.20180718170125.115: *6* p.setSelection
+    def setSelection(self, start, length):
+        return self.v.setSelection(start, length)
+    #@+node:vitalije.20180718170125.116: *6* p.restore/saveCursorAndScroll
+    def restoreCursorAndScroll(self):
+        self.v.restoreCursorAndScroll()
+
+    def saveCursorAndScroll(self):
+        self.v.saveCursorAndScroll()
+    #@+node:vitalije.20180718170125.117: *5* p.setBodyString & setHeadString
+    def setBodyString(self, s):
+        self.b = s
+
+    initBodyString = setBodyString
+    setTnodeText = setBodyString
+    scriptSetBodyString = setBodyString
+
+    def initHeadString(self, s):
+        c = self.c
+        ltm = c._ltm
+        i, pos, gnx, lev, nd = self._priv = ltm.normalize(self._priv)
+        nd.h = s
+
+    def setHeadString(self, s):
+        self.h = s
+    #@+node:vitalije.20180718170125.118: *5* p.Visited bits
+    #@+node:vitalije.20180718170125.119: *6* p.clearVisitedInTree
+    # Compatibility routine for scripts.
+
+    def clearVisitedInTree(self):
+        for p in self.self_and_subtree(copy=False):
+            p.clearVisited()
+    #@+node:vitalije.20180718170125.120: *6* p.clearAllVisitedInTree
+    def clearAllVisitedInTree(self):
+        for p in self.self_and_subtree(copy=False):
+            p.v.clearVisited()
+            p.v.clearWriteBit()
+    #@+node:vitalije.20180718170125.121: *5* p.Dirty bits
+    #@+node:vitalije.20180718170125.122: *6* p.clearDirty
+    def clearDirty(self):
+        '''(p) Set p.v dirty.'''
+        p = self
+        p.v.clearDirty()
+    #@+node:vitalije.20180718170125.123: *6* p.findAllPotentiallyDirtyNodes
+    def findAllPotentiallyDirtyNodes(self):
+        c = self.c
+        ltm = c._ltm
+        nodes = []
+        attrs = ltm.data.attrs
+        rgnx = ltm.data.nodes[0]
+        def it(x):
+            nodes.append(c.get_node(x))
+            for y in attrs[x].parents:
+                if y == rgnx:continue
+                it(y)
+            return nodes
+        return it(self._priv.gnx)
+    #@+node:vitalije.20180718170125.124: *6* p.inAtIgnoreRange
+    def inAtIgnoreRange(self):
+        """Returns True if position p or one of p's parents is an @ignore node."""
+        p = self
+        for p in p.self_and_parents(copy=False):
+            if p.isAtIgnoreNode():
+                return True
+        return False
+    #@+node:vitalije.20180718170125.125: *6* p.setAllAncestorAtFileNodesDirty
+    def setAllAncestorAtFileNodesDirty(self, setDescendentsDirty=False):
+
+        p = self
+        dirtyVnodeList = []
+        # Calculate all nodes that are joined to p or parents of such nodes.
+        nodes = p.findAllPotentiallyDirtyNodes()
+        if setDescendentsDirty:
+            # **Important**: only mark _direct_ descendents of nodes.
+            # Using the findAllPotentiallyDirtyNodes algorithm would mark way too many nodes.
+            for p2 in p.subtree():
+                # Only @thin nodes need to be marked.
+                if p2.v not in nodes and p2.isAnyAtFileNode():
+                        # Bug fix: 2011/07/05: was p2.isAtThinFileNode():
+                    nodes.append(p2.v)
+        dirtyVnodeList = [v for v in nodes
+            if not v.isDirty() and v.isAnyAtFileNode()]
+        for v in dirtyVnodeList:
+            v.setDirty()
+        return dirtyVnodeList
+    #@+node:vitalije.20180718170125.126: *6* p.setDirty
+    def setDirty(self, setDescendentsDirty=True):
+        '''
+        Mark a node and all ancestor @file nodes dirty.
+
+        **Warning**: p.setDirty() is *expensive* because it calls
+        p.setAllAncestorAtFileNodesDirty().
+
+        Usually, code *should* this setter, despite its cost, because it
+        update's Leo's outline pane properly. Calling c.redraw() is *not*
+        enough.
+        '''
+        c = self.c
+        if c.frame.top:
+            c.frame.top.newTreeWidget.update()
+
+        p = self; dirtyVnodeList = []
+        if not p.v.isDirty():
+            p.v.setDirty()
+            dirtyVnodeList.append(p.v)
+        # Important: this must be called even if p.v is already dirty.
+        # Typing can change the @ignore state!
+        dirtyVnodeList2 = p.setAllAncestorAtFileNodesDirty(setDescendentsDirty)
+        dirtyVnodeList.extend(dirtyVnodeList2)
+        return dirtyVnodeList
+    #@+node:vitalije.20180718170125.127: *4* p.Predicates
+    #@+node:vitalije.20180718170125.128: *5* p.is_at_all & is_at_all_tree
+    def is_at_all(self):
+        '''Return True if p.b contains an @all directive.'''
+        v = self.v
+        b = v._bodyString
+        return (
+            v.isAnyAtFileNode() and
+            any([g.match_word(s, 0, '@all') for s in g.splitLines(b)]))
+
+    def in_at_all_tree(self):
+        '''Return True if p or one of p's ancestors is an @all node.'''
+        for p in self.self_and_parents(copy=False):
+            if p.is_at_all():
+                return True
+        return False
+    #@+node:vitalije.20180718170125.129: *5* p.is_at_ignore & in_at_ignore_tree
+    def is_at_ignore(self):
+        '''Return True if p is an @ignore node.'''
+        h = self._priv.h
+        return g.match_word(h, 0, '@ignore')
+
+    def in_at_ignore_tree(self):
+        '''Return True if p or one of p's ancestors is an @ignore node.'''
+        for p in self.self_and_parents(copy=False):
+            if p.is_at_ignore():
+                return True
+        return False
+    #@-others
+
+position2 = Position2 # compatibility.
+#@+node:vitalije.20180718170942.1: *3* _pos_data
+def _pos_data(c, i):
+    #@+others
+    #@+node:vitalije.20180718171121.1: *4* PData
+    class PData(object):
+        def __init__(self, c, i):
+            self.c = c
+            self.set_i(i)
+
+        def set_i(self, i):
+            d = self.c._ltm.data
+            if i >= min(len(d.nodes), len(d.positions)):
+                self.i = 0
+                self.gnx = d.nodes and d.nodes[0]
+                self.pos = d.positions and d.positions[0]
+                return self
+            self.gnx = d.nodes[i]
+            self.pos = d.positions[i]
+            self.i = i
+            return self
+        #@+others
+        #@+node:vitalije.20180718204641.1: *5* v
+        def v(self):
+            if self.i == 0: return None
+            d = self.c._ltm.data
+            nd = d.attrs.get(self.gnx, None)
+            if not nd:
+                return None
+            v = self.c.get_node(self.gnx)
+            v._headString = nd.h
+            v._bodyString = nd.b
+            return v
+        #@+node:vitalije.20180718200138.1: *5* normalize
+        def normalize(self):
+            d = self.c._ltm.data
+            if d.positions[self.i] != self.pos:
+                try:
+                    self.i = d.positions.index(self.pos)
+                except ValueError:
+                    (i, pos, gnx) = self.c._ltm.revive_position(self.i, self.gnx)
+                    self.i = i
+                    self.pos = pos
+                    self.gnx = gnx
+            return self
+        #@+node:vitalije.20180718200142.1: *5* level
+        def level(self):
+            return self.c._ltm.data.levels[self.normalize().i]
+        #@+node:vitalije.20180718200146.1: *5* children
+        def children(self):
+            self.normalize()
+            for i, j, k in self.c._ltm._child_iterator(self.i):
+                yield Position2(self.c, j)
+
+        def has_children(self):
+            return self.i > 0 and self.c._ltm.data.attrs[self.gnx].size > 1
+        #@+node:vitalije.20180726203747.1: *5* relink_as_clone_of
+        def relink_as_clone_of(self, p2):
+            i = self.normalize().i
+            j = p2.normalize().i
+            if i * j:
+                self.c._ltm.relink_as_clone_of(i, j)
+        #@+node:vitalije.20180718200157.1: *5* all_siblings
+        def all_siblings(self):
+            self.normalize()
+            c = self.c
+            for p, i in c.ltm.all_siblings_from(self.i):
+                yield Position2(c, i)
+        #@+node:vitalije.20180718200201.1: *5* subtree
+        def subtree(self):
+            c = self.c
+            d = c._ltm.data
+            i = self.normalize().i
+            sz = d.attrs[self.gnx].size
+            for j in range(i+1, i+sz):
+                yield Position2(c, j)
+        #@+node:vitalije.20180718212247.1: *5* node_after_tree
+        def node_after_tree(self):
+            c = self.c
+            i = self.normalize().i
+            sz = c._ltm.data.attrs[self.gnx].size
+            return Position2(c, i + sz)
+
+        def move_to_node_after_tree(self):
+            i = self.normalize().i
+            sz = self.c._ltm.data.attrs[self.gnx].size
+            return self.set_i(i + sz)
+        #@+node:vitalije.20180718200352.1: *5* child_index
+        def child_index(self):
+            return self.c._ltm.child_index(self.normalize().i)
+        #@+node:vitalije.20180718201454.1: *5* direct_parents
+        def direct_parents(self):
+            c = self.c
+            d = c._ltm.data
+            for gnx in d.attrs[self.gnx].parents:
+                v = c.get_node(gnx)
+                nd = d.attrs[gnx]
+                v._headString = nd.h
+                v._bodyString = nd.b
+                yield v
+        #@+node:vitalije.20180718210626.1: *5* is_cloned
+        def is_cloned(self):
+            return len(self.c._ltm.data.attrs[self.gnx].parents) > 1
+        #@+node:vitalije.20180718201743.1: *5* number_of_children
+        def number_of_children(self):
+            nd = self.c._ltm.data.attrs.get(self.gnx)
+            return len(nd.children) if nd else 0
+        #@+node:vitalije.20180718204812.1: *5* parent
+        def parent(self):
+            c = self.c
+            i = self.normalize().i
+            pi = c._ltm.parent_index(i)
+            return Position2(c, pi)
+
+        def move_to_parent(self):
+            i = self.normalize().i
+            pi = self.c._ltm.parent_index(i)
+            self.set_i(pi)
+        #@+node:vitalije.20180718205145.1: *5* first_child
+        def first_child(self):
+            return next(self.children(), Position2(self.c, 0))
+
+        def move_to_first_child(self):
+            if self.c._ltm.data.attrs[self.gnx].size > 1:
+                self.set_i(self.normalize().i + 1)
+            else:
+                self.set_i(0)
+
+        #@+node:vitalije.20180718205613.1: *5* nth_child
+        def nth_child(self, n):
+            i = self.normalize().i
+            for x, j, k in self.c._ltm._child_iterator(i):
+                if x == n:
+                    return Position2(self.c, j)
+            return Position2(self.c, 0)
+
+        def move_to_nth_child(self, n):
+            i = self.normalize().i
+            for x, j, k in self.c._ltm._child_iterator(i):
+                if x == n:
+                    return self.set_i(j)
+        #@+node:vitalije.20180718205618.1: *5* last_child
+        def last_child(self):
+            lc = None
+            for ch in self.children():
+                lc = ch
+            return lc or Position2(self.c, 0)
+
+        def move_to_last_child(self):
+            c = self.c
+            d = c._ltm.data
+            i = self.normalize().i
+            sz = d.attrs[self.gnx].size
+            if sz > 1:
+                levels = d.levels
+                lev = levels[i] + 1
+                i = levels.rfind(lev, i, i + sz - 1)
+                self.set_i(i)
+            else:
+                self.set_i(0)
+        #@+node:vitalije.20180719043517.1: *5* last_node
+        def last_node(self):
+            c = self.c
+            i = self.normalize().i
+            sz = c._ltm.data.attrs[self.gnx].size
+            i += sz - 1
+            return Position2(c, i)
+
+        def move_to_last_node(self):
+            i = self.normalize().i
+            sz = self.c._ltm.data.attrs[self.gnx].size
+            return self.set_i(i + sz - 1)
+        #@+node:vitalije.20180718204632.1: *5* has_back
+        def has_back(self):
+            if self.i == 0: return False
+            d = self.c._ltm.data
+            i = self.normalize().i
+            lev = d.levels[i]
+            return lev != d.levels[i-1] + 1
+        #@+node:vitalije.20180718205709.1: *5* has_next
+        def has_next(self):
+            if self.i == 0: return False
+            d = self.c._ltm.data
+            i = self.normalize().i
+            lev = d.levels[i]
+            i += d.attrs[self.gnx].size
+            return (lev == d.levels[i]) if len(d.levels) > i else False
+        #@+node:vitalije.20180718204636.1: *5* has_parent
+        def has_parent(self):
+            if self.i == 0:
+                return False
+            i = self.normalize().i
+            return self.c._ltm.data.levels[i] > 1
+        #@+node:vitalije.20180718212615.1: *5* back
+        def back(self):
+            c = self.c
+            i = self.normalize().i
+            return Position2(c, c._ltm.prev_sibling_i(i))
+
+        def move_to_back(self):
+            i = self.normalize().i
+            self.set_i(self.c._ltm.prev_sibling_i(i))
+
+        #@+node:vitalije.20180718214131.1: *5* next
+        def next(self):
+            c = self.c
+            i = self.normalize().i
+            j = c._ltm.next_sibling_i(i)
+            return Position2(self.c, j)
+
+        def move_to_next(self):
+            i = self.normalize().i
+            return self.set_i(c._ltm.next_sibling_i(i))
+
+        #@+node:vitalije.20180718214537.1: *5* thread_back
+        def thread_back(self):
+            i = max(0, self.normalize().i - 1)
+            return Position2(self.c, i)
+
+        def move_to_thread_back(self):
+            i = max(0, self.normalize().i - 1)
+            return self.set_i(i)
+        #@+node:vitalije.20180718214824.1: *5* thread_next
+        def thread_next(self):
+            c = self.c
+            N = len(c._ltm.data.positions)
+            i = self.normalize().i
+            if 0 < i < N - 1:
+                return Position2(c, i + 1)
+            return Position2(c, 0)
+
+        def move_to_thread_next(self):
+            N = len(self.c._ltm.data.positions)
+            i = self.normalize().i
+            if 0 < i < N - 1:
+                return self.set_i(i + 1)
+            return self.set_i(0)
+        #@+node:vitalije.20180718220813.1: *5* vis_back
+        def vis_back(self):
+            i = self.c._ltm.vis_back_i(self.normalize().i)
+            return Position2(self.c, i)
+
+        def move_to_vis_back(self):
+            i = self.c._ltm.vis_back_i(self.normalize().i)
+            return self.set_i(i)
+        #@+node:vitalije.20180718221110.1: *5* vis_next
+        def vis_next(self):
+            i = self.c._ltm.vis_next_i(self.normalize().i)
+            return Position2(self.c, i)
+
+        def move_to_vis_next(self):
+            i = self.c._ltm.vis_next_i(self.normalize().i)
+            return self.set_i(i)
+        #@+node:vitalije.20180718222028.1: *5* copy
+        def copy(self):
+            i = self.normalize().i
+            return Position2(self.c, i)
+        #@+node:vitalije.20180718222217.1: *5* clone
+        def clone(self):
+            cloned = self.c._ltm.clone_node(self.pos)
+            if cloned:
+                self.move_to_node_after_tree()
+        #@+node:vitalije.20180718230953.1: *5* copy_tree_after
+        def copy_tree_after(self):
+            c = self.c
+            t = c._ltm.subtree_new(self.pos, c.ltm_newgnx)
+            rgnx = t.data.nodes[0]
+            c._ltm.insert_leaf_i_after(self.normalize().i, rgnx, '', '')
+            c._ltm.replace_node(t)
+            i = c._ltm.data.nodes.index(rgnx)
+            return Position2(c, i)
+        #@+node:vitalije.20180718232705.1: *5* delete_node
+        def delete_node(self):
+            if self.i == 0: return
+            self.c._ltm.delete_node(self.pos)
+            self.set_i(0)
+
+        #@+node:vitalije.20180718233935.1: *5* delete_all_children
+        def delete_all_children(self):
+            ltm = self.c._ltm
+            ltm.delete_all_children(self.pos)
+            ltm.invalidate_visual()
+        #@+node:vitalije.20180718234616.1: *5* insert_after
+        def insert_after(self):
+            c = self.c
+            v = VNode(c)
+            rgnx = v.fileIndex
+            ltm = c._ltm
+            ltm.insert_leaf_i_after(self.normalize().i, rgnx, v._headString, v._bodyString)
+            i = ltm.data.nodes.index(rgnx)
+            return self.next()
+
+
+        #@+node:vitalije.20180719000305.1: *5* insert_before
+        def insert_before(self):
+            c = self.c
+            v = VNode(c)
+            rgnx = v.fileIndex
+            c._ltm.insert_leaf_i(self.normalize().i, rgnx, v._headString, v._bodyString)
+            return self.back()
+
+
+        #@+node:vitalije.20180719000150.1: *5* insert_as_last_child
+        def insert_as_last_child(self):
+            c = self.c
+            if self.has_children():
+                return self.last_child()._priv.insert_after()
+            i = self.i
+            v = VNode(c)
+            rgnx = v.fileIndex
+            c._ltm.insert_leaf_i_pi(i + 1, rgnx, v._headString, v._bodyString, i)
+            return Position2(c, i + 1)
+        #@+node:vitalije.20180719000154.1: *5* insert_as_nth_child
+        def insert_as_nth_child(self, n):
+            j = self.number_of_children()
+            if j > n:
+                return self.nth_child(n)._priv.insert_after()
+            c = self.c
+            ltm = c._ltm
+            sz = ltm.data.attrs[self.gnx].size
+            i = self.i
+            v = VNode(c)
+            rgnx = v.fileIndex
+            ltm.insert_leaf_i_pi(i + sz, rgnx, v._headString, v._bodyString, i)
+            return Position2(c, i + sz)
+        #@+node:vitalije.20180719000859.1: *5* move_after
+        def move_after(self, a):
+            c = self.c
+            ltm = c._ltm
+            npi = ltm.parent_index(a._priv.i)
+            dst = ltm.data.attrs[self.gnx].size + npi
+            if c._ltm.move_node_to_index(self.normalize().i, dst, npi):
+                return a.node_after_tree()
+            return False
+        #@+node:vitalije.20180719001550.1: *5* move_first
+        def move_first(self, a):
+            ltm = self.c._ltm
+            npi = a.normalize().i
+            dst = npi + 1
+            src = self.normalize().i
+            if src == dst:
+                done = ltm.indent_node(self.pos)
+            else:
+                done = ltm.move_node_to_index(src, dst, npi)
+            if done:
+                return a.normalize().i + 1
+            return False
+        #@+node:vitalije.20180719002326.1: *5* move_last
+        def move_last(self, a):
+            ltm = self.c._ltm
+            npi = a.normalize().i
+            sz = ltm.size_gnx(a.gnx)
+            if ltm.move_node_to_index(self.normalize().i, npi+sz, npi):
+                return a.normalize().i + sz
+            return False
+        #@+node:vitalije.20180719002318.1: *5* move_nth
+        def move_nth(self, a, n):
+            npi = a.normalize().i
+            dst = a.nth_child(n)._priv.i
+            c = self.c
+            ltm = c._ltm
+            if dst == 0:
+                sz = ltm.size_gnx(a.gnx)
+                dst = npi + sz
+            else:
+                sz = dst - npi
+            if ltm.move_node_to_index(self.normalize().i, dst, npi):
+                return Position2(c, a.normalize().i + sz)
+            return False
+
+        #@+node:vitalije.20180719003244.1: *5* move_root
+        def move_root(self):
+            self.c._ltm.move_node_to_index(self.i, 1, 0)
+            return Position2(self.c, 1)
+        #@+node:vitalije.20180724114958.1: *5* marked set clear
+        def set_marked(self):
+            self.c._ltm.data.marked.add(self.gnx)
+
+        def clear_marked(self):
+            self.c._ltm.data.marked.discard(self.gnx)
+        #@-others
+        def exists(self, root=None):
+            d = self.c._ltm.data
+            positions = d.positions
+            i = self.normalize().i
+            if i == 0: return False
+            if root:
+                j = root._priv.normalize().i
+                sz = d.attrs[root.gnx].size
+                return j <= i < j + sz
+            return True
+    #@-others
+    return PData(c, i)
 #@+node:ville.20090311190405.68: ** class PosList (leoNodes.py)
 class PosList(list):
     #@+others
@@ -2480,6 +4355,13 @@ class VNodeBase(object):
                     self.unicode_warning_given = True
                     g.internalError(s)
                     g.es_exception()
+        if self.context.USE_NEW_MODEL:
+             try:
+                 self.context.ltm.set_b(v.fileIndex, v._bodyString)
+             except KeyError:
+                 # this can happen at load time
+                 # ltm will be adjusted when load completes
+                 pass
         sig.emit(self.context, 'body_changed', self)
 
     def setHeadString(self, s):
@@ -2497,6 +4379,13 @@ class VNodeBase(object):
                     self.unicode_warning_given = True
                     g.internalError(s)
                     g.es_exception()
+        if self.context.USE_NEW_MODEL:
+            try:
+                self.context.ltm.set_h(v.fileIndex, v._headString)
+            except KeyError:
+                 # this can happen at load time
+                 # ltm will be adjusted when load completes
+                pass
 
     initBodyString = setBodyString
     initHeadString = setHeadString
