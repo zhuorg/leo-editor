@@ -4522,8 +4522,9 @@ class LeoQtTreeTab(object):
         tt.w = w = LeoQComboBox(tt)
         tt.setNames()
         tt.iconBar.addWidget(w)
-
+        c = self.c
         def onIndexChanged(s, tt=tt):
+            if c.USE_NEW_MODEL:return
             if g.isInt(s):
                 s = '' if s == -1 else tt.w.currentText()
             else: # s is the tab name.
@@ -4531,7 +4532,10 @@ class LeoQtTreeTab(object):
             if s and not tt.cc.selectChapterLockout:
                 tt.selectTab(s)
         # A change: the argument could now be an int instead of a string.
-
+        def onItemActivated(i, tt=tt):
+            tt.selectTab(tt.w.itemText(i))
+        if c.USE_NEW_MODEL:
+            w.activated.connect(onItemActivated)
         w.currentIndexChanged.connect(onIndexChanged)
     #@+node:ekr.20110605121601.18443: *3* tt.createTab
     def createTab(self, tabName, select=True):
@@ -4572,9 +4576,20 @@ class LeoQtTreeTab(object):
     def setNames(self):
         '''LeoQtTreeTab: Recreate the list of items.'''
         w = self.w
-        names = self.cc.setAllChapterNames()
-        w.clear()
-        w.insertItems(0, names)
+        c = self.c
+        if c.USE_NEW_MODEL:
+            names = tuple(n for i,p,n in c._ltm.chapter_names())
+        else:
+            names = self.cc.setAllChapterNames()
+        n1 = w.count()
+        for i, s in enumerate(names):
+            if i < n1:
+                if s != g.u(w.itemText(i)):
+                    w.setItemText(i, s)
+            else:
+                w.insertItem(i, s)
+        #w.clear()
+        #w.insertItems(0, names)
     #@-others
 #@+node:ekr.20110605121601.18448: ** class LeoTabbedTopLevel (LeoBaseTabWidget)
 class LeoTabbedTopLevel(LeoBaseTabWidget):

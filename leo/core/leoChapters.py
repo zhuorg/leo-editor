@@ -167,7 +167,10 @@ class ChapterController(object):
                 return
         chapter.select()
         if c.USE_NEW_MODEL:
-            c._ltm.set_vis_top(chapter.p._priv.i)
+            vis_top = chapter.root._priv.i if chapter.root else 0
+            c._ltm.set_vis_top(vis_top)
+            c._ltm.invalidate_visual()
+            c._ltm.selectedPosition = chapter.p._priv.pos
         c.setCurrentPosition(chapter.p)
         # Clean up, but not initially.
         if collapse and chapter.name == 'main':
@@ -198,6 +201,10 @@ class ChapterController(object):
     def findAnyChapterNode(self):
         '''Return True if the outline contains any @chapter node.'''
         cc = self
+        c = self.c
+        if c.USE_NEW_MODEL:
+            for i, p, n in c._ltm.chapter_names():
+                if i > 0:return True
         for p in cc.c.all_unique_positions():
             if p.h.startswith('@chapter '):
                 return True
@@ -206,6 +213,9 @@ class ChapterController(object):
     def findChapterNameForPosition(self, p):
         '''Return the name of a chapter containing p or None if p does not exist.'''
         cc, c = self, self.c
+        if c.USE_NEW_MODEL:
+            return c._ltm.chapter_for_position(p._priv.pos)
+
         if not p or not c.positionExists(p):
             return None
         for name in cc.chaptersDict:
@@ -224,7 +234,13 @@ class ChapterController(object):
         but users may move them anywhere.
         '''
         cc = self
+        c = self.c
         name = g.toUnicode(name)
+        if c.USE_NEW_MODEL:
+            for i, p, n in c._ltm.chapter_names():
+                if n == name:
+                    return c.ltm_utpos(p, i)
+            return None
         for p in cc.c.all_positions():
             chapterName, binding = self.parseHeadline(p)
             if chapterName == name:
@@ -421,6 +437,9 @@ class Chapter(object):
     def findPositionInChapter(self, p1, strict=False):
         '''Return a valid position p such that p.v == v.'''
         c, name = self.c, self.name
+        if c.USE_NEW_MODEL:
+            return p1 if self.positionIsInChapter(p1) else None
+
         # Bug fix: 2012/05/24: Search without root arg in the main chapter.
         if name == 'main' and c.positionExists(p1):
             return p1
@@ -452,6 +471,10 @@ class Chapter(object):
         return w
     #@+node:ekr.20070615065222: *4* chapter.positionIsInChapter
     def positionIsInChapter(self, p):
+        c = self.c
+        if c.USE_NEW_MODEL:
+            return c._ltm.position_is_in_chapter(self.root._priv, p._priv)
+
         p2 = self.findPositionInChapter(p, strict=True)
         return p2
     #@+node:ekr.20070320091806.1: *3* chapter.unselect
