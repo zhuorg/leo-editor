@@ -107,7 +107,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         self.MAX_W = MW + X0
         self.upd_width()
         self.upd_height()
-        self.auto_vscroll(sel_is_drawn)
+        #self.auto_vscroll(sel_is_drawn)
     #@+node:vitalije.20180717202124.1: *4* auto_vscroll
     def auto_vscroll(self, cancel):
         '''Schedules or cancel automatic vertical scroll adjustment'''
