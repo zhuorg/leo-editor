@@ -690,6 +690,10 @@ class Commands(object):
         # (This can happen when there are multiple event loops.)
         # This does not prevent zombie windows if the script puts up a dialog...
         try:
+            U_N_M = c.USE_NEW_MODEL
+            if c.USE_NEW_MODEL:
+                c._ltm.sync_to_leo(c)
+                c.USE_NEW_MODEL = False
             c.inCommand = False
             g.inScript = g.app.inScript = True
                 # g.inScript is a synonym for g.app.inScript.
@@ -703,6 +707,9 @@ class Commands(object):
             else:
                 exec(script, d)
         finally:
+            if U_N_M and not c.USE_NEW_MODEL:
+                c._ltm.sync_from_leo(c.hiddenRootNode)
+            c.USE_NEW_MODEL = U_N_M
             g.inScript = g.app.inScript = False
     #@+node:ekr.20171123135625.6: *4* c.redirectScriptOutput
     def redirectScriptOutput(self):
