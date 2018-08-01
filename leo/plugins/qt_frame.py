@@ -242,6 +242,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
     def on_edit_finish(self):
         self.commit_headline(self._ew.text())
         self._ew.hide()
+        self.setFocus()
     #@+node:vitalije.20180725171223.1: *5* vpos_index
     def vpos_index(self, p):
         pos = p._priv.pos
@@ -250,6 +251,10 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
             if _p == pos:
                 return i, gx, x
             i += 1
+    #@+node:vitalije.20180801101126.1: *5* edit_headline
+    def edit_headline(self):
+        c = self.c
+        self.editLabel(c.p)
     #@+node:vitalije.20180725131635.1: *3* click_in_...
     click_in_icon = leoFrame.NewTreeOps.select_position
     click_in_pm_icon = leoFrame.NewTreeOps.toggle_position

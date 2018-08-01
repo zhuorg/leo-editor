@@ -2051,6 +2051,12 @@ class NewTreeOps(object):
         c.ltm_undo_redo_labels()
         c.frame.tree.redrawCount += 1
         self.update()
+        # now model has one inserted row but our self.vpositions
+        # list won't reflect this change until next repaint
+        # we can't place editor before new node is painted for
+        # first time. So we must repaint now!
+        self.repaint()
+        self.editLabel(c.p, selectAll=True)
         return c.p
     #@+node:vitalije.20180725130811.24: *4* clipboard
     #@+node:vitalije.20180725130811.25: *5* copy_node
@@ -2200,6 +2206,7 @@ class NullNewTree(NewTreeOps):
             w.setSelectionRange(len(p.h), len(p.h))
     #@-others
     update = NewTreeOps.noop
+    repaint = NewTreeOps.noop
 #@+node:ekr.20070301164543: ** class NullIconBarClass
 class NullIconBarClass(object):
     '''A class representing the singleton Icon bar'''

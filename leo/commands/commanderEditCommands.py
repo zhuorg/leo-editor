@@ -277,6 +277,7 @@ def deleteComments(self, event=None):
     c.updateBodyPane(head, result, tail, undoType='Delete Comments', oldSel=None, oldYview=oldYview)
 #@+node:ekr.20171123135625.54: ** c_ec.editHeadline
 @g.commander_command('edit-headline')
+@g.ltm_tree_will_do('edit_headline')
 def editHeadline(self, event=None):
     '''Begin editing the headline of the selected node.'''
     c = self
