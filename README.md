@@ -19,7 +19,7 @@ This is the global switch and it is located in leo/core/leoCommands.py line 125.
 TODO:
 
 - ~~selecting chapter in combobox is broken (selecting with minibuffer command is ok)~~ OK now
-- Ctrl+h for editing headline raises TypeError
+- ~~Ctrl+h for editing headline raises TypeError~~ Fixed
 - clean up code. There are lots of unused methods and functions everywhere
 - declutter is not working at the moment and likely all plugins that depend on the old tree
 
