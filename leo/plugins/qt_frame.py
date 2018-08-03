@@ -395,15 +395,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
                         yield name, value.rstrip()
 
         #@+node:vitalije.20180802190334.1: *4* update_icon_names
-        def update_icon_names(k, name, value, icon_names=None):
-            if icon_names is None:
-                icon_names = [g.os_path_finalize_join(g.app.loadDir, 'themes', x) for x in [
-                    'dark/stylesheet-vline2.svg',
-                    'dark/stylesheet-branch-more2.svg',
-                    'dark/stylesheet-branch-end2.svg',
-                    'dark/branch_closed2.svg',
-                    'dark/branch_open2.svg',]
-                ]
+        def update_icon_names(k, name, value, icon_names):
             if 'image' in name and value:
                 if (':has-siblings' in k
                     and ':!adjoins-item' in k
@@ -440,8 +432,13 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         #@-others
         sheet = ''.join(drop_comments(sheet))
         colors = self.colors
-        icon_names = None
-
+        icon_names = [g.os_path_finalize_join(g.app.leoDir, 'themes', x) for x in [
+                'dark/stylesheet-vline.svg',
+                'dark/stylesheet-branch-more.svg',
+                'dark/stylesheet-branch-end.svg',
+                'dark/branch_closed.svg',
+                'dark/branch_open.svg',]
+        ]
         for k, bl in block_iter(sheet):
             if k.startswith('QTreeView'):
                 for name, value in block_props(bl):
