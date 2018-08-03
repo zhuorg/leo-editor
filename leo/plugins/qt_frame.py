@@ -30,6 +30,8 @@ try:
 except ImportError:
     print('Can not import nested_splitter')
     splitter_class = QtWidgets.QSplitter
+QStyle = QtWidgets.QStyle
+QStyleOption = QtWidgets.QStyleOption
 #@-<< imports >>
 #@+others
 #@+node:vitalije.20180711214706.1: ** NewLeoTree
@@ -50,9 +52,18 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         self.c = c
         self.vpositions = []
         self.setAttribute(QtConst.WA_DeleteOnClose)
-        self.icons = [g.app.gui.getImageImage('box%02d.png'%i) for i in range(16)]
-        self.plusic = g.app.gui.getImageImage('plusnode.gif')
-        self.minusic = g.app.gui.getImageImage('minusnode.gif')
+        self._stylesheet = None
+        self.icons = []
+        self.colors =g.bunch(
+            bgsel=QtGui.QColor('#77cccc'),
+            fgsel=QtGui.QColor('#000000'),
+            bg=QtGui.QColor('#000044'),
+            bgia=QtGui.QColor('#000044'),
+            fg=QtGui.QColor('#ffff33'),
+            fgia=QtGui.QColor('#ffff33')
+        )
+        self._decluttered = {}
+        c.registerReloadSettings(self)
         self.setFocusPolicy(QtConst.WheelFocus)
         self._auto_scroller = QtCore.QTimer()
         self._auto_scroller.timeout.connect(self.avs_timeout)
@@ -60,6 +71,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         self._ew.hide()
         self._ew.textChanged.connect(self.on_edit_head)
         self._ew.editingFinished.connect(self.on_edit_finish)
+        self.declutter_patterns = c.ltm_declutter_patterns()
         #g.app.gui.setFilter(c, self._ew, self._ew, tag='head')
 
     def closeEvent(self, ev):
@@ -69,44 +81,99 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
     #@+node:vitalije.20180716141123.1: *3* drawing
     #@+node:vitalije.20180711214706.2: *4* draw_tree
     def draw_tree(self, painter, ltm):
+        if not self._stylesheet:self.update_style()
+        c = self.c
+        #@+others
+        #@+node:vitalije.20180802184705.1: *5* 1. prepare geom values, font & colors
         HR = self.HR
         self.top_index =  self.vbar.value()
         X0 = self.hbar.value()
         LW = 2 * HR
+        LW2 = HR
         W = self.width()
+        colors = self.colors
         count = self.row_count(HR)
-        pen_1 = painter.pen()
-        pen_2 = QtGui.QColor('#000000')
-        f = painter.font()
-        f.setPixelSize(HR-4)
-        painter.setFont(f)
         fm = painter.fontMetrics()
+        MW = 100
+        oldbg = colors.bg if self.hasFocus() else colors.bgia
+        painter.fillRect(0, 0, W, self.height(), oldbg)
+        painter.setPen(colors.fg if self.hasFocus() else colors.fgia)
+        pen_1 = painter.pen()
+        oldfont = painter.font()
+        #@+node:vitalije.20180802184740.1: *5* 2. reset vpositions
         vpositions = self.vpositions
         del vpositions[:]
-        MW = 100
-        sel_is_drawn = False
+        #@+node:vitalije.20180802184844.1: *5* 3. helper functions
+        gcicon = c.frame.tree.getCompositeIconFromList
+        giclist = c.editCommands.getIconListV
+        def drawpxmp(pxm, x, y):
+            painter.drawPixmap(x, y + (HR - pxm.height())//2, pxm)
 
+        declnode = self.declutter_node
+        #@+node:vitalije.20180802184929.1: *6* get_pxm
+        def get_pxm(gnx, vicons, iconVal):
+            v = c.get_node(gnx)
+            usr_icons = giclist(v)
+            return gcicon(usr_icons + vicons, iconVal).pixmap(W, HR-8, 0, 1)
+        #@+node:vitalije.20180802184923.1: *5* 4. prepare icons
+        vicon = self.icons[0].pixmap(LW, HR, 0, 1)
+        l_icon_1 = self.icons[1].pixmap(LW, HR, 0, 1)
+        l_icon_2 = self.icons[2].pixmap(LW, HR, 0, 1)
+        #@+node:vitalije.20180802185019.1: *5* 5. loop for each row
+        vlines = [True]
         for j, dd in enumerate(ltm.display_items(self.top_index, count+1)):
-            p, gnx, h, lev, pm, iconVal, sel = dd
-            x = lev * LW - 20 - X0
+            p, gnx, h, lev, pm, iconVal, sel, has_siblings = dd
+            x = lev * LW2 - 20 - X0
             y = j * HR + 2
             vpositions.append((p, gnx, x))
-            MW = max(MW, fm.boundingRect(h).width() + x + 24 + LW)
+            #@+others
+            #@+node:vitalije.20180802185301.1: *6* 5.1 draw vlines
+            while lev >= len(vlines):
+                vlines.append(True)
+            vlines[lev] = has_siblings
+            for i, vl in zip(range(lev), vlines):
+                if vl:
+                    painter.drawPixmap(i * LW2 - 20 - X0, y, vicon)
+            #@+node:vitalije.20180802185318.1: *6* 5.2 draw sibling line
+            if has_siblings:
+                l_icon = l_icon_1
+            else:
+                l_icon = l_icon_2
+            painter.drawPixmap(x, y, l_icon)
+            #@+node:vitalije.20180802185501.1: *6* 5.3 draw node icon
+            h, bg, fg, font, vicons = declnode(h, painter)
+            n_pixmap = get_pxm(gnx, vicons, iconVal)
+            if font != oldfont:
+                painter.setFont(font)
+                TW = painter.fontMetrics().boundingRect(h).width()
+            TW = fm.boundingRect(h).width()
+            MW = max(MW, TW + x + 24 + n_pixmap.width())
+            painter.drawPixmap(x + 20, y + 4, n_pixmap)
+            #@+node:vitalije.20180802185546.1: *6* 5.4 draw open/close icon
+            if pm != 'none':
+                pmicon = self.icons[3] if pm == 'plus' else self.icons[4]
+                pmicon = pmicon.pixmap(HR, HR, 0, 1)
+                painter.drawPixmap(x, y + (HR - pmicon.height())//2, pmicon)
+            #@-others
             if sel:
-                sel_is_drawn = j < count
-                painter.fillRect(0, y, W, HR + 2, QtGui.QColor('#77cccc'))
-                painter.setPen(pen_2)
-                painter.drawText(x + 24 + LW, y + HR - 4, h)
+                painter.fillRect(0, y, W, HR + 2, colors.bgsel)
+                painter.setPen(colors.fgsel)
+                painter.drawText(x + 24 + n_pixmap.width(), y + HR - 4, h)
                 painter.setPen(pen_1)
             else:
-                painter.drawText(x + 24 + LW, y + HR - 4, h)
-            if pm != 'none':
-                pmicon = self.plusic if pm == 'plus' else self.minusic
-                painter.drawPixmap(x, y + HR//2 - pmicon.height()//2, pmicon)
-            painter.drawPixmap(x + 20, y, LW, HR, self.icons[iconVal])
+                if bg != painter.background().color():
+                    painter.fillRect(0, y, W, HR + 2, bg)
+                if fg != pen_1.color():
+                    painter.setPen(fg)
+                painter.drawText(x + 24 + n_pixmap.width(), y + HR - 4, h)
+                painter.setPen(pen_1)
+            if font != oldfont:
+                painter.setFont(oldfont)
+        #@+node:vitalije.20180802185048.1: *5* 6. update sizes
         self.MAX_W = MW + X0
         self.upd_width()
         self.upd_height()
+        #@-others
         #self.auto_vscroll(sel_is_drawn)
     #@+node:vitalije.20180717202124.1: *4* auto_vscroll
     def auto_vscroll(self, cancel):
@@ -195,19 +262,20 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
 
         HR = self.HR
         LW = 2 * HR
+        LW2 = HR
         row = (y - 2)//HR
         self._ew.setVisible(ev.type() == 4)
         if row < len(self.vpositions):
             p, gnx, x0 = self.vpositions[row]
         else:
             return
-        if abs(x - x0) < HR / 2:
+        if x0 <= x <= x0 + HR:
             self.click_in_pm_icon(p)
-        elif abs(x - x0 - 20 - LW/2) < LW / 2:
+        elif abs(x - x0 - 20 - LW2/2) < LW2/2:
             self.click_in_icon(p)
             if ev.type() == 4:
                 self.editLabel(self.c.p, True)
-        elif x >= x0 + 24 + LW:
+        elif x >= x0 + 24 + LW2:
             self.click_in_head(p, gnx)
             if ev.type() == 4:
                 self.editLabel(self.c.p, True)
@@ -230,7 +298,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
             row = self.vpos_index(p)
             if row:
                 i, gnx, x = row
-                w.move(x, i * self.HR)
+                w.move(x + 3*self.HR, i * self.HR)
                 w.resize(self.width() - x, w.height())
                 w.show()
                 w.setFocus()
@@ -261,6 +329,217 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
 
     def click_in_head(self, p, gnx):
         self.select_position(p)
+    #@+node:vitalije.20180801154554.1: *3* update_style
+    def update_style(self):
+        c = self.c
+        w = c.styleSheetManager.get_master_widget()
+        sheet = w.styleSheet()
+        if self._stylesheet == sheet:return
+        self._stylesheet = sheet
+        #@+others
+        #@+node:vitalije.20180801140901.1: *4* drop_comments
+        def drop_comments(sheet):
+            while sheet:
+                x, y, z = sheet.partition('/*')
+                if x:
+                    yield x
+                if y:
+                    x, y, z = z.partition('*/')
+                    if y:
+                        sheet = z
+                else:
+                    sheet = ''
+        #@+node:vitalije.20180801141839.1: *4* block_iter
+        def block_iter(sheet):
+            while sheet:
+                x, y, z = sheet.partition('{')
+                if y:
+                    k = x.strip()
+                    x, y, z = z.partition('}')
+                    if y:
+                        yield k, x.strip()
+                    sheet = z
+                else:
+                    break
+        #@+node:vitalije.20180801144333.1: *4* parse_color
+        def parse_color(s):
+            col = QtGui.QColor(s)
+            if s.startswith('rgb'):
+                row = in_parens(s).split(',')
+                try:
+                    row = tuple(map(int, row))
+                    col.setRgb(*row)
+                except ValueError:
+                    pass
+            return col
+        #@+node:vitalije.20180801145335.1: *4* in_parens
+        def in_parens(s):
+            x, y, z = s.partition('(')
+            if y:
+                x, y, z = z.partition(')')
+                if y:
+                    return x.strip()
+            return ''
+        #@+node:vitalije.20180801154922.1: *4* block_props
+        def block_props(block):
+            for prop in block.split(';'):
+                name, sep, value = prop.strip().partition(':')
+                if sep:
+                    if name in ('color', 'background', 'background-color'):
+                        col = parse_color(value.strip())
+                        yield name, col
+                    elif 'image' in name:
+                        imurl = in_parens(value)
+                        yield name, imurl
+                    else:
+                        yield name, value.rstrip()
+
+        #@+node:vitalije.20180802190334.1: *4* update_icon_names
+        def update_icon_names(k, name, value, icon_names=None):
+            if icon_names is None:
+                icon_names = [g.os_path_finalize_join(g.app.loadDir, 'themes', x) for x in [
+                    'dark/stylesheet-vline2.svg',
+                    'dark/stylesheet-branch-more2.svg',
+                    'dark/stylesheet-branch-end2.svg',
+                    'dark/branch_closed2.svg',
+                    'dark/branch_open2.svg',]
+                ]
+            if 'image' in name and value:
+                if (':has-siblings' in k
+                    and ':!adjoins-item' in k
+                    and ':has-children' not in k):
+                    icon_names[0] = value
+                if (':adjoins-item' in k and 
+                    ':has-siblings' in k):
+                    icon_names[1] = value
+                if (':adjoins-item' in k and
+                    ':!has-siblings' in k):
+                    icon_names[2] = value
+                if (':closed' in k):
+                    icon_names[3] = value
+                if (':open' in k):
+                    icon_names[4] = value
+            return icon_names
+        #@+node:vitalije.20180802190526.1: *4* update_colors
+        def update_colors(k, name, value, colors):
+            if (':item' in k and ':selected' in k):
+                if name == 'background-color':
+                    colors.bgsel = value
+                elif name == 'color':
+                    colors.fgsel = value
+            elif k.strip() == 'QTreeView':
+                if name.strip() == 'color':
+                    colors.fg = value
+                elif 'background' in name:
+                    colors.bg = value
+            elif '#treeWidget' in k:
+                if 'background' in name:
+                    colors.bgia = value
+                elif name == 'color':
+                    colors.fgia = value
+        #@-others
+        sheet = ''.join(drop_comments(sheet))
+        colors = self.colors
+        icon_names = None
+
+        for k, bl in block_iter(sheet):
+            if k.startswith('QTreeView'):
+                for name, value in block_props(bl):
+                    icon_names = update_icon_names(k, name, value, icon_names)
+                    update_colors(k, name, value, colors)
+            elif '#treeWidget' in k:
+                for name, value in block_props(bl):
+                    update_colors(k, name, value, colors)
+        self.icons[:] = [g.app.gui.getIconImage(x) for x in icon_names]
+
+        tree = c.frame.tree.treeWidget
+        font = tree.font()
+        fm = QtGui.QFontMetrics(font)
+        self.HR = fm.height()
+        self.setFont(font)
+        pal = tree.palette()
+        #colors.fg = pal.color(pal.Active, pal.WindowText)
+        #colors.bg = pal.color(pal.Active, pal.Window)
+        #colors.fgia = pal.color(pal.Inactive, pal.WindowText)
+        #colors.bgia = pal.color(pal.Disabled, pal.Window)
+        self.setPalette(pal)
+
+    reloadSettings = update_style
+    #@+node:vitalije.20180802215723.1: *3* declutter...
+    def declutter_node(self, text, painter):
+        c = self.c
+        decluttered = self._decluttered
+        com = c.editCommands
+        k = text
+        if k in decluttered:
+            return decluttered[k]
+
+        font = painter.font()
+        bg = painter.background().color()
+        fg = painter.pen().color()
+        #@+others
+        #@+node:vitalije.20180802215852.1: *4* declutter_replace
+        def declutter_replace(arg, cmd, m, pattern, text):
+            '''
+            Execute cmd and return True if cmd is any replace command.
+            '''
+            if cmd == 'REPLACE':
+                return True, pattern.sub(arg, text)
+            elif cmd == 'REPLACE-HEAD':
+                s = text[:m.start()]
+                return True, s.rstrip()
+            elif cmd == 'REPLACE-TAIL':
+                s = text[m.end():]
+                return True, s.lstrip()
+            elif cmd == 'REPLACE-REST':
+                s = text[:m.start] + text[m.end():]
+                return True, s.strip()
+            else:
+                return False, text
+
+        #@+node:vitalije.20180802220242.1: *4* declutter_style
+        def declutter_style(arg, cmd, new_icons):
+            '''Handle style options.'''
+            arg = c.styleSheetManager.expand_css_constants(arg).split()[0]
+            if cmd == 'ICON':
+                com.appendImageDictToList(
+                        new_icons, arg, 2, on='vnode', visualIcon='1'
+                )
+            elif cmd == 'BG':
+                col = QtGui.QColor(arg)
+                bg.setRgb(col.red(), col.green(), col.blue(), col.alpha())
+            elif cmd == 'FG':
+                col = QtGui.QColor(arg)
+                fg.setRgb(col.red(), col.green(), col.blue(), col.alpha())
+            elif cmd == 'FONT':
+                return QtGui.QFont(arg)
+            elif cmd == 'ITALIC':
+                font.setItalic(bool(int(arg)))
+                painter.setFont(font)
+            elif cmd == 'WEIGHT':
+                arg = getattr(QtGui.QFont, arg, 75)
+                font.setWeight(arg)
+                painter.setFont(font)
+            elif cmd == 'PX':
+                font.setPixelSize(int(arg))
+                painter.setFont(font)
+            elif cmd == 'PT':
+                font.setPointSize(int(arg))
+                painter.setFont(font)
+            return font
+        #@-others
+        vicons = []
+        for pattern, cmds in self.declutter_patterns:
+            for func in (pattern.match, pattern.search):
+                m = func(text)
+                if m:
+                    for cmd, arg in cmds:
+                        done, text = declutter_replace(arg, cmd, m, pattern, text)
+                        if not done:
+                            font = declutter_style(arg, cmd, vicons)
+                    break # Don't try pattern.search if pattern.match succeeds.
+        decluttered[k] = text, bg, fg, font, vicons
+        return text, bg, fg, font, vicons
     #@-others
     @property
     def ltm(self):
@@ -268,6 +547,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
 
     def noop(self, *args, **kw):
         self.update()
+        
 #@+node:ekr.20110605121601.18137: ** class  DynamicWindow (QtWidgets.QMainWindow)
 class DynamicWindow(QtWidgets.QMainWindow):
     '''
@@ -613,6 +893,10 @@ class DynamicWindow(QtWidgets.QMainWindow):
     def show_new_tree(self):
         sl = self.findChildren(QtWidgets.QStackedLayout, 'treeStackLayout')[0]
         sl.setCurrentIndex(1)
+
+    def show_old_tree(self):
+        sl = self.findChildren(QtWidgets.QStackedLayout, 'treeStackLayout')[0]
+        sl.setCurrentIndex(0)
     #@+node:ekr.20110605121601.18150: *5* dw.createStatusBar
     def createStatusBar(self, parent):
         '''Create the widgets and ivars for Leo's status area.'''

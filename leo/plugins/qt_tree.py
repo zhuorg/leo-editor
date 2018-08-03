@@ -871,6 +871,9 @@ class LeoQtTree(leoFrame.LeoTree):
     def getCompositeIconImage(self, p, val):
         '''Get the icon at position p.'''
         userIcons = self.c.editCommands.getIconList(p)
+        return self.getCompositeIconFromList(userIcons, val)
+
+    def getCompositeIconFromList(self, userIcons, val):
         # Don't take this shortcut - not theme aware, see getImageImage()
         # which is called below - TNB 20130313
             # if not userIcons:

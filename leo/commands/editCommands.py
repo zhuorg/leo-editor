@@ -832,9 +832,13 @@ class EditCommandsClass(BaseEditCommandsClass):
     #@+node:ekr.20150514063305.233: *5* ec.getIconList
     def getIconList(self, p):
         """Return list of icons for position p, call setIconList to apply changes"""
+        return self.getIconListV(p.v)
+
+    def getIconListV(self, v):
+        """Return list of icons for node v, call setIconList to apply changes"""
         fromVnode = []
-        if hasattr(p.v, 'unknownAttributes'):
-            fromVnode = [dict(i) for i in p.v.u.get('icons', [])]
+        if hasattr(v, 'unknownAttributes'):
+            fromVnode = [dict(i) for i in v.u.get('icons', [])]
             for i in fromVnode: i['on'] = 'VNode'
         return fromVnode
     #@+node:ekr.20150514063305.234: *5* ec.setIconList & helpers
@@ -848,6 +852,14 @@ class EditCommandsClass(BaseEditCommandsClass):
             # no difference between original and current list of dictionaries
             return
         self._setIconListHelper(p, l, p.v, setDirty)
+
+    def setIconListSimple(self, v, l):
+        current = self.getIconListV(v)
+        if not l and not current: return
+        lHash = ''.join(self.dHash(i) for i in l)
+        cHash = ''.join(self.dHash(i) for i in current)
+        if lHash == cHash: return
+        u['icons'] = list(l)
     #@+node:ekr.20150514063305.235: *6* ec._setIconListHelper
     def _setIconListHelper(self, p, subl, uaLoc, setDirty):
         """icon setting code common between v and t nodes

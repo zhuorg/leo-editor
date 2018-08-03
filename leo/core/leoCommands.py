@@ -4193,6 +4193,31 @@ class Commands(object):
     def ltm_newgnx(self):
         v = leoNodes.VNode(self)
         return v.fileIndex
+
+    def ltm_declutter_patterns(self):
+        c = self
+        declutter_patterns = []
+        warned = False
+        lines = c.config.getData("tree-declutter-patterns")
+        for line in lines:
+            try:
+                cmd, arg = line.split(None, 1)
+            except ValueError:
+                # Allow empty arg, and guard against user errors.
+                cmd = line.strip()
+                arg = ''
+            if cmd.startswith('#'):
+                pass
+            elif cmd == 'RULE':
+                declutter_patterns.append((re.compile(arg), []))
+            else:
+                if declutter_patterns:
+                    declutter_patterns[-1][1].append((cmd, arg))
+                elif not warned:
+                    warned = True
+                    g.log('Declutter patterns must start with RULE*',
+                        color='error')
+        return declutter_patterns
     #@-others
 #@-others
 #@@language python
