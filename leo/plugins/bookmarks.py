@@ -1215,6 +1215,8 @@ class BookMarkDisplay(object):
         c = bm.v.context
         # check if deleting an auto bookmark, requires special handling
         if self.current_is_auto() or self.current_is_auto(bm.v):
+            # delete entries for nodes which have been deleted
+            self.auto_rank = [i for i in self.auto_rank if c.vnode2position(i[1])]
             rank = [c.vnode2position(i[1]).get_UNL() for i in self.auto_rank]
             try:
                 rank = rank.index(bm.v.b)
@@ -1222,7 +1224,7 @@ class BookMarkDisplay(object):
                 key = self.auto_rank[rank][1]
                 self.auto_dict[key] = 0
                 self.auto_rank = [i for i in self.auto_rank if i[1] != key]
-                self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
+                self.auto_index = {i[1]: n for n, i in enumerate(self.auto_rank)}
                 self.auto_update()
             except ValueError:
                 print("Unexpected failure to find bookmark")
@@ -1234,8 +1236,10 @@ class BookMarkDisplay(object):
             return
 
         u = c.undoer
-        if p.hasVisBack(c): newNode = p.visBack(c)
-        else: newNode = p.next()
+        if p.hasVisBack(c):
+            newNode = p.visBack(c)
+        else:
+            newNode = p.next()
         dirtyVnodeList = p.setAllAncestorAtFileNodesDirty()
 
         undoData = u.beforeDeleteNode(p)
@@ -1243,13 +1247,13 @@ class BookMarkDisplay(object):
             self.current = p.v.parents[0]
         p.doDelete(newNode)  # p is deleted, newNode is where to go afterwards
         c.setChanged(True)
-        u.afterDeleteNode(newNode, "Bookmark deletion", undoData,
-            dirtyVnodeList=dirtyVnodeList)
+        u.afterDeleteNode(
+            newNode, "Bookmark deletion", undoData, dirtyVnodeList=dirtyVnodeList
+        )
         c.redraw()
         self.c.bodyWantsFocusNow()
 
         self.show_list(self.get_list())
-
     #@+node:tbrown.20140804215436.30052: *3* promote_bookmark
 
     def promote_bookmark(self, bm):
@@ -1258,6 +1262,8 @@ class BookMarkDisplay(object):
         c = self.c
         # check if deleting an auto bookmark, requires special handling
         if self.current_is_auto() or self.current_is_auto(bm.v):
+            # delete entries for nodes which have been deleted
+            self.auto_rank = [i for i in self.auto_rank if c.vnode2position(i[1])]
             rank = [c.vnode2position(i[1]).get_UNL() for i in self.auto_rank]
             try:
                 rank = rank.index(bm.v.b)
