@@ -86,6 +86,8 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         #@+others
         #@+node:vitalije.20180802184705.1: *5* 1. prepare geom values, font & colors
         HR = self.HR
+        HIC = c.config.getInt('icon-height')
+
         self.top_index =  self.vbar.value()
         X0 = self.hbar.value()
         LW = 2 * HR
@@ -114,11 +116,11 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         def get_pxm(gnx, vicons, iconVal):
             v = c.get_node(gnx)
             usr_icons = giclist(v)
-            return gcicon(usr_icons + vicons, iconVal).pixmap(W, HR-8, 0, 1)
+            return gcicon(usr_icons + vicons, iconVal).pixmap(W, HIC, 0, 1)
         #@+node:vitalije.20180802184923.1: *5* 4. prepare icons
-        vicon = self.icons[0].pixmap(LW, HR, 0, 1)
-        l_icon_1 = self.icons[1].pixmap(LW, HR, 0, 1)
-        l_icon_2 = self.icons[2].pixmap(LW, HR, 0, 1)
+        vicon = self.icons[0].pixmap(LW, HIC, 0, 1)
+        l_icon_1 = self.icons[1].pixmap(LW, HIC, 0, 1)
+        l_icon_2 = self.icons[2].pixmap(LW, HIC, 0, 1)
         #@+node:vitalije.20180802185019.1: *5* 5. loop for each row
         vlines = [True]
         for j, dd in enumerate(ltm.display_items(self.top_index, count+1)):
@@ -153,7 +155,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
                 TW = painter.fontMetrics().boundingRect(h).width()
             TW = fm.boundingRect(h).width()
             MW = max(MW, TW + x + 24 + n_pixmap.width())
-            painter.drawPixmap(x + 20, y + 4, n_pixmap)
+            painter.drawPixmap(x + 20, y + (HR - n_pixmap.height())//2, n_pixmap)
             #@+node:vitalije.20180802185546.1: *6* 5.5 draw open/close icon
             if pm != 'none':
                 pmicon = self.icons[3] if pm == 'plus' else self.icons[4]
