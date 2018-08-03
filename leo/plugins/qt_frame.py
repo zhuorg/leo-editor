@@ -123,25 +123,30 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         vlines = [True]
         for j, dd in enumerate(ltm.display_items(self.top_index, count+1)):
             p, gnx, h, lev, pm, iconVal, sel, has_siblings = dd
+            h, bg, fg, font, vicons = declnode(h, painter)
             x = lev * LW2 - 20 - X0
             y = j * HR + 2
             vpositions.append((p, gnx, x))
             #@+others
-            #@+node:vitalije.20180802185301.1: *6* 5.1 draw vlines
+            #@+node:vitalije.20180803204351.1: *6* 5.1 draw bg
+            if sel:
+                painter.fillRect(0, y, W, HR + 2, colors.bgsel)
+            elif bg != painter.background().color():
+                painter.fillRect(0, y, W, HR + 2, bg)
+            #@+node:vitalije.20180802185301.1: *6* 5.2 draw vlines
             while lev >= len(vlines):
                 vlines.append(True)
             vlines[lev] = has_siblings
             for i, vl in zip(range(lev), vlines):
                 if vl:
                     painter.drawPixmap(i * LW2 - 20 - X0, y, vicon)
-            #@+node:vitalije.20180802185318.1: *6* 5.2 draw sibling line
+            #@+node:vitalije.20180802185318.1: *6* 5.3 draw sibling line
             if has_siblings:
                 l_icon = l_icon_1
             else:
                 l_icon = l_icon_2
             painter.drawPixmap(x, y, l_icon)
-            #@+node:vitalije.20180802185501.1: *6* 5.3 draw node icon
-            h, bg, fg, font, vicons = declnode(h, painter)
+            #@+node:vitalije.20180802185501.1: *6* 5.4 draw node icon
             n_pixmap = get_pxm(gnx, vicons, iconVal)
             if font != oldfont:
                 painter.setFont(font)
@@ -149,20 +154,17 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
             TW = fm.boundingRect(h).width()
             MW = max(MW, TW + x + 24 + n_pixmap.width())
             painter.drawPixmap(x + 20, y + 4, n_pixmap)
-            #@+node:vitalije.20180802185546.1: *6* 5.4 draw open/close icon
+            #@+node:vitalije.20180802185546.1: *6* 5.5 draw open/close icon
             if pm != 'none':
                 pmicon = self.icons[3] if pm == 'plus' else self.icons[4]
                 pmicon = pmicon.pixmap(HR, HR, 0, 1)
                 painter.drawPixmap(x, y + (HR - pmicon.height())//2, pmicon)
             #@-others
             if sel:
-                painter.fillRect(0, y, W, HR + 2, colors.bgsel)
                 painter.setPen(colors.fgsel)
                 painter.drawText(x + 24 + n_pixmap.width(), y + HR - 4, h)
                 painter.setPen(pen_1)
             else:
-                if bg != painter.background().color():
-                    painter.fillRect(0, y, W, HR + 2, bg)
                 if fg != pen_1.color():
                     painter.setPen(fg)
                 painter.drawText(x + 24 + n_pixmap.width(), y + HR - 4, h)
@@ -452,7 +454,9 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         tree = c.frame.tree.treeWidget
         font = tree.font()
         fm = QtGui.QFontMetrics(font)
-        self.HR = fm.height()
+        HR = int(1.5 * fm.height())
+        font.setPixelSize(HR)
+        self.HR = HR
         self.setFont(font)
         pal = tree.palette()
         #colors.fg = pal.color(pal.Active, pal.WindowText)
