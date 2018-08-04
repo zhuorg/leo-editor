@@ -55,12 +55,12 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         self._stylesheet = None
         self.icons = []
         self.colors =g.bunch(
-            bgsel=QtGui.QColor('#77cccc'),
+            bgsel=QtGui.QColor('#cccccc'),
             fgsel=QtGui.QColor('#000000'),
-            bg=QtGui.QColor('#000044'),
-            bgia=QtGui.QColor('#000044'),
-            fg=QtGui.QColor('#ffff33'),
-            fgia=QtGui.QColor('#ffff33')
+            bg=QtGui.QColor('#ffffff'),
+            bgia=QtGui.QColor('#dddddd'),
+            fg=QtGui.QColor('#000000'),
+            fgia=QtGui.QColor('#110000')
         )
         self._decluttered = {}
         c.registerReloadSettings(self)
@@ -159,7 +159,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
             #@+node:vitalije.20180802185546.1: *6* 5.5 draw open/close icon
             if pm != 'none':
                 pmicon = self.icons[3] if pm == 'plus' else self.icons[4]
-                pmicon = pmicon.pixmap(HR, HR, 0, 1)
+                pmicon = pmicon.pixmap(HR, HIC, 0, 1)
                 painter.drawPixmap(x, y + (HR - pmicon.height())//2, pmicon)
             #@-others
             if sel:
@@ -268,7 +268,6 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         LW = 2 * HR
         LW2 = HR
         row = (y - 2)//HR
-        self._ew.setVisible(ev.type() == 4)
         if row < len(self.vpositions):
             p, gnx, x0 = self.vpositions[row]
         else:
@@ -283,13 +282,12 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
             self.click_in_head(p, gnx)
             if ev.type() == 4:
                 self.editLabel(self.c.p, True)
-                
 
     #@+node:vitalije.20180725171227.1: *4* editLabel
     def editLabel(self, p, selectAll=False, selection=None):
         w = self.edit_widget(p)
         if w:
-            self._ew.setText(p.h)
+            w.setText(p.h)
             self._ew_revert_h = p.h
 
             if selectAll:
@@ -306,6 +304,8 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
                 w.resize(self.width() - x, w.height())
                 w.show()
                 w.setFocus()
+        else:
+            self._ew.hide()
     #@+node:vitalije.20180725165138.1: *5* edit_widget
     def edit_widget(self, p):
         if p:
@@ -456,8 +456,7 @@ class NewLeoTree(QtWidgets.QFrame, leoFrame.NewTreeOps):
         tree = c.frame.tree.treeWidget
         font = tree.font()
         fm = QtGui.QFontMetrics(font)
-        HR = int(1.5 * fm.height())
-        font.setPixelSize(HR)
+        HR = max(fm.height(), c.config.getInt('icon-height'))
         self.HR = HR
         self.setFont(font)
         pal = tree.palette()

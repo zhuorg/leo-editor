@@ -1996,7 +1996,6 @@ class FileCommands(object):
             d = root.v.u
             if d: str_pos = d.get('str_leo_pos')
         if str_pos is not None:
-            print('current pos:[%r]'%str_pos)
             current = self.archivedPositionToPosition(str_pos)
         c.setCurrentPosition(current or c.rootPosition())
     #@-others
