@@ -3202,7 +3202,7 @@ class KeyHandlerClass(object):
             return False
         #
         # Ignore any keys in the background tree widget.
-        if c.widget_name(w).startswith('canvas'):
+        if c.widget_name(w).startswith(('canvas','newtree')):
             return False
         #
         # Ignore the char if it is bound to the auto-complete command.
