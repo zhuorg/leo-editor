@@ -2156,7 +2156,7 @@ class NewTreeOps(object):
             p.h = txt
     #@+node:vitalije.20180725200843.1: *4* commit_headline
     def commit_headline(self, txt=None):
-        if not g.app.gui:
+        if not g.app.gui or self._ew_revert_h is None:
             # unfortunately Leo calls c.selectPosition even before creates gui
             # that is IMO major design flaw but for now let it be that way
             # 2018-07-26 Vitalije
