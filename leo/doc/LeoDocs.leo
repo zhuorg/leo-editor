@@ -2137,6 +2137,8 @@
 <v t="ekr.20180702154446.1"><vh>#922: text following @others is ignored</vh></v>
 <v t="ekr.20180708035251.1"><vh>#933: Leo clears the user's clipboard on first time startup</vh></v>
 <v t="ekr.20180704130141.1"><vh>#938: New code breakes tree abbreviations </vh></v>
+<v t="ekr.20180806040310.1"><vh>#943: reload-all-settings</vh></v>
+<v t="ekr.20180806043625.1"><vh>#947: replace-all</vh></v>
 <v t="ekr.20180708030832.1"><vh>Fixed problems with git-diff command</vh></v>
 <v t="ekr.20180708081949.1"><vh>Fixed crasher in LeoQtLog.linkClicked</vh></v>
 </v>
@@ -2147,8 +2149,10 @@
 <v t="ekr.20180528114740.1"><vh>Features</vh>
 <v t="ekr.20180528114754.1"><vh>#871: A setting to position the icon bar </vh></v>
 <v t="ekr.20180626054937.1"><vh>#913: Show base classes in python importer</vh></v>
-<v t="ekr.20180608055318.1"><vh>Added print-stats command &amp; improved tracing</vh></v>
+<v t="ekr.20180806054424.1"><vh>#949: Smart quotes</vh></v>
 <v t="ekr.20180708120421.1"><vh>Added dump-clone-parents command</vh></v>
+<v t="ekr.20180608055318.1"><vh>Added print-stats command &amp; improved tracing</vh></v>
+<v t="ekr.20180806085322.1"><vh>Added .sty and .latex entries in extension_dict</vh></v>
 </v>
 </v>
 </vnodes>
@@ -28322,6 +28326,25 @@ Changes:
     url = link.url()
 AttributeError: 'QUrl' object has no attribute 'url'</t>
 <t tx="ekr.20180708120421.1">This is for debugging only.</t>
+<t tx="ekr.20180806040310.1">https://github.com/leo-editor/leo-editor/issues/943
+
+The fix was to getVnodeFromClipboard
+
+</t>
+<t tx="ekr.20180806043625.1">The fix was to set @&lt;file&gt; nodes dirty by brute force in find.changeAllCommand.
+
+https://github.com/leo-editor/leo-editor/issues/947
+
+See also:
+    
+https://github.com/leo-editor/leo-editor/issues/722
+https://github.com/leo-editor/leo-editor/issues/880
+</t>
+<t tx="ekr.20180806054424.1">https://github.com/leo-editor/leo-editor/issues/949
+
+The present code converts a straight quote (single or double) to an opening curly quote if the cursor is at the start of a line or if a blank or tab precedes the cursor.  Otherwise, the code converts a straight quote (single or double) to a closing curly quote.
+</t>
+<t tx="ekr.20180806085322.1"></t>
 <t tx="peckj.20130813123907.6841" str_ctime="1376412039.0" str_mtime="1376412039.0" str_atime="1376414164.0">Documenting new plugins is important for users to be able understand and use the features they add. To that effect, there are a few documentation steps that should not be overlooked.
 
 - Document the plugin thoroughly in the plugin's docstring. This allows the documentation to be accessed from the Plugins menu.
