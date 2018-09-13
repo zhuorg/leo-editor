@@ -2146,7 +2146,6 @@ class LeoQtFrame(leoFrame.LeoFrame):
                 bg == c.config.getColor('find-not-found-bg')
             ):
                 status = 'fail'
-
             d = self.styleSheetCache
             if status != d.get(w, '__undefined__'):
                 d[w] = status
@@ -2154,6 +2153,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
                 c.styleSheetManager.mng.add_sclass(w, status)
                 c.styleSheetManager.mng.update_view(w)  # force appearance update
             w.setText(s)
+
         #@+node:chris.20180320072817.1: *4* QtStatusLineClass.update & helper
         def update(self):
             if g.app.killed: return
@@ -2750,7 +2750,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
                     f.hideOutlinePane()
                     c.bodyWantsFocus()
                     break
-    #@+node:ekr.20110605121601.18299: *5* qtFrame.expand/contract/hide...Pane (changed)
+    #@+node:ekr.20110605121601.18299: *5* qtFrame.expand/contract/hide...Pane
     @cmd('contract-body-pane')
     @cmd('expand-outline-pane')
     def contractBodyPane(self, event=None):
@@ -4299,6 +4299,8 @@ class LeoQtTreeTab(object):
         tt, c, cc = self, self.c, self.cc
         tabName = g.u(tabName)
         exists = tabName in self.tabNames
+        c.treeWantsFocusNow()
+            # Fix #969. Somehow this is important.
         if not exists:
             tt.createTab(tabName) # Calls tt.setNames()
         if tt.lockout:
@@ -4553,6 +4555,7 @@ class TabbedFrameFactory(object):
                     c.close()
 
         def tab_cycle(offset):
+
             tabw = self.masterFrame
             cur = tabw.currentIndex()
             count = tabw.count()
@@ -4631,14 +4634,19 @@ class TabbedFrameFactory(object):
         tabw = self.masterFrame
         w = tabw.widget(idx)
         f = self.leoFrames.get(w)
-        if f:
-            tabw.setWindowTitle(f.title)
-            if hasattr(g.app.gui, 'findDialogSelectCommander'):
-                g.app.gui.findDialogSelectCommander(f.c)
-            # g.app.selectLeoWindow(f.c)
-                # would break --minimize
-            # Fix bug 690260: correct the log.
-            g.app.log = f.log
+        if not f:
+            return
+        tabw.setWindowTitle(f.title)
+        if hasattr(g.app.gui, 'findDialogSelectCommander'):
+            g.app.gui.findDialogSelectCommander(f.c)
+        # g.app.selectLeoWindow(f.c)
+            # would break --minimize
+        # Fix bug 690260: correct the log.
+        g.app.log = f.log
+        # Redraw the tab.
+        c = f.c
+        if c:
+            c.redraw()
     #@-others
 #@-others
 #@@language python

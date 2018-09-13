@@ -1584,7 +1584,7 @@ class LeoFind(object):
         else:
             g.es_print('tag not found: %s' % self.find_text)
         return len(clones)
-    #@+node:ekr.20160920112617.2: *5* find.createCloneTagNodes (changed)
+    #@+node:ekr.20160920112617.2: *5* find.createCloneTagNodes
     def createCloneTagNodes(self, clones):
         '''
         Create a "Found Tag" node as the last node of the outline.
@@ -1673,7 +1673,7 @@ class LeoFind(object):
         else:
             self.restore(data)
         return count
-    #@+node:ekr.20141023110422.1: *6* find.createCloneFindAllNodes (changed)
+    #@+node:ekr.20141023110422.1: *6* find.createCloneFindAllNodes
     def createCloneFindAllNodes(self, clones, flattened):
         '''
         Create a "Found" node as the last node of the outline.
@@ -2526,6 +2526,7 @@ class LeoFind(object):
             w = c.edit_widget(p)
             self.was_in_headline = True # 2015/03/25
         else:
+            # Tricky code.  Do not change without careful thought.
             w = c.frame.body.wrapper
             # *Always* do the full selection logic.
             # This ensures that the body text is inited  and recolored.
@@ -2536,10 +2537,11 @@ class LeoFind(object):
             c.bodyWantsFocusNow()
             w.setSelectionRange(pos, newpos, insert=insert)
             w.see(insert)
-            # Fix bug 78: find-next match not always scrolled into view.
-            # https://github.com/leo-editor/leo-editor/issues/78
-            g.app.allow_delayed_see = True
+                # Fix bug 78: find-next match not always scrolled into view.
+                # https://github.com/leo-editor/leo-editor/issues/78
+            # g.app.allow_delayed_see = True
             c.outerUpdate()
+                # Set the focus immediately.
             if c.vim_mode and c.vimCommands:
                 c.vimCommands.update_selection_after_search()
         # Support for the console gui.

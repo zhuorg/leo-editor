@@ -65,12 +65,24 @@ class FastRead (object):
         if not s:
             with open(path, 'rb') as f:
                 s = f.read()
-        return self.readWithElementTree(s)
+        return self.readWithElementTree(path, s)
     #@+node:ekr.20180602062323.7: *4* fast.readWithElementTree & helpers
-    def readWithElementTree(self, s):
+    def readWithElementTree(self, path, s):
 
         contents = g.toUnicode(s) if g.isPython3 else s
-        xroot = ElementTree.fromstring(contents)
+        try:
+            xroot = ElementTree.fromstring(contents)
+        except Exception as e:
+            if path:
+                message = 'bad .leo file: %s' % g.shortFileName(path)
+            else:
+                message = 'The clipboard is not a vaild .leo file'
+            print('')
+            g.es_print(message, color='red')
+            g.es_print(g.toUnicode(e))
+            print('')
+            # #970: Just report failure here.
+            return None
         g_element = xroot.find('globals')
         v_elements = xroot.find('vnodes')
         t_elements = xroot.find('tnodes')
@@ -180,22 +192,27 @@ class FastRead (object):
     def getGlobalData(self):
         '''Return a dict containing all global data.'''
         c = self.c
-        data = c.db.get('window_position')
-        if data:
-            # pylint: disable=unpacking-non-sequence
-            top, left, height, width = data
-            d = {
+        try:
+            window_pos = c.db.get('window_position')
+            r1 = float(c.db.get('body_outline_ratio', '0.5'))
+            r2 = float(c.db.get('body_secondary_ratio', '0.5'))
+            top, left, height, width = window_pos
+            return {
                 'top': int(top),
                 'left': int(left),
                 'height': int(height),
                 'width': int(width),
+                'r1': r1,
+                'r2': r2,
             }
-        else:
-            # Use reasonable defaults.
-            d = {'top': 50, 'left': 50, 'height': 500, 'width': 800}
-        d ['r1'] = float(c.db.get('body_outline_ratio', '0.5'))
-        d ['r2'] = float(c.db.get('body_secondary_ratio', '0.5'))
-        return d
+        except Exception:
+            pass
+        # Use reasonable defaults.
+        return {
+            'top': 50, 'left': 50,
+            'height': 500, 'width': 800,
+            'r1': 0.5, 'r2': 0.5,
+        }
     #@+node:ekr.20180602062323.8: *5* fast.scanTnodes
     def scanTnodes (self, t_elements):
 
@@ -375,7 +392,6 @@ class FileCommands(object):
         v = hidden_v.children[0]
         v.parents = []
         # Restore the hidden root's children
-        ### assert c.hiddenRootNode not in v.parents, g.objToString(v.parents)
         c.hiddenRootNode.children = old_children
         if not v:
             return g.es("the clipboard is not valid ", color="blue")
@@ -413,7 +429,6 @@ class FileCommands(object):
         hidden_v = FastRead(c, self.gnxDict).readFile(s=s)
         v = hidden_v.children[0]
         # Restore the hidden root's children
-        ### assert c.hiddenRootNode not in v.parents, g.objToString(v.parents)
         c.hiddenRootNode.children = old_children
         if not v:
             return g.es("the clipboard is not valid ", color="blue")
@@ -501,33 +516,18 @@ class FileCommands(object):
                     # Do this before reading external files.
                 c.setFileTimeStamp(fileName)
                 if readAtFileNodesFlag:
-                    # Redraw before reading the @file nodes so the screen isn't blank.
-                    # This is important for big files like LeoPy.leo.
-                    c.redraw()
+                    # c.redraw()
+                        # Does not work.
+                        # Redraw before reading the @file nodes so the screen isn't blank.
+                        # This is important for big files like LeoPy.leo.
                     recoveryNode = fc.readExternalFiles(fileName)
         finally:
             p = recoveryNode or c.p or c.lastTopLevel()
                 # lastTopLevel is a better fallback, imo.
-            # New in Leo 5.3. Delay the second redraw until idle time.
-            # This causes a slight flash, but corrects a hangnail.
-
-            def handler(timer, c=c, p=c.p):
-                c.initialFocusHelper()
-                c.redraw(p)
-                c.k.showStateAndMode()
-                c.outerUpdate()
-                timer.stop()
-
-            timer = g.IdleTime(handler, delay=0, tag='getLeoFile')
-            if timer:
-                timer.start()
-            else:
-                # Defensive code:
-                c.selectPosition(p)
-                c.initialFocusHelper()
-                c.k.showStateAndMode()
-                c.outerUpdate()
-
+            c.selectPosition(p)
+            c.redraw_later()
+                # Delay the second redraw until idle time.
+                # This causes a slight flash, but corrects a hangnail.
             c.checkOutline()
                 # Must be called *after* ni.end_holding.
             c.loading = False
