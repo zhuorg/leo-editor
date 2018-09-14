@@ -400,6 +400,7 @@ def cmd_bookmark(event, child=False, organizer=False, container=None):
     bc = container.context
     bp = bc.vnode2position(container)
     nd = bp.insertAsNthChild(0)
+    nd.v.u['__bookmarks'] = {}
     # pylint: disable=consider-using-ternary
     nd.h = (
         c.frame.body.wrapper.hasSelection() and
@@ -409,9 +410,14 @@ def cmd_bookmark(event, child=False, organizer=False, container=None):
     if not organizer:
         nd.b = new_url
     else:
-        nd.v.u['__bookmarks'] = {
-            'is_dupe': False,
-        }
+        nd.v.u['__bookmarks']['is_dupe'] = False
+    if c.config.getInt('bookmarks-auto'):
+        score = self.auto_rank[0][0]+10 if self.auto_rank else 10
+        nd.v.u['__bookmarks']['auto_score'] = score
+        self.auto_dict[c.p.v] = score
+        # regenerate index
+        self.auto_index = {i[1]:n for n, i in enumerate(self.auto_rank)}
+
     bm.current = nd.v
     if organizer:
         g.es("Showing new (empty) folder:\n'%s'" % nd.h)
