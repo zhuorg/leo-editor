@@ -3043,7 +3043,7 @@ class KeyHandlerClass(object):
         k = self
         # Setup...
         if 'keys' in g.app.debug:
-            g.trace(repr(k.state.kind), repr(event.char), event.stroke)
+            g.trace(repr(k.state.kind), repr(event.char), repr(event.stroke))
         k.checkKeyEvent(event)
         k.setEventWidget(event)
         k.traceVars(event)
@@ -3256,8 +3256,14 @@ class KeyHandlerClass(object):
         # Second, honor general modes.
         #
         if state == 'getArg':
-            k.getArg(event, stroke=stroke)
-            return True
+            # New in Leo 5.8: Only call k.getArg for keys it can handle.
+            if k.isPlainKey(stroke):
+                k.getArg(event, stroke=stroke)
+                return True
+            if stroke.s in ('Escape', 'Tab', 'BackSpace'):
+                k.getArg(event, stroke=stroke)
+                return True
+            return False 
         if state in ('getFileName', 'get-file-name'):
             k.getFileName(event)
             return True
@@ -3494,6 +3500,7 @@ class KeyHandlerClass(object):
             if result == 'ignore':
                 return False # Let getArg handle it.
             if result == 'found':
+                # Do not call k.keyboardQuit here!
                 return True
         #
         # No binding exists.
@@ -3533,7 +3540,11 @@ class KeyHandlerClass(object):
             stroke=stroke)
         # Careful: the command could exit.
         if c.exists and not k.silentMode:
-            c.minibufferWantsFocus()
+            # Use the state *after* executing the command.
+            if k.state.kind:
+                c.minibufferWantsFocus()
+            else:
+                c.bodyWantsFocus()
         return 'found'
     #@+node:ekr.20180418031118.1: *5* k.isSpecialKey
     def isSpecialKey(self, event):
