@@ -464,7 +464,7 @@
 <v t="ekr.20100808060203.4273" descendentVnodeUnknownAttributes="7d710058010000003071017d7102580500000069636f6e7371035d71047d7105285807000000796f666673657471064b005804000000747970657107580400000066696c657108580500000077686572657109580e0000006265666f7265486561646c696e65710a58020000006f6e710b5805000000766e6f6465710c580a00000076697375616c49636f6e710d580100000031710e5807000000786f6666736574710f4b0258040000007870616471104b016808583d000000443a2f53796e6365642f676974687562207265706f732f6c656f2f6c656f2f49636f6e732f66696c655f69636f6e732f66696c655f66696c652e706e677111580700000072656c506174687112581800000066696c655f69636f6e732f66696c655f66696c652e706e677113756173732e"><vh>@file html/index.html</vh></v>
 </v>
 <v t="ekr.20101007100904.4372"><vh>Slideshows</vh>
-<v t="ekr.20101028110015.8271" descendentVnodeUnknownAttributes="7d710028580b000000302e312e312e382e322e3171017d7102580b0000007374725f6c656f5f706f7371035800000000710473580b000000302e312e312e382e342e3171057d7106580b0000007374725f6c656f5f706f737107680473580b000000302e312e312e382e332e3171087d7109580b0000007374725f6c656f5f706f73710a680473580b000000302e312e312e382e352e31710b7d710c580b0000007374725f6c656f5f706f73710d680473580100000030710e7d710f580500000069636f6e7371105d71117d7112285807000000796f666673657471134b005804000000747970657114580400000066696c657115580500000077686572657116580e0000006265666f7265486561646c696e65711758020000006f6e71185805000000766e6f64657119580a00000076697375616c49636f6e711a580100000031711b5807000000786f6666736574711c4b02580400000078706164711d4b016815583d000000443a2f53796e6365642f676974687562207265706f732f6c656f2f6c656f2f49636f6e732f66696c655f69636f6e732f66696c655f66696c652e706e67711e580700000072656c50617468711f581800000066696c655f69636f6e732f66696c655f66696c652e706e677120756173752e"><vh>@file slideshows.txt</vh></v>
+<v t="ekr.20101028110015.8271" descendentVnodeUnknownAttributes="7d71002858010000003071017d7102580500000069636f6e7371035d71047d7105285807000000796f666673657471064b005804000000747970657107580400000066696c657108580500000077686572657109580e0000006265666f7265486561646c696e65710a58020000006f6e710b5805000000766e6f6465710c580a00000076697375616c49636f6e710d580100000031710e5807000000786f6666736574710f4b0258040000007870616471104b016808583d000000443a2f53796e6365642f676974687562207265706f732f6c656f2f6c656f2f49636f6e732f66696c655f69636f6e732f66696c655f66696c652e706e677111580700000072656c506174687112581800000066696c655f69636f6e732f66696c655f66696c652e706e677113756173580b000000302e312e312e382e322e3171147d7115580b0000007374725f6c656f5f706f7371165800000000711773580b000000302e312e312e382e332e3171187d7119580b0000007374725f6c656f5f706f73711a681773580b000000302e312e312e382e342e31711b7d711c580b0000007374725f6c656f5f706f73711d681773580b000000302e312e312e382e352e31711e7d711f580b0000007374725f6c656f5f706f737120681773752e"><vh>@file slideshows.txt</vh></v>
 </v>
 <v t="ekr.20101115152915.4937"><vh>wikipedia entry</vh></v>
 </v>
@@ -542,6 +542,12 @@
 <v t="ekr.20090221070927.1"><vh>@rst html/license.html</vh></v>
 </v>
 <v t="ekr.20131008041326.16092"><vh>Installing &amp; running Leo</vh>
+<v t="matt.20190126111747.1"><vh>{matt's suggested alternate}</vh>
+<v t="matt.20190126103030.1"><vh>Recommended</vh></v>
+<v t="matt.20190126104227.1"><vh>Use existing python</vh></v>
+<v t="matt.20190126104545.1"><vh>Full control</vh></v>
+<v t="matt.20190126104817.1"><vh>Windows desktop</vh></v>
+</v>
 <v t="ekr.20131015104133.16766"><vh>@rst html/getting-started.html</vh></v>
 <v t="ekr.20111127144911.5544"><vh>@rst html/download.html</vh>
 <v t="tbrown.20140412113009.50227"><vh>Snapshots</vh></v>
@@ -29807,6 +29813,102 @@ Time passes, upgrade desired::
 dramatically speed up download time as it only grabs the latest
 development branch and skips all but the last couple weeks or months of
 history.</t>
+<t tx="matt.20190126103030.1">###########
+Recommended
+###########
+
+Recommended install recipe for any computer running Windows, Linux, or MacOS. This is the most reliable cross platform method.
+
+- Install Miniconda
+- Install Python, PyQt, Git
+- Install Leo
+
+Example terminal session, Miniconda already installed::
+
+    conda create -n leo
+    conda activate leo
+    conda install pyqt5, git
+        # also installs python, pip
+    cd path/to/local/apps
+    git clone --depth=500 https://github.com/leo-editor/leo-editor.git
+    cd leo-editor
+    git checkout devel
+    pip install --editable ./
+
+-----------
+Running Leo
+-----------
+::
+    leo          # Use graphical ui
+    leo-console  # Use console ui
+    leo-messages # Windows: use graphical ui and show log messages in command prompt
+
+Note: can be shortened to ``leo-c`` and ``leo-m``.
+
+------------
+Post install
+------------
+
+Optional steps, up to the user to figure out for their system.
+
+- Create menu and desktop shortcuts
+- File associations
+</t>
+<t tx="matt.20190126104227.1">========================
+Use your existing python
+========================
+
+Python 3
+--------
+Pip will manage installing pyqt and all other dependencies.
+
+::
+    pip install leo
+
+
+Python 2
+--------
+You install pyqt, pip manages the other dependencies.
+
+Install pyqt `link`
+
+Install pip (if needed) `link`
+::
+    pip install leo
+</t>
+<t tx="matt.20190126104545.1">============
+Full control
+============
+Steps for a roll your own install full control.
+
+- Install python `link`
+- Install pyqt `link`
+- Install other dependencies `link`
+
+Download Leo sources `link`
+
+Running Leo::
+
+    python launchLeo.py
+    python launchLeo-console.py
+</t>
+<t tx="matt.20190126104817.1">================================
+Windows with desktop integration
+================================
+
+The Windows installer `link` includes all dependencies, integrates with Start Menu and Desktop, associates .leo files with icon and double-click to open, and can be uninstalled from the system Control Panel.
+
+The Windows installer is only updated for major releases.</t>
+<t tx="matt.20190126111747.1">I (matt) think this is a cleaner, simpler wording for "How to install and run Leo". As always am open to suggestions and alternatives.
+
+It would replace everything in this tree (Installing &amp; running Leo).
+
+To do: incorporate:
+
+- desktop integration examples
+- dependency list
+- download locations
+</t>
 <t tx="peckj.20130813123907.6841" str_ctime="1376412039.0" str_atime="1376414164.0" str_mtime="1376412039.0">Documenting new plugins is important for users to be able understand and use the features they add. To that effect, there are a few documentation steps that should not be overlooked.
 
 - Document the plugin thoroughly in the plugin's docstring. This allows the documentation to be accessed from the Plugins menu.
