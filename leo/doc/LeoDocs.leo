@@ -547,6 +547,7 @@
 <v t="matt.20190126104227.1"><vh>Use existing python</vh></v>
 <v t="matt.20190126104545.1"><vh>Full control</vh></v>
 <v t="matt.20190126104817.1"><vh>Windows desktop</vh></v>
+<v t="matt.20190205221108.1"><vh>PyPi vs GitHub</vh></v>
 </v>
 <v t="ekr.20131015104133.16766"><vh>@rst html/getting-started.html</vh></v>
 <v t="ekr.20111127144911.5544"><vh>@rst html/download.html</vh>
@@ -29908,6 +29909,37 @@ To do: incorporate:
 - desktop integration examples
 - dependency list
 - download locations
+- differences between pypi and github installs</t>
+<t tx="matt.20190205221108.1">=================================
+Pypi vs Github _editable_ install
+=================================
+
+Developers should install from source (Github) in editable mode. Users can install from either Pypi or Github.
+
+**(A) PyPi**
+
+`pip install leo`  grabs install package from Pypi.org
+
+`pip install https://github.com/leo-editor/leo-editor/archive/devel.zip` grabs from Github.com
+
+These two methods are grouped together because they are functionally identical. The only difference is newness or stable vs leading edge.
+
+
+**(B) Github Editable**
+
+- download source code package (with or without git, doesn't matter)
+- unpack somewhere
+- run `pip install --editable path/to/leo-editor`
+
+See _FAQ: How to  Pip install from GitHub?_ for an extended example.
+
+
+Differences
+-----------
+When using _(A) PyPi_ method anything in the root folder of the leo-editor code repository is not installed. _None_ of these files are needed for running Leo.
+
+
+Also left out are contents of `./leo/test` and `./leo/doc/html`. Test because it's only relevant to developers and Doc html because the contents are all derived files. Leaving them out makes the download package smaller and install speedier. Doc html can be regnerated with appropriate plugins enabled and configured. For most it will be simpler to use www.leoeditor.com though.
 </t>
 <t tx="peckj.20130813123907.6841" str_ctime="1376412039.0" str_atime="1376414164.0" str_mtime="1376412039.0">Documenting new plugins is important for users to be able understand and use the features they add. To that effect, there are a few documentation steps that should not be overlooked.
 
