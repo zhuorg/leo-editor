@@ -3,6 +3,9 @@ Leo 5.8.1 beta 1, http://leoeditor.com, is now available on
 
 Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
 
+![][0]
+
+
 **The highlights of Leo 5.8.1**
 
 - LeoWapp: Leo in a browser.
@@ -26,3 +29,5 @@ Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/prefac
 - [What people are saying about Leo](http://leoeditor.com/testimonials.html)
 - [A web page that displays .leo files](http://leoeditor.com/load-leo.html)
 - [More links](http://leoeditor.com/leoLinks.html)
+
+[0]:  https://img.shields.io/travis/leo-editor/leo-editor/master.svg?style=flat
