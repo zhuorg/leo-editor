@@ -4,7 +4,7 @@ Leo 5.8.1 beta 1, http://leoeditor.com, is now available on
 Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/preface.html).
 
 <!-- statistic badges from shields.io : placement -->
-![][21] &nbsp; ![][22] &nbsp; ![][10] &nbsp; ![][11]  
+![][21] &nbsp; ![][10] &nbsp; ![][11]  
 ![][31] &nbsp; ![][32] &nbsp; ![][6]
 <!-- /end badges placement -->
 
@@ -36,7 +36,6 @@ Leo is an IDE, outliner and PIM, as described [here](http://leoeditor.com/prefac
 <!-- statistic badges from shields.io : links -->
 <!-- for testing see https://gist.github.com/maphew/0713a0288fa6265f421e9a6091392c59 -->
 [21]: https://img.shields.io/github/release/leo-editor/leo-editor.svg?label=Github%20release
-[22]: https://img.shields.io/github/downloads/leo-editor/leo-editor/total.svg
 
 [10]: https://img.shields.io/travis/leo-editor/leo-editor/master.svg?label=master
 [11]: https://img.shields.io/travis/leo-editor/leo-editor/devel.svg?label=devel
