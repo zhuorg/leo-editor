@@ -1,216 +1,47 @@
 
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>rst3 Command Reference &mdash; Leo 6.0 documentation</title>
-  
 
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>rst3 Command Reference &#8212; Leo 6.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Plugins" href="plugins.html" />
     <link rel="prev" title="Customizing Leo" href="customizing.html" /> 
-</head>
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="customizing.html" title="Customizing Leo"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="leo_toc.html">Leo 6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="usersguide.html" accesskey="U">Leo’s Users Guide</a> &#187;</li> 
+      </ul>
+    </div>  
 
-<body class="wy-body-for-nav">
-
-   
-  <div class="wy-grid-for-nav">
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="leo_toc.html" class="icon icon-home"> Leo
-          
-
-          
-            
-            <img src="_static/Leo4-80-border.jpg" class="logo" alt="Logo"/>
-          
-          </a>
-
-          
-            
-            
-              <div class="version">
-                6.0
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="preliminaries.html">Preliminaries</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Downloading, Installing &amp; Running Leo</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cheatsheet.html">Cheat Sheet</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="screencasts.html">Videos about Leo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorials</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="usersguide.html">Users Guide</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="customizing.html">Customizing Leo</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">rst3 Command Reference</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#options">Options</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#general-options">General options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#headline-commands">Headline commands</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#option-doc-parts">Option doc parts</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#settings-give-defaults-for-options">Settings give defaults for options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#http-plugin-options">Http plugin options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#section-expansion-options">Section expansion options</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#other-topics">Other topics</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#markup-doc-parts">Markup doc parts</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#required-cascading-style-sheets">Required cascading style sheets</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#controlling-the-rst3-command-from-scripts">Controlling the rst3 command from scripts</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#further-study">Further study</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#theory-of-operation">Theory of operation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#advanced-topics">Advanced topics</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#modes">Modes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#code-mode-options">Code mode options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#rst-mode-options">Rst mode options</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-code-block-directive">The code-block directive</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="plugins.html">Plugins</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands.html">Leo’s Commands Reference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="directives.html">Directives Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="leoandotherprograms.html">Leo and Other Programs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="intermediatetopics.html">Advanced Topics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="appendices.html">Appendices</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="history.html">History of Leo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
-<li class="toctree-l1"><a class="reference internal" href="what-is-new.html">What's New</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="slides.html">Slides</a></li>
-<li class="toctree-l1"><a class="reference internal" href="leoLinks.html">More Leo Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="screen-shots.html">Leo screen shots</a></li>
-</ul>
-
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="leo_toc.html">Leo</a>
-        
-      </nav>
-
-
-      <div class="wy-nav-content">
-        
-        <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="leo_toc.html">Docs</a> &raquo;</li>
-        
-          <li><a href="usersguide.html">Leo’s Users Guide</a> &raquo;</li>
-        
-      <li>rst3 Command Reference</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rst3-command-reference">
 <h1>rst3 Command Reference<a class="headerlink" href="#rst3-command-reference" title="Permalink to this headline">¶</a></h1>
@@ -572,55 +403,54 @@ as normal markup.</p>
 </div>
 
 
-           </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="plugins.html" class="btn btn-neutral float-right" title="Plugins" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="customizing.html" class="btn btn-neutral float-left" title="Customizing Leo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 1997-2019, Edward K. Ream
-      <span class="lastupdated">
-        Last updated on Jul 13, 2019.
-      </span>
-
-    </p>
-  </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
-
         </div>
       </div>
-
-    </section>
-
-  </div>
-  
-
-
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
-
-  
-  
-    
-   
-
-</body>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="leo_toc.html">
+              <img class="logo" src="_static/Leo4-80-border.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="customizing.html"
+                        title="previous chapter">Customizing Leo</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plugins.html"
+                        title="next chapter">Plugins</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugins"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="customizing.html" title="Customizing Leo"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="leo_toc.html">Leo 6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="usersguide.html" >Leo’s Users Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 1997-2019, Edward K. Ream.
+      Last updated on Jul 14, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+    </div>
+  </body>
 </html>

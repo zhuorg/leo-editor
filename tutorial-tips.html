@@ -1,230 +1,47 @@
 
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Useful Tips &mdash; Leo 6.0 documentation</title>
-  
 
-  
-  
-  
-  
-
-  
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Useful Tips &#8212; Leo 6.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Leo’s Users Guide" href="usersguide.html" />
     <link rel="prev" title="Writing Leo scripts in Python" href="tutorial-scripting.html" /> 
-</head>
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="usersguide.html" title="Leo’s Users Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial-scripting.html" title="Writing Leo scripts in Python"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="leo_toc.html">Leo 6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tutorial.html" accesskey="U">Leo’s Tutorials</a> &#187;</li> 
+      </ul>
+    </div>  
 
-<body class="wy-body-for-nav">
-
-   
-  <div class="wy-grid-for-nav">
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="leo_toc.html" class="icon icon-home"> Leo
-          
-
-          
-            
-            <img src="_static/Leo4-80-border.jpg" class="logo" alt="Logo"/>
-          
-          </a>
-
-          
-            
-            
-              <div class="version">
-                6.0
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="preliminaries.html">Preliminaries</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Downloading, Installing &amp; Running Leo</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cheatsheet.html">Cheat Sheet</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="screencasts.html">Videos about Leo</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tutorial-basics.html">Leo in 10 Minutes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial-pim.html">Using Leo as a Personal Information Manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial-rst3.html">Creating Documents from Outlines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial-scripting.html">Writing Leo scripts in Python</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Useful Tips</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#the-most-important-tips">The most important tips</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#you-don-t-have-to-remember-command-names">You don’t have to remember command names</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#learn-to-use-clones">Learn to use clones</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#learning-to-use-leo">Learning to use Leo</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#leo-s-most-important-plugins">Leo’s most important plugins</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#move-clones-to-the-last-top-level-node">Move clones to the last top-level node</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#put-personal-settings-myleosettings-leo">Put personal settings myLeoSettings.leo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#search-for-settings-in-leosettings-leo">Search for settings in leoSettings.leo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-abbreviations">Use abbreviations</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#useful-commands">Useful commands</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#the-beautify-command-nobeautify-directive">The beautify command &amp; &#64;nobeautify directive</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-find-quick-selected-command">The find-quick-selected command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-parse-body-command">The parse-body command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-pyflakes-command">The pyflakes command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-pylint-command">The pylint command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-rst3-command">The rst3 command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-sort-siblings-command">The sort-siblings command</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-alt-n-goto-next-clone-to-find-primary-clones">Use Alt-N (goto-next-clone) to find “primary” clones</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-cffm-to-gather-outline-nodes">Use cffm to gather outline nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-ctrl-p-repeat-complex-command-to-avoid-key-bindings">Use Ctrl-P (repeat-complex-command) to avoid key bindings</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#scripting-tips">Scripting tips</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#clearing-the-log-window">Clearing the Log window</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#g-callers-returns-a-list-of-callers">g.callers() returns a list of callers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-button-make-md-toc-script-in-leodocs-leo">The &#64;button make-md-toc script in LeoDocs.leo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-button-nodes">Use &#64;button nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-test-nodes">Use &#64;test nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-a-universal-shortcut-for-your-scripts">Use a universal shortcut for your scripts</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-cff-to-gather-nodes-matching-a-pattern">Use cff to gather nodes matching a pattern</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-g-pdb-from-the-console">Use g.pdb from the console</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-g-trace-to-debug-scripts">Use g.trace to debug scripts</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#use-section-references-sparingly">Use section references sparingly</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="usersguide.html">Users Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="leoandotherprograms.html">Leo and Other Programs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="intermediatetopics.html">Advanced Topics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="appendices.html">Appendices</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="history.html">History of Leo</a></li>
-<li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
-<li class="toctree-l1"><a class="reference internal" href="what-is-new.html">What's New</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="slides.html">Slides</a></li>
-<li class="toctree-l1"><a class="reference internal" href="leoLinks.html">More Leo Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="screen-shots.html">Leo screen shots</a></li>
-</ul>
-
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="leo_toc.html">Leo</a>
-        
-      </nav>
-
-
-      <div class="wy-nav-content">
-        
-        <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="leo_toc.html">Docs</a> &raquo;</li>
-        
-          <li><a href="tutorial.html">Leo’s Tutorials</a> &raquo;</li>
-        
-      <li>Useful Tips</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="useful-tips">
 <h1>Useful Tips<a class="headerlink" href="#useful-tips" title="Permalink to this headline">¶</a></h1>
@@ -470,55 +287,54 @@ exactly. Here is a common pattern for &#64;file nodes for python files:</p>
 </div>
 
 
-           </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="usersguide.html" class="btn btn-neutral float-right" title="Leo’s Users Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="tutorial-scripting.html" class="btn btn-neutral float-left" title="Writing Leo scripts in Python" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 1997-2019, Edward K. Ream
-      <span class="lastupdated">
-        Last updated on Jul 13, 2019.
-      </span>
-
-    </p>
-  </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
-</footer>
-
         </div>
       </div>
-
-    </section>
-
-  </div>
-  
-
-
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
-
-  
-  
-    
-   
-
-</body>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="leo_toc.html">
+              <img class="logo" src="_static/Leo4-80-border.jpg" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial-scripting.html"
+                        title="previous chapter">Writing Leo scripts in Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usersguide.html"
+                        title="next chapter">Leo’s Users Guide</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="usersguide.html" title="Leo’s Users Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial-scripting.html" title="Writing Leo scripts in Python"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="leo_toc.html">Leo 6.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="tutorial.html" >Leo’s Tutorials</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 1997-2019, Edward K. Ream.
+      Last updated on Jul 14, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+    </div>
+  </body>
 </html>
