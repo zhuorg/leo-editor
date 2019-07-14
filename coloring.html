@@ -1,33 +1,26 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Controlling Syntax Coloring &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <script type="text/javascript" src="_static/sidebar.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Writing Plugins" href="writingPlugins.html" />
     <link rel="prev" title="Advanced Topics" href="intermediatetopics.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -56,34 +49,37 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#settings-for-syntax-coloring" id="id1">Settings for syntax coloring</a><ul>
-<li><a class="reference internal" href="#color-settings" id="id2">Color settings</a></li>
-<li><a class="reference internal" href="#font-settings" id="id3">Font settings</a></li>
+<li><p><a class="reference internal" href="#settings-for-syntax-coloring" id="id1">Settings for syntax coloring</a></p>
+<ul>
+<li><p><a class="reference internal" href="#color-settings" id="id2">Color settings</a></p></li>
+<li><p><a class="reference internal" href="#font-settings" id="id3">Font settings</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#files" id="id4">Files</a></li>
-<li><a class="reference internal" href="#the-colorizer-s-inner-loop" id="id5">The colorizer’s inner loop</a></li>
-<li><a class="reference internal" href="#format-of-colorizer-control-files" id="id6">Format of colorizer control files</a><ul>
-<li><a class="reference internal" href="#ruleset-names" id="id7">Ruleset names</a></li>
-<li><a class="reference internal" href="#x-properties" id="id8">x.properties</a></li>
-<li><a class="reference internal" href="#attribute-dictionaries-and-x-attributesdictdict" id="id9">Attribute dictionaries and x.attributesDictDict</a></li>
-<li><a class="reference internal" href="#keyword-dictionaries-and-x-keywordsdictdict" id="id10">Keyword dictionaries and x.keywordsDictDict</a></li>
-<li><a class="reference internal" href="#rules-rules-dictionaries-and-x-rulesdictdict" id="id11">Rules, rules dictionaries and x.rulesDictDict</a></li>
-<li><a class="reference internal" href="#x-importdict-and-imported-versus-delegated-rulesets" id="id12">x.importDict and imported versus delegated rulesets</a></li>
+<li><p><a class="reference internal" href="#files" id="id4">Files</a></p></li>
+<li><p><a class="reference internal" href="#the-colorizer-s-inner-loop" id="id5">The colorizer’s inner loop</a></p></li>
+<li><p><a class="reference internal" href="#format-of-colorizer-control-files" id="id6">Format of colorizer control files</a></p>
+<ul>
+<li><p><a class="reference internal" href="#ruleset-names" id="id7">Ruleset names</a></p></li>
+<li><p><a class="reference internal" href="#x-properties" id="id8">x.properties</a></p></li>
+<li><p><a class="reference internal" href="#attribute-dictionaries-and-x-attributesdictdict" id="id9">Attribute dictionaries and x.attributesDictDict</a></p></li>
+<li><p><a class="reference internal" href="#keyword-dictionaries-and-x-keywordsdictdict" id="id10">Keyword dictionaries and x.keywordsDictDict</a></p></li>
+<li><p><a class="reference internal" href="#rules-rules-dictionaries-and-x-rulesdictdict" id="id11">Rules, rules dictionaries and x.rulesDictDict</a></p></li>
+<li><p><a class="reference internal" href="#x-importdict-and-imported-versus-delegated-rulesets" id="id12">x.importDict and imported versus delegated rulesets</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rule-methods" id="id13">Rule methods</a><ul>
-<li><a class="reference internal" href="#arguments-to-rule-methods" id="id14">Arguments to rule methods</a></li>
-<li><a class="reference internal" href="#match-eol-span" id="id15">match_eol_span</a></li>
-<li><a class="reference internal" href="#match-eol-span-regexp" id="id16">match_eol_span_regexp</a></li>
-<li><a class="reference internal" href="#match-keywords" id="id17">match_keywords</a></li>
-<li><a class="reference internal" href="#match-mark-following" id="id18">match_mark_following</a></li>
-<li><a class="reference internal" href="#match-mark-previous" id="id19">match_mark_previous</a></li>
-<li><a class="reference internal" href="#match-seq" id="id20">match_seq</a></li>
-<li><a class="reference internal" href="#match-seq-regexp" id="id21">match_seq_regexp</a></li>
-<li><a class="reference internal" href="#match-span" id="id22">match_span</a></li>
-<li><a class="reference internal" href="#match-span-regexp" id="id23">match_span_regexp</a></li>
-<li><a class="reference internal" href="#match-terminate" id="id24">match_terminate</a></li>
+<li><p><a class="reference internal" href="#rule-methods" id="id13">Rule methods</a></p>
+<ul>
+<li><p><a class="reference internal" href="#arguments-to-rule-methods" id="id14">Arguments to rule methods</a></p></li>
+<li><p><a class="reference internal" href="#match-eol-span" id="id15">match_eol_span</a></p></li>
+<li><p><a class="reference internal" href="#match-eol-span-regexp" id="id16">match_eol_span_regexp</a></p></li>
+<li><p><a class="reference internal" href="#match-keywords" id="id17">match_keywords</a></p></li>
+<li><p><a class="reference internal" href="#match-mark-following" id="id18">match_mark_following</a></p></li>
+<li><p><a class="reference internal" href="#match-mark-previous" id="id19">match_mark_previous</a></p></li>
+<li><p><a class="reference internal" href="#match-seq" id="id20">match_seq</a></p></li>
+<li><p><a class="reference internal" href="#match-seq-regexp" id="id21">match_seq_regexp</a></p></li>
+<li><p><a class="reference internal" href="#match-span" id="id22">match_span</a></p></li>
+<li><p><a class="reference internal" href="#match-span-regexp" id="id23">match_span_regexp</a></p></li>
+<li><p><a class="reference internal" href="#match-terminate" id="id24">match_terminate</a></p></li>
 </ul>
 </li>
 </ul>
@@ -94,17 +90,17 @@
 <div class="section" id="color-settings">
 <h3><a class="toc-backref" href="#id2">Color settings</a><a class="headerlink" href="#color-settings" title="Permalink to this headline">¶</a></h3>
 <p>To specify a color, say for comment1, for <em>all</em> languages, create an &#64;color node:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@color</span> <span class="n">comment1</span> <span class="o">=</span> <span class="n">blue</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@color</span> <span class="n">comment1</span> <span class="o">=</span> <span class="n">blue</span>
 </pre></div>
 </div>
 <p>To specify a color for a <strong>particular</strong> language, say Python, prepend the setting name
 with the language name.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@color</span> <span class="n">python_comment1</span> <span class="o">=</span> <span class="n">pink</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@color</span> <span class="n">python_comment1</span> <span class="o">=</span> <span class="n">pink</span>
 </pre></div>
 </div>
 <p>Here are Leo’s legacy (jEdit-based) &#64;color settings:</p>
 <blockquote>
-<div>&#64;color comment1
+<div><p>&#64;color comment1
 &#64;color comment2
 &#64;color comment3
 &#64;color comment4
@@ -130,9 +126,10 @@ with the language name.  For example:</p>
 &#64;color show-invisibles-space
 &#64;color tab
 &#64;color trailing-whitespace
-&#64;color url</div></blockquote>
+&#64;color url</p>
+</div></blockquote>
 <p>In addition, the pygments colorizer uses these settings:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>@color comment
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>@color comment
 @color comment.hashbang
 @color comment.multiline
 @color comment.preproc
@@ -212,7 +209,7 @@ with the language name.  For example:</p>
 <div class="section" id="font-settings">
 <h3><a class="toc-backref" href="#id3">Font settings</a><a class="headerlink" href="#font-settings" title="Permalink to this headline">¶</a></h3>
 <p>To specify a font, say for keyword_font, to be used as the default font for <strong>all</strong> languages, put the following in the body text of an &#64;font node in leoSettings.leo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># keyword_font_family = None</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># keyword_font_family = None</span>
 <span class="n">keyword_font_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">keyword_font_slant</span> <span class="o">=</span> <span class="n">roman</span>
     <span class="c1"># roman, italic</span>
@@ -222,7 +219,7 @@ with the language name.  For example:</p>
 </div>
 <p>Comments are allowed and undefined settings are set to reasonable defaults. At present, comments can not follow a setting: comments must start a line.</p>
 <p>You can specify per-language settings by preceding the settings names by a prefix x. Such settings affect only colorizing for language x (i.e., all the modes in modes/x.py when using the new colorizer). For example, to specify a font for php (only), put the following in the body text of an &#64;font node in leoSettings.leo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># php_keyword_font_family = None</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># php_keyword_font_family = None</span>
 <span class="n">php_keyword_font_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">php_keyword_font_slant</span> <span class="o">=</span> <span class="n">roman</span>
     <span class="c1"># roman, italic</span>
@@ -241,10 +238,10 @@ with the language name.  For example:</p>
 <p><strong>Important</strong>: throughout this documentation, <strong>x.py</strong> will refer to the Python colorer for language x, and <strong>x.xml</strong> will refer to the corresponding xml language-description file.</p>
 <p>Using Python colorer control files has the following advantages:</p>
 <ul class="simple">
-<li>Running jEdit2Py need only be done when x.xml changes, and the speed of the xml parser in jEdit2Py does not affect the speed of Leo’s colorizer in any way. Moreover, the jEdit2Py script can contain debugging traces and checks.</li>
-<li>Colorer control files are valid .py files, so all of Python’s import optimizations work as usual. In particular, all the data in colorer control files is immediately accessible to Leo’s colorer.</li>
-<li>Colorer control files are easier for humans to understand and modify than the equivalent xml file. Furthermore, it is easy to insert debugging information into Python colorer control files.</li>
-<li>It is easy to modify the Python colorer control files ‘by hand’ without changing the corresponding xml file. In particular, it would be easy to define entirely new kinds of pattern-matching rules in Python merely by creating functions in a colorer control file.</li>
+<li><p>Running jEdit2Py need only be done when x.xml changes, and the speed of the xml parser in jEdit2Py does not affect the speed of Leo’s colorizer in any way. Moreover, the jEdit2Py script can contain debugging traces and checks.</p></li>
+<li><p>Colorer control files are valid .py files, so all of Python’s import optimizations work as usual. In particular, all the data in colorer control files is immediately accessible to Leo’s colorer.</p></li>
+<li><p>Colorer control files are easier for humans to understand and modify than the equivalent xml file. Furthermore, it is easy to insert debugging information into Python colorer control files.</p></li>
+<li><p>It is easy to modify the Python colorer control files ‘by hand’ without changing the corresponding xml file. In particular, it would be easy to define entirely new kinds of pattern-matching rules in Python merely by creating functions in a colorer control file.</p></li>
 </ul>
 </div>
 <div class="section" id="the-colorizer-s-inner-loop">
@@ -252,7 +249,7 @@ with the language name.  For example:</p>
 <p>When Leo’s syntax colorer sees the <a class="reference external" href="mailto:'&#37;&#52;&#48;language">‘<span>&#64;</span>language</a> x’ directive, it will import x.py from Leo’s modes folder. The colorer can then access any module-level object obj in x.py as x.obj.</p>
 <p>Colorizer control files contain <strong>rules functions</strong> corresponding to rule elements in x.xml. The colorizer can call these functions as if they were members of the colorizer class by passing ‘self’ as the first argument of these functions. I call these rules <em>functions</em> to distinguish them from the corresponding <strong>rules methods</strong> which are actual methods of the colorizer class. Rules <em>functions</em> merely call corresponding rules <em>methods</em>. Indeed, rules functions are simply a way of binding values to keyword arguments of rules methods. These keywords arguments correspond to the xml attributes of rule elements in x.xml.</p>
 <p>The colorizer calls rules functions until one matches, at which point a range of text gets colored and the process repeats. The inner loop of the colorizer is this code:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rulesDict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">],[]):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rulesDict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">],[]):</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="n">n</span> <span class="p">;</span> <span class="k">break</span>
@@ -260,11 +257,11 @@ with the language name.  For example:</p>
 </pre></div>
 </div>
 <ul class="simple">
-<li>rulesDict is a dictionary whose keys are rulesets and whose values are ruleset dictionaries.
+<li><p>rulesDict is a dictionary whose keys are rulesets and whose values are ruleset dictionaries.
 Ruleset dictionaries have keys that are single characters and whose values are
-the list of rules that can start with that character.</li>
-<li>s is the full text to be colorized.</li>
-<li>i is the position within s is to be colorized.</li>
+the list of rules that can start with that character.</p></li>
+<li><p>s is the full text to be colorized.</p></li>
+<li><p>i is the position within s is to be colorized.</p></li>
 </ul>
 <p>Rules methods (and functions) return n &gt; 0 if they match, and n == 0 if they fail.</p>
 </div>
@@ -275,7 +272,7 @@ the list of rules that can start with that character.</li>
 <h3><a class="toc-backref" href="#id7">Ruleset names</a><a class="headerlink" href="#ruleset-names" title="Permalink to this headline">¶</a></h3>
 <p>A <strong>ruleset name</strong> is a Python string having the form ‘x_setname’, where setname is the value of the SET attribute of the &lt;RULES&gt; element in x.xml. For example, the ruleset name of the ruleset whose SET attribute is JAVASCRIPT in php.xml is ‘php_JAVASCRIPT’. <strong>Important</strong>: by convention, the ruleset name of the default &lt;RULES&gt; element is ‘x_main’; note that default &lt;RULES&gt; element have no SET attributes.</p>
 <p>The colorizer uses ruleset names to gain access to all data structures in x.py. To anticipate a bit, ruleset names are keys into two standard dictionaries, x.rulesDict and x.keywordsDictDict, from which the colorizer can get all other information in x.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># The rules list for the &#39;JAVASCRIPT&#39; ruleset in php.xml.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># The rules list for the &#39;JAVASCRIPT&#39; ruleset in php.xml.</span>
 <span class="n">rules</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">rulesDict</span><span class="p">(</span><span class="s1">&#39;php_JAVASCRIPT&#39;</span><span class="p">)</span>
 
 <span class="c1"># The keywords dict for the &#39;JAVASCRIPT&#39; ruleset in php.xml.</span>
@@ -287,7 +284,7 @@ the list of rules that can start with that character.</li>
 <div class="section" id="x-properties">
 <h3><a class="toc-backref" href="#id8">x.properties</a><a class="headerlink" href="#x-properties" title="Permalink to this headline">¶</a></h3>
 <p><strong>x.properties</strong> is a Python dictionary corresponding to the &lt;PROPS&gt; element in x.xml. Keys are property names; values are strings, namely the contents of &lt;PROPERTY&gt; elements in x.xml. x.properties contains properties for the entire mode. That is, only modes have &lt;PROPS&gt; elements. For example, here is x.properties in php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># properties for mode php.xml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># properties for mode php.xml</span>
 <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;commentEnd&quot;</span><span class="p">:</span> <span class="s2">&quot;--&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;commentStart&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;!--&quot;</span><span class="p">,</span>
@@ -302,15 +299,15 @@ the list of rules that can start with that character.</li>
 <h3><a class="toc-backref" href="#id9">Attribute dictionaries and x.attributesDictDict</a><a class="headerlink" href="#attribute-dictionaries-and-x-attributesdictdict" title="Permalink to this headline">¶</a></h3>
 <p>x.py contains a <strong>attribute dictionary</strong> for each ruleset in x.xml. Keys are attribute names, values strings representing the values of the attributes. This dictionary is empty if a ruleset contains no attributes. The valid keys are:</p>
 <ul class="simple">
-<li>‘default’: the default token type.  ‘null’ is the default.</li>
-<li>‘digit_re’: a regular expression.
-Words matching this regular expression are colored with the digit token type.</li>
-<li>‘ignore_case’: ‘true’ or ‘false’.  Default is ‘true’.</li>
-<li>‘highlight_digits’: ‘true’ or ‘false’.  Default is ‘true’.</li>
-<li>‘no_word_sep’: A list of characters treated as ‘alphabetic’ characters when matching keywords.</li>
+<li><p>‘default’: the default token type.  ‘null’ is the default.</p></li>
+<li><p>‘digit_re’: a regular expression.
+Words matching this regular expression are colored with the digit token type.</p></li>
+<li><p>‘ignore_case’: ‘true’ or ‘false’.  Default is ‘true’.</p></li>
+<li><p>‘highlight_digits’: ‘true’ or ‘false’.  Default is ‘true’.</p></li>
+<li><p>‘no_word_sep’: A list of characters treated as ‘alphabetic’ characters when matching keywords.</p></li>
 </ul>
 <p>For example, here is one attribute dictionary in php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Attributes dict for php_javascript ruleset.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Attributes dict for php_javascript ruleset.</span>
 <span class="n">php_javascript_attributes_dict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="s2">&quot;MARKUP&quot;</span><span class="p">,</span>
     <span class="s2">&quot;digit_re&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -321,7 +318,7 @@ Words matching this regular expression are colored with the digit token type.</l
 </pre></div>
 </div>
 <p>x.py also contains <strong>x.attributesDictDict</strong>. Keys are ruleset names, values are attribute dictionaries. Here is attributesDictDict for php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Dictionary of attributes dictionaries for php mode.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dictionary of attributes dictionaries for php mode.</span>
 <span class="n">attributesDictDict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;php_javascript&quot;</span><span class="p">:</span> <span class="n">php_javascript_attributes_dict</span><span class="p">,</span>
     <span class="s2">&quot;php_javascript_php&quot;</span><span class="p">:</span> <span class="n">php_javascript_php_attributes_dict</span><span class="p">,</span>
@@ -341,7 +338,7 @@ Words matching this regular expression are colored with the digit token type.</l
 <p>x.py contains a <strong>keyword dictionary</strong> for each ruleset in x.xml. x.py contains an empty keywords dictionary if a ruleset contains no &lt;KEYWORDS&gt; element.</p>
 <p>Keys are strings representing keywords of the language describe by the mode. Values are strings representing syntactic categories, i.e. a TYPE attribute valid in x.xml, namely: COMMENT1, COMMENT2, COMMENT3, COMMENT4, FUNCTION, KEYWORD1, KEYWORD2, KEYWORD3, KEYWORD4, LABEL, LITERAL1, LITERAL2, LITERAL3, LITERAL4, MARKUP, NULL and OPERATOR.</p>
 <p>For example, here (parts of) some keyword dictionaries in php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Keywords dict for mode php::PHP</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Keywords dict for mode php::PHP</span>
 <span class="n">php_PHP_keywords_dict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;COM_invoke&quot;</span><span class="p">:</span> <span class="s2">&quot;keyword2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;COM_load&quot;</span><span class="p">:</span> <span class="s2">&quot;keyword2&quot;</span><span class="p">,</span>
@@ -368,7 +365,7 @@ Words matching this regular expression are colored with the digit token type.</l
 </pre></div>
 </div>
 <p>x.py also contains <strong>x.keywordsDictDict</strong>. Keys are ruleset names, values are keywords dictionaries. Here is keywordsDictDict for php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Dictionary of keywords dictionaries for php mode.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dictionary of keywords dictionaries for php mode.</span>
 <span class="n">keywordsDictDict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;php_javascript&quot;</span><span class="p">:</span> <span class="n">php_javascript_keywords_dict</span><span class="p">,</span>
     <span class="s2">&quot;php_javascript_php&quot;</span><span class="p">:</span> <span class="n">php_javascript_php_keywords_dict</span><span class="p">,</span>
@@ -382,7 +379,7 @@ Words matching this regular expression are colored with the digit token type.</l
 </pre></div>
 </div>
 <p>The colorizer can get the keywords dictionary for a ruleset as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">keywordsDict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">keywordsDictDict</span><span class="p">(</span><span class="n">rulesetName</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">keywordsDict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">keywordsDictDict</span><span class="p">(</span><span class="n">rulesetName</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Note</strong>: The jEdit2Py script creates ‘friendly’ names for keyword dictionaries <em>solely</em> as an aid for people reading the code. Leo’s colorer uses only the name x.keywordsDictDict; Leo’s colorer never uses the actual names of keywords dictionaries such as php_PHPDOC_keywords_dict.</p>
@@ -391,14 +388,14 @@ Words matching this regular expression are colored with the digit token type.</l
 <h3><a class="toc-backref" href="#id11">Rules, rules dictionaries and x.rulesDictDict</a><a class="headerlink" href="#rules-rules-dictionaries-and-x-rulesdictdict" title="Permalink to this headline">¶</a></h3>
 <p>x.py contains one <strong>rule function</strong> for every rule in every ruleset (&lt;RULES&gt; element) in x.xml. These rules have names rule1 through  ruleN, where N is the total number of rules in all rulesets in x.xml.</p>
 <p>Each rules <em>function</em> merely calls a rules <em>method</em> in Leo’s colorizer. Which method gets called depends on the corresponding element in <cite>x.xml</cite>. For example, the first rule in php.xml is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;SPAN TYPE=&quot;MARKUP&quot; DELEGATE=&quot;PHP&quot;&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;SPAN TYPE=&quot;MARKUP&quot; DELEGATE=&quot;PHP&quot;&gt;
             &lt;BEGIN&gt;&amp;lt;?php&lt;/BEGIN&gt;
             &lt;END&gt;?&amp;gt;&lt;/END&gt;
     &lt;/SPAN&gt;
 </pre></div>
 </div>
 <p>and the corresponding rule function is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">php_rule0</span><span class="p">(</span><span class="n">colorer</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">php_rule0</span><span class="p">(</span><span class="n">colorer</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">colorer</span><span class="o">.</span><span class="n">match_span</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;markup&quot;</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="s2">&quot;&lt;?php&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;?&gt;&quot;</span><span class="p">,</span>
         <span class="n">at_line_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">at_whitespace_end</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">at_word_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">delegate</span><span class="o">=</span><span class="s2">&quot;PHP&quot;</span><span class="p">,</span><span class="n">exclude_match</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -407,7 +404,7 @@ Words matching this regular expression are colored with the digit token type.</l
 </div>
 <p>php_rule0 calls colorer.match_span because the corresponding xml rule is a &lt;SPAN&gt; element.</p>
 <p>For each ruleset, x.py also contains a <strong>rules dictionary</strong>, a Python dictionary whose keys are characters and whose values are all lists of rules functions that that can match the key. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Rules dict for phpdoc ruleset.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Rules dict for phpdoc ruleset.</span>
 <span class="n">rulesDict8</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;*&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">rule64</span><span class="p">,],</span>
     <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">rule70</span><span class="p">,],</span>
@@ -441,13 +438,13 @@ Words matching this regular expression are colored with the digit token type.</l
 </div>
 <p><strong>Note</strong>: The order of rules in each rules list is important; it should be the same as rules element in x.xml.</p>
 <p>Finally, x.py contains <strong>x.rulesDictDict</strong>. Keys are ruleset names, values are rules dictionaries. The colorer can get the rules list for character ch as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">rulesDict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">rulesDictDict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rulesetName</span><span class="p">)</span> <span class="c1"># When a mode is inited.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">rulesDict</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">rulesDictDict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rulesetName</span><span class="p">)</span> <span class="c1"># When a mode is inited.</span>
 <span class="o">...</span>
 <span class="n">rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rulesDict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ch</span><span class="p">,[])</span> <span class="c1"># In the main loop.</span>
 </pre></div>
 </div>
 <p>For example, here is the rules dictionary for php.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># x.rulesDictDict for php mode.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># x.rulesDictDict for php mode.</span>
 <span class="n">rulesDictDict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;php_javascript&quot;</span><span class="p">:</span> <span class="n">rulesDict6</span><span class="p">,</span>
     <span class="s2">&quot;php_javascript_php&quot;</span><span class="p">:</span> <span class="n">rulesDict7</span><span class="p">,</span>
@@ -465,7 +462,7 @@ Words matching this regular expression are colored with the digit token type.</l
 <div class="section" id="x-importdict-and-imported-versus-delegated-rulesets">
 <h3><a class="toc-backref" href="#id12">x.importDict and imported versus delegated rulesets</a><a class="headerlink" href="#x-importdict-and-imported-versus-delegated-rulesets" title="Permalink to this headline">¶</a></h3>
 <p>x.importDict is a Python dictionary. Keys are ruleset names; values are a list of ruleset names. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Import dict for php mode.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import dict for php mode.</span>
 <span class="n">importDict</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;php_javascript_php&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;javascript::main&quot;</span><span class="p">],</span>
 <span class="p">}</span>
@@ -476,8 +473,8 @@ Words matching this regular expression are colored with the digit token type.</l
 <p><strong>Note 2</strong>:  Multiple &lt;IMPORT&gt; rule elements in a single ruleset are allowed: delegated rules are copied to the end of N’s rules list in the order they appear in the ruleset.</p>
 <p><strong>Note 3</strong>: The DELEGATE attribute of &lt;IMPORT&gt; elements is, in fact, completely separate from the DELEGATE attributes of other rules as discussed in <a class="reference internal" href="#arguments-to-rule-methods">Arguments to rule methods</a>. Indeed, the DELEGATE attribute of &lt;IMPORT&gt; elements creates entries in x.importDict, which in turn causes the colorizer to append the rules of the imported ruleset to the end of the present rules list. In contrast, the DELEGATE attributes of other rules sets the delegate argument to rules methods, which in tern causes the colorizer to recursively color the matched text with the <strong>delegated</strong> ruleset. In short:</p>
 <ul class="simple">
-<li>The rules of <strong>imported</strong> rulesets are appended to the end of another rules list; the rules of <strong>delegated</strong> rulesets never are.</li>
-<li><strong>Imported</strong> ruleset names appear as the values of items in x.importDict; <strong>delegated</strong> ruleset names appear as delegate arguments to rule methods.</li>
+<li><p>The rules of <strong>imported</strong> rulesets are appended to the end of another rules list; the rules of <strong>delegated</strong> rulesets never are.</p></li>
+<li><p><strong>Imported</strong> ruleset names appear as the values of items in x.importDict; <strong>delegated</strong> ruleset names appear as delegate arguments to rule methods.</p></li>
 </ul>
 </div>
 </div>
@@ -490,44 +487,44 @@ Words matching this regular expression are colored with the digit token type.</l
 <p>All rule methods take three required arguments and zero or more optional keyword arguments.</p>
 <p>Here is a list of the required arguments and their meaning:</p>
 <ul class="simple">
-<li><strong>self</strong>: An instance of Leo’s colorizer.</li>
-<li><strong>s</strong>: The string in which matches may be found.</li>
-<li><strong>i</strong>: The location within the string at which the rule method looks for a match.</li>
+<li><p><strong>self</strong>: An instance of Leo’s colorizer.</p></li>
+<li><p><strong>s</strong>: The string in which matches may be found.</p></li>
+<li><p><strong>i</strong>: The location within the string at which the rule method looks for a match.</p></li>
 </ul>
 <p>Here is a list of all optional keyword arguments and their meaning:</p>
 <ul class="simple">
-<li><strong>at_line_start</strong>:
-If True, a match will succeed only if i is at the start of a line.</li>
-<li><strong>at_whitespace_end</strong>:
-If True, the match will succeed only if i is at the first non-whitespace text in a line.</li>
-<li><strong>at_word_start</strong>:
-If True, the match will succeed only if i is at the beginning of a word.</li>
-<li><strong>delegate</strong>:
+<li><p><strong>at_line_start</strong>:
+If True, a match will succeed only if i is at the start of a line.</p></li>
+<li><p><strong>at_whitespace_end</strong>:
+If True, the match will succeed only if i is at the first non-whitespace text in a line.</p></li>
+<li><p><strong>at_word_start</strong>:
+If True, the match will succeed only if i is at the beginning of a word.</p></li>
+<li><p><strong>delegate</strong>:
 If non-empty, the value of this argument is a <a class="reference internal" href="#ruleset-names">ruleset name</a>.
-If the match succeeds, the matched text will be colored recursively with the indicate ruleset.</li>
-<li><strong>exclude_match</strong>:
+If the match succeeds, the matched text will be colored recursively with the indicate ruleset.</p></li>
+<li><p><strong>exclude_match</strong>:
 If True, the actual text that matched will not be colored.
 The meaning of this argument varies slightly depending on whether one or two sequences are matched.
-See the individual rule methods for details.</li>
-<li><strong>kind</strong>: A string representing a class of tokens, i.e., one of:
+See the individual rule methods for details.</p></li>
+<li><p><strong>kind</strong>: A string representing a class of tokens, i.e., one of:
 ‘comment1’, ‘comment2’, ‘comment3’, ‘comment4’, ‘function’,
 ‘keyword1’, ‘keyword2’, ‘keyword3’, ‘keyword4’,
 ‘label’, ‘literal1’, ‘literal2’, ‘literal3’, ‘literal4’,
-‘markup’, ‘null’ and ‘operator’.</li>
-<li><strong>no_escape</strong>:
+‘markup’, ‘null’ and ‘operator’.</p></li>
+<li><p><strong>no_escape</strong>:
 If True, the ruleset’s escape character will have no effect before the end argument to match_span.
-Otherwise, the presence of the escape character will cause that occurrence of the end string to be ignored.</li>
-<li><strong>no_line_break</strong>:
-If True, the match will not succeed across line breaks.</li>
-<li><strong>no_word_break</strong>:
-If True, the match will not cross word breaks.</li>
+Otherwise, the presence of the escape character will cause that occurrence of the end string to be ignored.</p></li>
+<li><p><strong>no_line_break</strong>:
+If True, the match will not succeed across line breaks.</p></li>
+<li><p><strong>no_word_break</strong>:
+If True, the match will not cross word breaks.</p></li>
 </ul>
 <p>New in Leo 4.4.1 final: the regular expression rule matchers no longer get a hash_char argument
 because such matchers are called only if the present search pattern starts with hash_char.</p>
 </div>
 <div class="section" id="match-eol-span">
 <h3><a class="toc-backref" href="#id15">match_eol_span</a><a class="headerlink" href="#match-eol-span" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_eol_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">begin</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_eol_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">begin</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -540,7 +537,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-eol-span-regexp">
 <h3><a class="toc-backref" href="#id16">match_eol_span_regexp</a><a class="headerlink" href="#match-eol-span-regexp" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_eol_span_regexp</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_eol_span_regexp</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -550,14 +547,14 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <p>match_eol_span_exp succeeds if:</p>
 <ol class="arabic simple">
-<li>The regular expression regex matches at s[i:], and</li>
-<li>The at_line_start, at_whitespace_end and at_word_start conditions are all satisfied.</li>
+<li><p>The regular expression regex matches at s[i:], and</p></li>
+<li><p>The at_line_start, at_whitespace_end and at_word_start conditions are all satisfied.</p></li>
 </ol>
 <p>If successful, match_eol_span_regexp  highlights from i to the end of the line. If the exclude_match argument is True, only the text before the matched text will be colored. The delegate argument, if present, specifies the ruleset to color the colored text.</p>
 </div>
 <div class="section" id="match-keywords">
 <h3><a class="toc-backref" href="#id17">match_keywords</a><a class="headerlink" href="#match-keywords" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_keywords</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_keywords</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>match_keywords succeeds if s[i:] starts with an identifier contained in the mode’s keywords dictionary d.</p>
@@ -565,7 +562,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-mark-following">
 <h3><a class="toc-backref" href="#id18">match_mark_following</a><a class="headerlink" href="#match-mark-following" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_mark_following</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">pattern</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_mark_following</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">pattern</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -577,7 +574,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-mark-previous">
 <h3><a class="toc-backref" href="#id19">match_mark_previous</a><a class="headerlink" href="#match-mark-previous" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_mark_previous</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">pattern</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_mark_previous</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">pattern</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -589,7 +586,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-seq">
 <h3><a class="toc-backref" href="#id20">match_seq</a><a class="headerlink" href="#match-seq" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_seq</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">seq</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_seq</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">seq</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -601,7 +598,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-seq-regexp">
 <h3><a class="toc-backref" href="#id21">match_seq_regexp</a><a class="headerlink" href="#match-seq-regexp" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_seq_regexp</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_seq_regexp</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -610,14 +607,14 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <p>match_seq succeeds if:</p>
 <ol class="arabic simple">
-<li>The regular expression regex matches at s[i:], and</li>
-<li>The at_line_start, at_whitespace_end and at_word_start conditions are all satisfied.</li>
+<li><p>The regular expression regex matches at s[i:], and</p></li>
+<li><p>The at_line_start, at_whitespace_end and at_word_start conditions are all satisfied.</p></li>
 </ol>
 <p>If successful, match_seq_regexp highlights from i to the end of the sequence with the color specified by kind. The delegate argument, if present, specifies the ruleset to color the colored text.</p>
 </div>
 <div class="section" id="match-span">
 <h3><a class="toc-backref" href="#id22">match_span</a><a class="headerlink" href="#match-span" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">begin</span><span class="p">,</span><span class="n">end</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">begin</span><span class="p">,</span><span class="n">end</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -633,7 +630,7 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <div class="section" id="match-span-regexp">
 <h3><a class="toc-backref" href="#id23">match_span_regexp</a><a class="headerlink" href="#match-span-regexp" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span><span class="n">end</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_span</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">regex</span><span class="p">,</span><span class="n">end</span><span class="p">,</span>
     <span class="n">at_line_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_whitespace_end</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">at_word_start</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -646,16 +643,16 @@ because such matchers are called only if the present search pattern starts with 
 </div>
 <p>match_span_regex succeeds if:</p>
 <ol class="arabic simple">
-<li>The regular expression regex matches at s[i:],</li>
-<li>There is an index j &gt; i such that s[i:j].endswith(end),</li>
-<li>The at_line_start, at_whitespace_end, at_word_start,
-no_escape, no_line_break and no_word_break conditions are all satisfied.</li>
+<li><p>The regular expression regex matches at s[i:],</p></li>
+<li><p>There is an index j &gt; i such that s[i:j].endswith(end),</p></li>
+<li><p>The at_line_start, at_whitespace_end, at_word_start,
+no_escape, no_line_break and no_word_break conditions are all satisfied.</p></li>
 </ol>
 <p>If successful, match_span colors s[i:j], with the color specified by kind; but if the exclude_match argument is True, the begin and end text are not colored. The delegate argument, if present, specifies the ruleset to color the colored text.</p>
 </div>
 <div class="section" id="match-terminate">
 <h3><a class="toc-backref" href="#id24">match_terminate</a><a class="headerlink" href="#match-terminate" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_terminate</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">at_char</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">match_terminate</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">kind</span><span class="p">,</span><span class="n">at_char</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>match_terminate succeeds if s[i:] contains at least at_char more characters.</p>
@@ -680,13 +677,13 @@ no_escape, no_line_break and no_word_break conditions are all satisfied.</li>
   <p class="topless"><a href="writingPlugins.html"
                         title="next chapter">Writing Plugins</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -711,8 +708,8 @@ no_escape, no_line_break and no_word_break conditions are all satisfied.</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jun 17, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Last updated on Jul 14, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

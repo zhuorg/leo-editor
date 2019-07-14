@@ -1,33 +1,26 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Directives Reference &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <script type="text/javascript" src="_static/sidebar.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Leo and Other Programs" href="leoandotherprograms.html" />
     <link rel="prev" title="Leo’s Commands Reference" href="commands.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -55,31 +48,33 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#part-1-file-directives" id="id2">Part 1: &#64;&lt;file&gt; directives</a><ul>
-<li><a class="reference internal" href="#asis-path" id="id3">&#64;asis &lt;path&gt;</a></li>
-<li><a class="reference internal" href="#auto-path" id="id4">&#64;auto &lt;path&gt;</a><ul>
-<li><a class="reference internal" href="#auto-sanity-checks" id="id5">&#64;auto sanity checks</a></li>
+<li><p><a class="reference internal" href="#part-1-file-directives" id="id2">Part 1: &#64;&lt;file&gt; directives</a></p>
+<ul>
+<li><p><a class="reference internal" href="#asis-path" id="id3">&#64;asis &lt;path&gt;</a></p></li>
+<li><p><a class="reference internal" href="#auto-path" id="id4">&#64;auto &lt;path&gt;</a></p>
+<ul>
+<li><p><a class="reference internal" href="#auto-sanity-checks" id="id5">&#64;auto sanity checks</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#clean-path" id="id6">&#64;clean &lt;path&gt;</a></li>
-<li><a class="reference internal" href="#edit-path" id="id7">&#64;edit &lt;path&gt;</a></li>
-<li><a class="reference internal" href="#file-path-aka-thin" id="id8">&#64;file &lt;path&gt; (aka &#64;thin)</a></li>
-<li><a class="reference internal" href="#nosent-path" id="id9">&#64;nosent &lt;path&gt;</a></li>
-<li><a class="reference internal" href="#shadow-path-deprecated" id="id10">&#64;shadow &lt;path&gt; (deprecated)</a></li>
-<li><a class="reference internal" href="#path-expressions" id="id11">Path expressions</a></li>
+<li><p><a class="reference internal" href="#clean-path" id="id6">&#64;clean &lt;path&gt;</a></p></li>
+<li><p><a class="reference internal" href="#edit-path" id="id7">&#64;edit &lt;path&gt;</a></p></li>
+<li><p><a class="reference internal" href="#file-path-aka-thin" id="id8">&#64;file &lt;path&gt; (aka &#64;thin)</a></p></li>
+<li><p><a class="reference internal" href="#nosent-path" id="id9">&#64;nosent &lt;path&gt;</a></p></li>
+<li><p><a class="reference internal" href="#shadow-path-deprecated" id="id10">&#64;shadow &lt;path&gt; (deprecated)</a></p></li>
+<li><p><a class="reference internal" href="#path-expressions" id="id11">Path expressions</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#part-2-all-and-others" id="id12">Part 2: &#64;all and &#64;others</a></li>
-<li><a class="reference internal" href="#part-3-syntax-coloring-directives" id="id13">Part 3: Syntax coloring directives</a></li>
-<li><a class="reference internal" href="#part-4-dangerous-directives" id="id14">Part 4: Dangerous directives</a></li>
-<li><a class="reference internal" href="#part-5-all-other-directives" id="id15">Part 5: All other directives</a></li>
+<li><p><a class="reference internal" href="#part-2-all-and-others" id="id12">Part 2: &#64;all and &#64;others</a></p></li>
+<li><p><a class="reference internal" href="#part-3-syntax-coloring-directives" id="id13">Part 3: Syntax coloring directives</a></p></li>
+<li><p><a class="reference internal" href="#part-4-dangerous-directives" id="id14">Part 4: Dangerous directives</a></p></li>
+<li><p><a class="reference internal" href="#part-5-all-other-directives" id="id15">Part 5: All other directives</a></p></li>
 </ul>
 </div>
 <div class="section" id="part-1-file-directives">
 <h2><a class="toc-backref" href="#id2">Part 1: &#64;&lt;file&gt; directives</a><a class="headerlink" href="#part-1-file-directives" title="Permalink to this headline">¶</a></h2>
 <p id="index-0">This section discusses the &#64;&lt;file&gt; directives. These directives create or import external files.</p>
 <p>&#64;&lt;file&gt; nodes create external files:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@asis</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>        <span class="n">write</span> <span class="n">only</span><span class="p">,</span> <span class="n">no</span> <span class="n">sentinels</span><span class="p">,</span> <span class="n">exact</span> <span class="n">line</span> <span class="n">endings</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@asis</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>        <span class="n">write</span> <span class="n">only</span><span class="p">,</span> <span class="n">no</span> <span class="n">sentinels</span><span class="p">,</span> <span class="n">exact</span> <span class="n">line</span> <span class="n">endings</span>
 <span class="nd">@auto</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>        <span class="n">recommended</span>
 <span class="nd">@clean</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>       <span class="n">recommended</span>
 <span class="nd">@edit</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span>        <span class="nd">@edit</span> <span class="n">node</span> <span class="n">contains</span> <span class="n">entire</span> <span class="n">file</span>
@@ -90,7 +85,7 @@
 <p><strong>Note</strong>: &#64;file, &#64;clean and &#64;auto are the recommended ways of creating external files. &#64;asis and &#64;nosent are for special occasions.</p>
 <p><strong>Note</strong>: All these directive must appear in headlines.</p>
 <p>The following table compares the various ways of creating external files. Later sections provide more details:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>                         Sections &amp;   File data in
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                         Sections &amp;   File data in
 @&lt;file&gt; kind  Sentinels?  @others?    .leo file?    Notes
 ------------  ---------- -----------  ------------  -----
 @asis            no         no           yes
@@ -104,7 +99,7 @@
 </div>
 <p><strong>Note 1</strong>: &#64;auto nodes read files using language-specific importers.
 By default, the file’s extension determines the importer:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Extensions</span>                  <span class="n">Importer</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Extensions</span>                  <span class="n">Importer</span>
 <span class="o">----------</span>                  <span class="o">--------</span>
 <span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="o">.</span><span class="n">cc</span><span class="p">,</span> <span class="o">.</span><span class="n">c</span><span class="o">++</span><span class="p">,</span> <span class="o">.</span><span class="n">cpp</span><span class="p">,</span><span class="o">.</span><span class="n">cxx</span>    <span class="n">C</span>
 <span class="o">.</span><span class="n">cs</span><span class="s1">&#39;, .c#&#39;</span>                  <span class="n">C</span> <span class="n">Sharp</span>
@@ -127,7 +122,7 @@ By default, the file’s extension determines the importer:</p>
 </pre></div>
 </div>
 <p><strong>Note 2</strong>: You can also specify importers <em>explicitly</em> as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">xxx</span>           <span class="n">Importer</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">xxx</span>           <span class="n">Importer</span>
 <span class="o">---------</span>           <span class="o">--------</span>
 <span class="nd">@auto</span><span class="o">-</span><span class="n">ctext</span>         <span class="n">ctext</span>
 <span class="nd">@auto</span><span class="o">-</span><span class="n">markdown</span>      <span class="n">markdown</span>
@@ -158,7 +153,7 @@ line from the next node will concatenated to the last line of the preceding node
 <p>&#64;auto trees allow people to use Leo in collaborative environments without using sentinels in external files. Even without sentinels, &#64;auto trees can change when the corresponding external file changes outside of Leo.</p>
 <p id="index-4">&#64;auto nodes read files using language-specific importers.
 By default, the file’s extension determines the importer:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Extensions</span>                  <span class="n">Importer</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Extensions</span>                  <span class="n">Importer</span>
 <span class="o">----------</span>                  <span class="o">--------</span>
 <span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="o">.</span><span class="n">cc</span><span class="p">,</span> <span class="o">.</span><span class="n">c</span><span class="o">++</span><span class="p">,</span> <span class="o">.</span><span class="n">cpp</span><span class="p">,</span><span class="o">.</span><span class="n">cxx</span>    <span class="n">C</span>
 <span class="o">.</span><span class="n">cs</span><span class="s1">&#39;, .c#&#39;</span>                  <span class="n">C</span> <span class="n">Sharp</span>
@@ -181,7 +176,7 @@ By default, the file’s extension determines the importer:</p>
 </pre></div>
 </div>
 <p>You can also specify importers <em>explicitly</em> as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">xxx</span>           <span class="n">Importer</span>            <span class="n">Notes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">xxx</span>           <span class="n">Importer</span>            <span class="n">Notes</span>
 <span class="o">---------</span>           <span class="o">--------</span>            <span class="o">-----</span>
 <span class="nd">@auto</span><span class="o">-</span><span class="n">ctext</span>         <span class="n">ctext</span>
 <span class="nd">@auto</span><span class="o">-</span><span class="n">markdown</span>      <span class="n">markdown</span>            <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>
@@ -205,8 +200,8 @@ By default, the file’s extension determines the importer:</p>
 <p>After importing a file, Leo verifies that writing the &#64;auto node would create the same file as the original file. Such file comparison mismatches generate errors unless the problem involves only leading whitespace for non-strict languages. Whenever a mismatch occurs the first non-matching line is printed.</p>
 <p>File comparison mismatches can arise for several reasons:</p>
 <ol class="arabic simple">
-<li>Bugs in the import parsers. Please report any such bugs immediately.</li>
-<li>Underindented lines in classes, methods or function.</li>
+<li><p>Bugs in the import parsers. Please report any such bugs immediately.</p></li>
+<li><p>Underindented lines in classes, methods or function.</p></li>
 </ol>
 <p id="index-6">An <strong>underindented line</strong> is a line of body text that is indented less then the starting line of the class, method or function in which it appears. Leo outlines can not represent such lines exactly: every line in an external file will have at least the indentation of any unindented line of the corresponding node in the outline. Leo will issue a warning (not an error) for underindented Python comment lines. Such lines can not change the meaning of Python programs.</p>
 </div>
@@ -264,9 +259,9 @@ a problem: Leo 4.7 can read all external files written by Leo 4.6.</p>
 </div>
 <div class="section" id="path-expressions">
 <h3><a class="toc-backref" href="#id11">Path expressions</a><a class="headerlink" href="#path-expressions" title="Permalink to this headline">¶</a></h3>
-<p>Within &#64;path and &#64;&lt;file&gt; paths, Leo evaluates <code class="docutils literal"><span class="pre">{{exp}}</span></code> with the the following symbols defined: <code class="docutils literal"><span class="pre">c</span></code>, <code class="docutils literal"><span class="pre">g</span></code>, <code class="docutils literal"><span class="pre">p</span></code>, <code class="docutils literal"><span class="pre">os</span></code> and <code class="docutils literal"><span class="pre">sys</span></code>. Also, <code class="docutils literal"><span class="pre">sep</span></code> is defined as os.sep.
+<p>Within &#64;path and &#64;&lt;file&gt; paths, Leo evaluates <code class="docutils literal notranslate"><span class="pre">{{exp}}</span></code> with the the following symbols defined: <code class="docutils literal notranslate"><span class="pre">c</span></code>, <code class="docutils literal notranslate"><span class="pre">g</span></code>, <code class="docutils literal notranslate"><span class="pre">p</span></code>, <code class="docutils literal notranslate"><span class="pre">os</span></code> and <code class="docutils literal notranslate"><span class="pre">sys</span></code>. Also, <code class="docutils literal notranslate"><span class="pre">sep</span></code> is defined as os.sep.
 File names are relative to the directory containing the .leo file, but that can be overridden, depending on the form of the file name. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@file</span> <span class="p">{{</span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s1">&#39;my-dir&#39;</span><span class="p">)}}{{</span><span class="n">sep</span><span class="p">}}</span><span class="n">myFile</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@file</span> <span class="p">{{</span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s1">&#39;my-dir&#39;</span><span class="p">)}}{{</span><span class="n">sep</span><span class="p">}}</span><span class="n">myFile</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
@@ -274,7 +269,7 @@ File names are relative to the directory containing the .leo file, but that can 
 <div class="section" id="part-2-all-and-others">
 <h2><a class="toc-backref" href="#id12">Part 2: &#64;all and &#64;others</a><a class="headerlink" href="#part-2-all-and-others" title="Permalink to this headline">¶</a></h2>
 <p>These control how Leo places text when writing external files. They are two of the most important directives in Leo.</p>
-<dl class="glossary docutils">
+<dl class="glossary simple">
 </dl>
 <p id="index-12">&#64;all</p>
 <blockquote>
@@ -303,29 +298,33 @@ may have other &#64;others directives.</p>
 <p>The &#64;color, &#64;killcolor, &#64;nocolor and &#64;nocolor-node directives control how
 Leo colors text in the body pane.</p>
 <p id="index-14">These directives typically affect the node in which they appear and all descendant nodes. Exception: an <strong>ambiguous node</strong>, a node containing both &#64;color and &#64;nocolor directives, has no effect on how Leo colors text in descendant nodes.</p>
-<dl class="glossary docutils">
+<dl class="glossary simple">
 </dl>
 <p id="index-15">&#64;color</p>
 <blockquote>
-<div>Enables syntax coloring until the next &#64;nocolor directive.</div></blockquote>
+<div><p>Enables syntax coloring until the next &#64;nocolor directive.</p>
+</div></blockquote>
 <p id="index-16">&#64;killcolor</p>
 <blockquote>
-<div>Disables syntax coloring in a node, overriding all &#64;color, &#64;nocolor or
-&#64;nocolor-node directives in the same node.</div></blockquote>
+<div><p>Disables syntax coloring in a node, overriding all &#64;color, &#64;nocolor or
+&#64;nocolor-node directives in the same node.</p>
+</div></blockquote>
 <p id="index-17">&#64;nocolor</p>
 <blockquote>
-<div>Disables syntax coloring until the next &#64;nocolor directive.</div></blockquote>
+<div><p>Disables syntax coloring until the next &#64;nocolor directive.</p>
+</div></blockquote>
 <p id="index-18">&#64;nocolor-node</p>
 <blockquote>
-<div>Disables coloring for only the node containing it. The &#64;nocolor-node
+<div><p>Disables coloring for only the node containing it. The &#64;nocolor-node
 directive overrides the &#64;color and &#64;nocolor directives within the same
-node.</div></blockquote>
+node.</p>
+</div></blockquote>
 </div>
 <div class="section" id="part-4-dangerous-directives">
 <h2><a class="toc-backref" href="#id14">Part 4: Dangerous directives</a><a class="headerlink" href="#part-4-dangerous-directives" title="Permalink to this headline">¶</a></h2>
 <p>These directives alter how Leo represents data in external files. They are <strong>dangerous</strong>–mistakes in using these sentinels can make it impossible for Leo to read the resulting external file. Use them with care!</p>
 <p>Nevertheless, these sentinels can be useful in special situations.</p>
-<dl class="glossary docutils">
+<dl class="glossary simple">
 </dl>
 <p id="index-19">&#64;comment &lt;1, 2 or three comment delims&gt;</p>
 <blockquote>
@@ -340,7 +339,7 @@ single-line-comment delimiter, and the others set the block-comment
 delimiters.</p>
 <p>Within these delimiters, underscores represent a significant space, and
 double underscores represent a newline. Examples:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@comment</span> <span class="n">REM_</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@comment</span> <span class="n">REM_</span>
 <span class="nd">@comment</span> <span class="n">__</span><span class="o">=</span><span class="n">pod__</span> <span class="n">__</span><span class="o">=</span><span class="n">cut__</span>
 </pre></div>
 </div>
@@ -360,12 +359,13 @@ directive will be ignored. Use binascii.hexlify(‘my-delimiter’) to generate 
 Decoded delimiters are not checked for validity (such as, UTF-8) and whether they
 do not clash with Leo format (like newline or NUL characters)!</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@comment</span> <span class="nd">@0x3c212d2d2120</span> <span class="nd">@0x202d2d3e</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@comment</span> <span class="nd">@0x3c212d2d2120</span> <span class="nd">@0x202d2d3e</span>
 </pre></div>
 </div>
 <p>for GenshiXML is the same definition as</p>
 <blockquote>
-<div>&#64;comment &lt;!–!_ _–&gt;</div></blockquote>
+<div><p>&#64;comment &lt;!–!_ _–&gt;</p>
+</div></blockquote>
 <p>to create comments that will be removed from the output by Genshi. But the latter would
 cause XML parsing error on the &#64;comment line.</p>
 </div></blockquote>
@@ -377,7 +377,7 @@ whitespace. If one delimiter is present it sets the single-line-comment
 delimiter. If two delimiters are present they set block comment delimiters.</p>
 <p>This directive is often used to place Javascript text inside XML or HTML
 files. Like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@delims</span> <span class="o">/*</span> <span class="o">*/</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@delims</span> <span class="o">/*</span> <span class="o">*/</span>
 <span class="n">Javascript</span> <span class="n">stuff</span>
 <span class="nd">@delims</span> <span class="o">&lt;--</span> <span class="o">--&gt;</span>
 <span class="n">HTML</span> <span class="n">stuff</span>
@@ -395,22 +395,23 @@ the &#64;+leo sentinel and the initial &#64;+body and &#64;+node sentinels.</p>
 </div></blockquote>
 <p id="index-21">&#64;raw and &#64;end_raw</p>
 <blockquote>
-<div>&#64;raw starts a section of “raw” text that ends <em>only</em> with the &#64;end_raw directive
+<div><p>&#64;raw starts a section of “raw” text that ends <em>only</em> with the &#64;end_raw directive
 or the end of the body text containing the &#64;raw directive. Within this
 range, Leo ignores all section references and directives, and Leo generates
-no additional leading whitespace.</div></blockquote>
+no additional leading whitespace.</p>
+</div></blockquote>
 </div>
 <div class="section" id="part-5-all-other-directives">
 <h2><a class="toc-backref" href="#id15">Part 5: All other directives</a><a class="headerlink" href="#part-5-all-other-directives" title="Permalink to this headline">¶</a></h2>
 <p>This section is a reference guide for all other Leo directives, organized alphabetically.</p>
 <p>Unless otherwise noted, all directives listed are valid only in body text, and they must start at the leftmost column of the node.</p>
-<dl class="glossary docutils">
+<dl class="glossary simple">
 </dl>
 <span class="target" id="index-22"></span><span class="target" id="index-23"></span><p id="index-24">&#64; and &#64;doc</p>
 <blockquote>
 <div><p>These directives start a doc part. &#64;doc is a synonym for &#64;. Doc parts
 continue until an &#64;c directive or the end of the body text. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">@</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">doc</span> <span class="n">part</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">@</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">comment</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">doc</span> <span class="n">part</span><span class="o">.</span>
 <span class="n">Doc</span> <span class="n">parts</span> <span class="n">can</span> <span class="n">span</span> <span class="n">multiple</span> <span class="n">lines</span><span class="o">.</span>
 <span class="n">The</span> <span class="nb">next</span> <span class="n">line</span> <span class="n">ends</span> <span class="n">the</span> <span class="n">doc</span> <span class="n">part</span>
 <span class="nd">@c</span>
@@ -435,7 +436,7 @@ continue until an &#64;c directive or the end of the body text. For example:</p>
 <p id="index-28">&#64;encoding &lt;encoding&gt;</p>
 <blockquote>
 <div><p>Specifies the Unicode encoding for an external file. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span>
 </pre></div>
 </div>
 <p>When reading external files, the encoding given must match the encoding
@@ -447,12 +448,12 @@ actually used in the external file or “byte hash” will result.</p>
 sentinels. &#64;first lines must be the <em>very first</em> lines in an &#64;&lt;file&gt; node.
 More then one &#64;first lines may appear.</p>
 <p>This creates two first lines, a shebang line and a Python encoding line:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1">#! /usr/bin/env python</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1">#! /usr/bin/env python</span>
 <span class="nd">@first</span> <span class="c1"># -*- coding: utf-8 -*-</span>
 </pre></div>
 </div>
 <p>Here is a perl example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1">#!/bin/sh -- # perl, to stop looping</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1">#!/bin/sh -- # perl, to stop looping</span>
 <span class="nd">@first</span> <span class="nb">eval</span> <span class="s1">&#39;exec /usr/bin/perl -w -S $0 ${1+&quot;$@&quot;}&#39;</span>
 <span class="nd">@first</span>     <span class="k">if</span> <span class="mi">0</span><span class="p">;</span>
 </pre></div>
@@ -479,7 +480,7 @@ by the &#64;string target-language setting.</p>
 <p><strong>Note</strong>: Shell files have comments that start with #.</p>
 <p>Case is ignored in the language names. For example, the following are
 equivalent:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@language</span> <span class="n">html</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@language</span> <span class="n">html</span>
 <span class="nd">@language</span> <span class="n">HTML</span>
 </pre></div>
 </div>
@@ -493,7 +494,7 @@ over 100 such languages.</p>
 <div><p>Places lines at the very end of external files.</p>
 <p>This directive must occur at the <em>very end</em> of top-level &#64;&lt;file&gt; nodes. More
 than one &#64;last directive may exist. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>@first &lt;?php
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>@first &lt;?php
 ...
 @last ?&gt;
 </pre></div>
@@ -505,26 +506,26 @@ than one &#64;last directive may exist. For example:</p>
 <div><p>Sets the line endings for external files.
 This directive overrides the &#64;string output_newline setting.</p>
 <p>The valid forms of the &#64;lineending directive are:</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="31%" />
-<col width="69%" />
+<col style="width: 31%" />
+<col style="width: 69%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>&#64;lineending nl</td>
-<td>The default, Linux.</td>
+<tbody>
+<tr class="row-odd"><td><p>&#64;lineending nl</p></td>
+<td><p>The default, Linux.</p></td>
 </tr>
-<tr class="row-even"><td>&#64;lineending cr</td>
-<td>Mac</td>
+<tr class="row-even"><td><p>&#64;lineending cr</p></td>
+<td><p>Mac</p></td>
 </tr>
-<tr class="row-odd"><td>&#64;lineending crlf</td>
-<td>Windows</td>
+<tr class="row-odd"><td><p>&#64;lineending crlf</p></td>
+<td><p>Windows</p></td>
 </tr>
-<tr class="row-even"><td>&#64;lineending lf</td>
-<td>Same as ‘nl’, not recommended</td>
+<tr class="row-even"><td><p>&#64;lineending lf</p></td>
+<td><p>Same as ‘nl’, not recommended</p></td>
 </tr>
-<tr class="row-odd"><td>&#64;lineending platform</td>
-<td>Same as platform value for output_newline setting.</td>
+<tr class="row-odd"><td><p>&#64;lineending platform</p></td>
+<td><p>Same as platform value for output_newline setting.</p></td>
 </tr>
 </tbody>
 </table>
@@ -541,7 +542,7 @@ This directive overrides the &#64;string output_newline setting.</p>
 <div><p>Sets the page width used by the reformat-paragraph command.
 This directive also controls how &#64;doc parts are broken into lines.
 &lt;n&gt; should be a positive integer.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@pagewidth</span> <span class="mi">100</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@pagewidth</span> <span class="mi">100</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -566,8 +567,9 @@ the directory containing the .leo file.</p>
 <p>&#64;persistence is an optional feature. The stored data is akin to bookmarks. The data can “break” (become inaccessible) if the structure (including class/method/function names) changes. However, the data will typically break infrequently. To disable this feature, just delete an existing &#64;persistence node or change &#64;persistence to &#64;&#64;persistence.</p>
 <span class="target" id="index-39"></span><p id="index-40">&#64;tabwidth &lt;n&gt;</p>
 <blockquote>
-<div>Sets the width of tabs.
-Negative tab widths cause Leo to convert tabs to spaces.</div></blockquote>
+<div><p>Sets the width of tabs.
+Negative tab widths cause Leo to convert tabs to spaces.</p>
+</div></blockquote>
 <p id="index-41">&#64;wrap</p>
 <blockquote>
 <div><p>Enables line wrapping in Leo’s body pane.</p>
@@ -593,13 +595,13 @@ Negative tab widths cause Leo to convert tabs to spaces.</div></blockquote>
   <p class="topless"><a href="leoandotherprograms.html"
                         title="next chapter">Leo and Other Programs</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -624,8 +626,8 @@ Negative tab widths cause Leo to convert tabs to spaces.</div></blockquote>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jun 17, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Last updated on Jul 14, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

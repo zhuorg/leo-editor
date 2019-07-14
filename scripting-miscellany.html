@@ -1,33 +1,26 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>A Miscellany of Leo Scripting &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '6.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <script type="text/javascript" src="_static/sidebar.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Exploring Leo’s Code Base" href="theory.html" />
     <link rel="prev" title="Leo’s Console Gui" href="console-gui.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -57,51 +50,54 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#button-example" id="id1">&#64;button example</a></li>
-<li><a class="reference internal" href="#comparing-two-similar-outlines" id="id2">Comparing two similar outlines</a></li>
-<li><a class="reference internal" href="#creating-code-that-will-run-on-both-python-2-and-3" id="id3">Creating code that will run on both Python 2 and 3</a></li>
-<li><a class="reference internal" href="#creating-minimal-outlines" id="id4">Creating minimal outlines</a></li>
-<li><a class="reference internal" href="#creating-qt-windows-from-leo-scripts" id="id5">Creating Qt Windows from Leo scripts</a></li>
-<li><a class="reference internal" href="#cutting-and-pasting-text" id="id6">Cutting and pasting text</a></li>
-<li><a class="reference internal" href="#g-app-gui-run-methods-run-dialogs" id="id7">g.app.gui.run* methods run dialogs</a></li>
-<li><a class="reference internal" href="#getting-commander-preferences" id="id8">Getting commander preferences</a></li>
-<li><a class="reference internal" href="#getting-configuration-settings" id="id9">Getting configuration settings</a></li>
-<li><a class="reference internal" href="#getting-interactive-input-in-scripts-and-commands" id="id10">Getting interactive input in scripts and commands</a></li>
-<li><a class="reference internal" href="#inserting-and-deleting-icons" id="id11">Inserting and deleting icons</a></li>
-<li><a class="reference internal" href="#invoking-commands-from-scripts" id="id12">Invoking commands from scripts</a></li>
-<li><a class="reference internal" href="#making-operations-undoable" id="id13">Making operations undoable</a></li>
-<li><a class="reference internal" href="#modifying-plugins-with-script-scripts" id="id14">Modifying plugins with &#64;script scripts</a></li>
-<li><a class="reference internal" href="#modifying-the-body-pane-directly" id="id15">Modifying the body pane directly</a></li>
-<li><a class="reference internal" href="#recovering-vnodes" id="id16">Recovering vnodes</a></li>
-<li><a class="reference internal" href="#recursive-import-script" id="id17">Recursive import script</a></li>
-<li><a class="reference internal" href="#retaining-pointers-to-qt-windows" id="id18">Retaining pointers to Qt windows</a></li>
-<li><a class="reference internal" href="#running-code-at-idle-time" id="id19">Running code at idle time</a></li>
-<li><a class="reference internal" href="#running-code-in-separate-processes" id="id20">Running code in separate processes</a><ul>
-<li><a class="reference internal" href="#using-subprocess-popen" id="id21">Using subprocess.popen</a><ul>
-<li><a class="reference internal" href="#call-subprocess-popen-directly" id="id22">Call subprocess.popen directly</a></li>
-<li><a class="reference internal" href="#call-g-execute-shell-commands" id="id23">Call g.execute_shell_commands</a></li>
-<li><a class="reference internal" href="#call-g-execute-shell-commands-with-options" id="id24">Call g.execute_shell_commands_with_options</a></li>
+<li><p><a class="reference internal" href="#button-example" id="id1">&#64;button example</a></p></li>
+<li><p><a class="reference internal" href="#comparing-two-similar-outlines" id="id2">Comparing two similar outlines</a></p></li>
+<li><p><a class="reference internal" href="#creating-code-that-will-run-on-both-python-2-and-3" id="id3">Creating code that will run on both Python 2 and 3</a></p></li>
+<li><p><a class="reference internal" href="#creating-minimal-outlines" id="id4">Creating minimal outlines</a></p></li>
+<li><p><a class="reference internal" href="#creating-qt-windows-from-leo-scripts" id="id5">Creating Qt Windows from Leo scripts</a></p></li>
+<li><p><a class="reference internal" href="#cutting-and-pasting-text" id="id6">Cutting and pasting text</a></p></li>
+<li><p><a class="reference internal" href="#g-app-gui-run-methods-run-dialogs" id="id7">g.app.gui.run* methods run dialogs</a></p></li>
+<li><p><a class="reference internal" href="#getting-commander-preferences" id="id8">Getting commander preferences</a></p></li>
+<li><p><a class="reference internal" href="#getting-configuration-settings" id="id9">Getting configuration settings</a></p></li>
+<li><p><a class="reference internal" href="#getting-interactive-input-in-scripts-and-commands" id="id10">Getting interactive input in scripts and commands</a></p></li>
+<li><p><a class="reference internal" href="#inserting-and-deleting-icons" id="id11">Inserting and deleting icons</a></p></li>
+<li><p><a class="reference internal" href="#invoking-commands-from-scripts" id="id12">Invoking commands from scripts</a></p></li>
+<li><p><a class="reference internal" href="#making-operations-undoable" id="id13">Making operations undoable</a></p></li>
+<li><p><a class="reference internal" href="#modifying-plugins-with-script-scripts" id="id14">Modifying plugins with &#64;script scripts</a></p></li>
+<li><p><a class="reference internal" href="#modifying-the-body-pane-directly" id="id15">Modifying the body pane directly</a></p></li>
+<li><p><a class="reference internal" href="#recovering-vnodes" id="id16">Recovering vnodes</a></p></li>
+<li><p><a class="reference internal" href="#recursive-import-script" id="id17">Recursive import script</a></p></li>
+<li><p><a class="reference internal" href="#retaining-pointers-to-qt-windows" id="id18">Retaining pointers to Qt windows</a></p></li>
+<li><p><a class="reference internal" href="#running-code-at-idle-time" id="id19">Running code at idle time</a></p></li>
+<li><p><a class="reference internal" href="#running-code-in-separate-processes" id="id20">Running code in separate processes</a></p>
+<ul>
+<li><p><a class="reference internal" href="#using-subprocess-popen" id="id21">Using subprocess.popen</a></p>
+<ul>
+<li><p><a class="reference internal" href="#call-subprocess-popen-directly" id="id22">Call subprocess.popen directly</a></p></li>
+<li><p><a class="reference internal" href="#call-g-execute-shell-commands" id="id23">Call g.execute_shell_commands</a></p></li>
+<li><p><a class="reference internal" href="#call-g-execute-shell-commands-with-options" id="id24">Call g.execute_shell_commands_with_options</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#using-g-app-backgroundprocessmanager" id="id25">Using g.app.backgroundProcessManager</a></li>
-<li><a class="reference internal" href="#using-g-execute-shell-commands" id="id26">Using g.execute_shell_commands</a></li>
+<li><p><a class="reference internal" href="#using-g-app-backgroundprocessmanager" id="id25">Using g.app.backgroundProcessManager</a></p></li>
+<li><p><a class="reference internal" href="#using-g-execute-shell-commands" id="id26">Using g.execute_shell_commands</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#running-leo-in-batch-mode" id="id27">Running Leo in batch mode</a></li>
-<li><a class="reference internal" href="#using-pyplot-and-matplotlib" id="id28">Using &#64;pyplot and matplotlib</a><ul>
-<li><a class="reference internal" href="#overview" id="id29">Overview</a></li>
-<li><a class="reference internal" href="#displaying-images-externally" id="id30">Displaying images externally</a></li>
+<li><p><a class="reference internal" href="#running-leo-in-batch-mode" id="id27">Running Leo in batch mode</a></p></li>
+<li><p><a class="reference internal" href="#using-pyplot-and-matplotlib" id="id28">Using &#64;pyplot and matplotlib</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id29">Overview</a></p></li>
+<li><p><a class="reference internal" href="#displaying-images-externally" id="id30">Displaying images externally</a></p></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#working-with-directives-and-paths" id="id31">Working with directives and paths</a></li>
-<li><a class="reference internal" href="#writing-g-es-output-to-other-tabs" id="id32">Writing g.es output to other tabs</a></li>
-<li><a class="reference internal" href="#writing-clickable-links-to-the-log-tab" id="id33">Writing clickable links to the Log tab</a></li>
+<li><p><a class="reference internal" href="#working-with-directives-and-paths" id="id31">Working with directives and paths</a></p></li>
+<li><p><a class="reference internal" href="#writing-g-es-output-to-other-tabs" id="id32">Writing g.es output to other tabs</a></p></li>
+<li><p><a class="reference internal" href="#writing-clickable-links-to-the-log-tab" id="id33">Writing clickable links to the Log tab</a></p></li>
 </ul>
 </div>
 <div class="section" id="button-example">
 <h2><a class="toc-backref" href="#id1">&#64;button example</a><a class="headerlink" href="#button-example" title="Permalink to this headline">¶</a></h2>
 <p>The .leo files in Leo’s distribution contain many &#64;button nodes (many disabled), that do repetitive chores. Here is one, &#64;button promote-child-bodies, from LeoDocs.leo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Copy the body text of all children to the parent&#39;s body text.&#39;&#39;&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Copy the body text of all children to the parent&#39;s body text.&#39;&#39;&#39;</span>
 
 <span class="c1"># Great for creating what&#39;s new nodes.</span>
 <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">b</span><span class="p">]</span>
@@ -121,7 +117,7 @@
 <h2><a class="toc-backref" href="#id2">Comparing two similar outlines</a><a class="headerlink" href="#comparing-two-similar-outlines" title="Permalink to this headline">¶</a></h2>
 <p>efc.compareTrees does most of the work of comparing two similar outlines.
 For example, here is “&#64;button compare vr-controller” in leoPluginsRef.leo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">findNodeAnywhere</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;class ViewRenderedController (QWidget) (vr)&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">findNodeAnywhere</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;class ViewRenderedController (QWidget) (vr)&#39;</span><span class="p">)</span>
 <span class="n">p2</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">findNodeAnywhere</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s1">&#39;class ViewRenderedController (QWidget) (vr2)&#39;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p2</span>
 <span class="n">tag</span> <span class="o">=</span> <span class="s1">&#39;compare vr1 &amp; vr2&#39;</span>
@@ -134,28 +130,28 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <h2><a class="toc-backref" href="#id3">Creating code that will run on both Python 2 and 3</a><a class="headerlink" href="#creating-code-that-will-run-on-both-python-2-and-3" title="Permalink to this headline">¶</a></h2>
 <p>Leo uses constants and functions defined in leoGlobals.py to ensure that Leo’s code works on both Python 2.7+ and Python 3.x.</p>
 <ul class="simple">
-<li>g.isPython3: True if Leo is running Python 3.x.  False otherwise.</li>
+<li><p>g.isPython3: True if Leo is running Python 3.x.  False otherwise.</p></li>
 </ul>
 <p>You should be particularly aware of:</p>
 <ul class="simple">
-<li>g.isBytes, g.isInt, g.isString, g.isUnicode.</li>
-<li>g.toUnicode, g.toEncodedString, g.isValidEncoding.</li>
-<li>g.u, g.ue.</li>
+<li><p>g.isBytes, g.isInt, g.isString, g.isUnicode.</p></li>
+<li><p>g.toUnicode, g.toEncodedString, g.isValidEncoding.</p></li>
+<li><p>g.u, g.ue.</p></li>
 </ul>
 <p>If you use the above methods there should never be a need for direct calls to unicode(s), encode(s) or decode(s).  The above methods are clearer, safer, and do better error checking and recovery.</p>
 <p>A few other functions should be on your radar:</p>
 <ul class="simple">
-<li>g.readFileIntoEncodedString</li>
-<li>s, e = g.readFileIntoString</li>
-<li>g.stripBOM</li>
+<li><p>g.readFileIntoEncodedString</p></li>
+<li><p>s, e = g.readFileIntoString</p></li>
+<li><p>g.stripBOM</p></li>
 </ul>
 <p>There may be cases where direct tests against g.isPython3 seem the clearest. That’s fine, but usually you can avoid direct tests.</p>
 <p><strong>Important</strong>: g.u and g.toUnicode are not always interchangeable. You should always use g.u to convert Qt QStrings to unicode. Here is an example from quicksearch.py:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">lineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">lineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>Similarly, use g.ue to convert Qt bytes to unicode. Here is an example from LM.openZipFile:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">theFile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">theFile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">isPython3</span><span class="p">:</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">ue</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
 <span class="k">return</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
@@ -167,7 +163,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="creating-minimal-outlines">
 <h2><a class="toc-backref" href="#id4">Creating minimal outlines</a><a class="headerlink" href="#creating-minimal-outlines" title="Permalink to this headline">¶</a></h2>
 <p>The following script will create a minimal Leo outline:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="mi">1</span><span class="p">:</span>
     <span class="c1"># Create a visible frame.</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">newCommander</span><span class="p">(</span><span class="n">fileName</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
@@ -186,7 +182,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="creating-qt-windows-from-leo-scripts">
 <h2><a class="toc-backref" href="#id5">Creating Qt Windows from Leo scripts</a><a class="headerlink" href="#creating-qt-windows-from-leo-scripts" title="Permalink to this headline">¶</a></h2>
 <p>The following puts up a test window when run as a Leo script:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtGui</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtGui</span>
 <span class="n">w</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
 <span class="n">w</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
 <span class="n">w</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
@@ -196,7 +192,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </pre></div>
 </div>
 <p><strong>Important</strong>: Something like the last line is essential. Without it, the window would immediately disappear after being created.  The assignment:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">my_test</span> <span class="o">=</span> <span class="n">w</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">my_test</span> <span class="o">=</span> <span class="n">w</span>
 </pre></div>
 </div>
 <p>creates a permanent reference to the window so the window won’t be garbage collected after the Leo script exits.</p>
@@ -204,7 +200,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="cutting-and-pasting-text">
 <h2><a class="toc-backref" href="#id6">Cutting and pasting text</a><a class="headerlink" href="#cutting-and-pasting-text" title="Permalink to this headline">¶</a></h2>
 <p>The following shows how to cut and paste text to the clipboard:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">replaceClipboardWith</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">replaceClipboardWith</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">getTextFromClipboard</span><span class="p">())</span>
 </pre></div>
 </div>
@@ -213,7 +209,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <h2><a class="toc-backref" href="#id7">g.app.gui.run* methods run dialogs</a><a class="headerlink" href="#g-app-gui-run-methods-run-dialogs" title="Permalink to this headline">¶</a></h2>
 <p>Scripts can invoke various dialogs using the following methods of the g.app.gui object.</p>
 <p>Here is a partial list. Use typing completion to get the full list:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runAskOkCancelNumberDialog</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runAskOkCancelNumberDialog</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runAskOkCancelStringDialog</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">message</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runAskOkDialog</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;Ok&#39;</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runAskYesNoCancelDialog</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -223,7 +219,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </div>
 <p>The values returned are in (‘ok’,’yes’,’no’,’cancel’), as indicated by the method names. Some dialogs also return strings or numbers, again as indicated by their names.</p>
 <p>Scripts can run File Open and Save dialogs with these methods:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runOpenFileDialog</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="n">filetypes</span><span class="p">,</span><span class="n">defaultextension</span><span class="p">,</span><span class="n">multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runOpenFileDialog</span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="n">filetypes</span><span class="p">,</span><span class="n">defaultextension</span><span class="p">,</span><span class="n">multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">runSaveFileDialog</span><span class="p">(</span><span class="n">initialfile</span><span class="p">,</span><span class="n">title</span><span class="p">,</span><span class="n">filetypes</span><span class="p">,</span><span class="n">defaultextension</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -233,7 +229,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <h2><a class="toc-backref" href="#id8">Getting commander preferences</a><a class="headerlink" href="#getting-commander-preferences" title="Permalink to this headline">¶</a></h2>
 <p>Each commander sets ivars corresponding to settings.</p>
 <p>Scripts can get the following ivars of the Commands class:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ivars</span> <span class="o">=</span> <span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ivars</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s1">&#39;output_doc_flag&#39;</span><span class="p">,</span>
     <span class="s1">&#39;page_width&#39;</span><span class="p">,</span>
     <span class="s1">&#39;page_width&#39;</span><span class="p">,</span>
@@ -247,7 +243,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </pre></div>
 </div>
 <p>If your script sets c.tab_width it should call f.setTabWidth to redraw the screen:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">tab_width</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>    <span class="c1"># Change this and see what happens.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">tab_width</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>    <span class="c1"># Change this and see what happens.</span>
 <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">setTabWidth</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">tab_width</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -257,15 +253,15 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <p>Settings may be different for each commander.</p>
 <p>The c.config class has the following getters.</p>
 <ul class="simple">
-<li>c.config.getBool(settingName,default=None)</li>
-<li>c.config.getColor(settingName)</li>
-<li>c.config.getDirectory(settingName)</li>
-<li>c.config.getFloat(settingName)</li>
-<li>c.config.getInt(settingName)</li>
-<li>c.config.getLanguage(settingName)</li>
-<li>c.config.getRatio(settingName)</li>
-<li>c.config.getShortcut(settingName)</li>
-<li>c.config.getString(settingName)</li>
+<li><p>c.config.getBool(settingName,default=None)</p></li>
+<li><p>c.config.getColor(settingName)</p></li>
+<li><p>c.config.getDirectory(settingName)</p></li>
+<li><p>c.config.getFloat(settingName)</p></li>
+<li><p>c.config.getInt(settingName)</p></li>
+<li><p>c.config.getLanguage(settingName)</p></li>
+<li><p>c.config.getRatio(settingName)</p></li>
+<li><p>c.config.getShortcut(settingName)</p></li>
+<li><p>c.config.getString(settingName)</p></li>
 </ul>
 <p>These methods return None if no setting exists.</p>
 <p>The getBool ‘default’ argument to getBool specifies the value to be returned if the setting does not exist.</p>
@@ -277,7 +273,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <p>k.get1Arg is a state machine. It has to be because it’s almost always waiting for the user to type the next character. The handle keyword arg specifies the next state in the machine.</p>
 <p>The following examples will work in any class having a ‘c’ ivar bound to a commander.</p>
 <p>Example 1: get one argument from the user:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@cmd</span><span class="p">(</span><span class="s1">&#39;my-command&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@cmd</span><span class="p">(</span><span class="s1">&#39;my-command&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">myCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;State 0&quot;&quot;&quot;</span>
     <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">k</span>
@@ -297,7 +293,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </pre></div>
 </div>
 <p>Example 2: get two arguments from the user:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@cmd</span><span class="p">(</span><span class="s1">&#39;my-command&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@cmd</span><span class="p">(</span><span class="s1">&#39;my-command&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">myCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;State 0&quot;&quot;&quot;</span>
     <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">k</span>
@@ -325,20 +321,20 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </div>
 <p><strong>Summary</strong></p>
 <ul class="simple">
-<li>The handler keyword argument to k.get1Arg and k.getNextArg specifies the next state in the state machine.</li>
-<li>k.get1Arg contains many optional keyword arguments. See its docstring for details.</li>
+<li><p>The handler keyword argument to k.get1Arg and k.getNextArg specifies the next state in the state machine.</p></li>
+<li><p>k.get1Arg contains many optional keyword arguments. See its docstring for details.</p></li>
 </ul>
 </div>
 <div class="section" id="inserting-and-deleting-icons">
 <h2><a class="toc-backref" href="#id11">Inserting and deleting icons</a><a class="headerlink" href="#inserting-and-deleting-icons" title="Permalink to this headline">¶</a></h2>
 <p>You can add an icon to the presently selected node with c.editCommands.insertIconFromFile(path). path is an absolute path or a path relative to the leo/Icons folder. A relative path is recommended if you plan to use the icons on machines with different directory structures.</p>
 <p>For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;rt_arrow_disabled.gif&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;rt_arrow_disabled.gif&#39;</span>
 <span class="n">c</span><span class="o">.</span><span class="n">editCommands</span><span class="o">.</span><span class="n">insertIconFromFile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Scripts can delete icons from the presently selected node using the following methods:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">editCommands</span><span class="o">.</span><span class="n">deleteFirstIcon</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">editCommands</span><span class="o">.</span><span class="n">deleteFirstIcon</span><span class="p">()</span>
 <span class="n">c</span><span class="o">.</span><span class="n">editCommands</span><span class="o">.</span><span class="n">deleteLastIcon</span><span class="p">()</span>
 <span class="n">c</span><span class="o">.</span><span class="n">editCommands</span><span class="o">.</span><span class="n">deleteNodeIcons</span><span class="p">()</span>
 </pre></div>
@@ -347,15 +343,15 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="invoking-commands-from-scripts">
 <h2><a class="toc-backref" href="#id12">Invoking commands from scripts</a><a class="headerlink" href="#invoking-commands-from-scripts" title="Permalink to this headline">¶</a></h2>
 <p>Leo dispatches commands using c.doCommand, which calls the “command1” and “command2” hook routines for the given label. c.doCommand catches all exceptions thrown by the command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">doCommand</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">markHeadline</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;markheadline&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">doCommand</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">markHeadline</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;markheadline&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can also call command handlers directly so that hooks will not be called:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">markHeadline</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">markHeadline</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>You can invoke minibuffer commands by name.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">executeMinibufferCommand</span><span class="p">(</span><span class="s1">&#39;open-outline&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">executeMinibufferCommand</span><span class="p">(</span><span class="s1">&#39;open-outline&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>c.keyHandler.funcReturn contains the value returned from the command. In many cases, as above, this value is simply ‘break’.</p>
@@ -372,7 +368,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <h2><a class="toc-backref" href="#id14">Modifying plugins with &#64;script scripts</a><a class="headerlink" href="#modifying-plugins-with-script-scripts" title="Permalink to this headline">¶</a></h2>
 <p>The mod_scripting plugin runs &#64;scripts before plugin initiation is complete. Thus, such scripts can not directly modify plugins. Instead, a script can create an event handler for the after-create-leo-frame that will modify the plugin.</p>
 <p>For example, the following modifies the cleo.py plugin after Leo has completed loading it:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prikey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prikey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">pa</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getat</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s1">&#39;priority&#39;</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -399,15 +395,15 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="modifying-the-body-pane-directly">
 <h2><a class="toc-backref" href="#id15">Modifying the body pane directly</a><a class="headerlink" href="#modifying-the-body-pane-directly" title="Permalink to this headline">¶</a></h2>
 <p><strong>Important</strong>: The changes you make below <strong>will not persist</strong> unless your script calls c.frame.body.onBodyChanged after making those changes. This method has the following signature:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">onBodyChanged</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">undoType</span><span class="p">,</span><span class="n">oldSel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">oldText</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">oldYview</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">onBodyChanged</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">undoType</span><span class="p">,</span><span class="n">oldSel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">oldText</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">oldYview</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </pre></div>
 </div>
 <p>Let:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">wrapper</span> <span class="c1"># Leo&#39;s body pane.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">wrapper</span> <span class="c1"># Leo&#39;s body pane.</span>
 </pre></div>
 </div>
 <p>Scripts can get or change the context of the body as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">w</span><span class="o">.</span><span class="n">appendText</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>                     <span class="c1"># Append s to end of body text.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">w</span><span class="o">.</span><span class="n">appendText</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>                     <span class="c1"># Append s to end of body text.</span>
 <span class="n">w</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>                  <span class="c1"># Delete characters from i to j.</span>
 <span class="n">w</span><span class="o">.</span><span class="n">deleteTextSelection</span><span class="p">()</span>             <span class="c1"># Delete the selected text, if any.</span>
 <span class="n">s</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>                 <span class="c1"># Return the text from i to j.</span>
@@ -421,16 +417,16 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 </div>
 <p><strong>Notes</strong>:</p>
 <ul class="simple">
-<li>These are only the most commonly-used methods. For more information, consult Leo’s source code.</li>
-<li>i and j are zero-based indices into the the text. When j is not specified, it defaults to i. When the sort parameter is in effect, getSelectionRange ensures i &lt;= j.</li>
-<li>color is a Tk color name, even when using the Gt gui.</li>
+<li><p>These are only the most commonly-used methods. For more information, consult Leo’s source code.</p></li>
+<li><p>i and j are zero-based indices into the the text. When j is not specified, it defaults to i. When the sort parameter is in effect, getSelectionRange ensures i &lt;= j.</p></li>
+<li><p>color is a Tk color name, even when using the Gt gui.</p></li>
 </ul>
 </div>
 <div class="section" id="recovering-vnodes">
 <h2><a class="toc-backref" href="#id16">Recovering vnodes</a><a class="headerlink" href="#recovering-vnodes" title="Permalink to this headline">¶</a></h2>
 <p>Positions become invalid whenever the outline changes.</p>
 <p>This script finds a position p2 having the same vnode as an invalid position p:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">positionExists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">positionExists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">p2</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">all_positions</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">p2</span><span class="o">.</span><span class="n">v</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="n">v</span><span class="p">:</span> <span class="c1"># found</span>
             <span class="n">c</span><span class="o">.</span><span class="n">selectPosition</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
@@ -442,7 +438,7 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <div class="section" id="recursive-import-script">
 <h2><a class="toc-backref" href="#id17">Recursive import script</a><a class="headerlink" href="#recursive-import-script" title="Permalink to this headline">¶</a></h2>
 <p>The following script imports files from a given directory and all subdirectories:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">recursiveImport</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">recursiveImport</span><span class="p">(</span>
     <span class="n">dir_</span> <span class="o">=</span> <span class="s1">&#39;path to file or directory&#39;</span><span class="p">,</span>
     <span class="n">kind</span> <span class="o">=</span> <span class="s1">&#39;@clean&#39;</span><span class="p">,</span>        <span class="c1"># or &#39;@file&#39; or &#39;@auto&#39;</span>
     <span class="n">one_file</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>       <span class="c1"># True: import only one file.</span>
@@ -456,18 +452,19 @@ For example, here is “&#64;button compare vr-controller” in leoPluginsRef.le
 <h2><a class="toc-backref" href="#id18">Retaining pointers to Qt windows</a><a class="headerlink" href="#retaining-pointers-to-qt-windows" title="Permalink to this headline">¶</a></h2>
 <p>The following script won’t work as intended:</p>
 <blockquote>
-<div>from PyQt4 import QtGui
+<div><p>from PyQt4 import QtGui
 w = QtGui.QWidget()
 w.resize(250, 150)
 w.move(300, 300)
 w.setWindowTitle(‘Simple test’)
-w.show()</div></blockquote>
+w.show()</p>
+</div></blockquote>
 <p>When the script exits the sole reference to the window, w, ceases to exist, so the window is destroyed (garbage collected). To keep the window open, add the following code as the last line to keep the reference alive:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">scriptsDict</span><span class="p">[</span><span class="s1">&#39;my-script_w&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">scriptsDict</span><span class="p">[</span><span class="s1">&#39;my-script_w&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
 </pre></div>
 </div>
 <p>Note that this reference will persist until the next time you run the execute-script. If you want something even more permanent, you can do something like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">my_script_w</span> <span class="o">=</span> <span class="n">w</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">my_script_w</span> <span class="o">=</span> <span class="n">w</span>
 </pre></div>
 </div>
 </div>
@@ -475,14 +472,14 @@ w.show()</div></blockquote>
 <h2><a class="toc-backref" href="#id19">Running code at idle time</a><a class="headerlink" href="#running-code-at-idle-time" title="Permalink to this headline">¶</a></h2>
 <p>Scripts and plugins can call g.app.idleTimeManager.add_callback(callback) to cause
 the callback to be called at idle time forever. This should suffice for most purposes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_hi</span><span class="p">():</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_hi</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;hi&#39;</span><span class="p">)</span>
 
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">idleTimeManager</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">print_hi</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For greater control, g.IdleTime is a thin wrapper for the Leo’s IdleTime class. The IdleTime class executes a handler with a given delay at idle time. The handler takes a single argument, the IdleTime instance:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;IdleTime handler.  it is an IdleTime instance.&quot;&quot;&quot;</span>
     <span class="n">delta_t</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">time</span><span class="o">-</span><span class="n">it</span><span class="o">.</span><span class="n">starting_time</span>
     <span class="n">g</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">count</span><span class="p">,</span><span class="n">it</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">shortFileName</span><span class="p">(),</span><span class="s1">&#39;</span><span class="si">%2.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">delta_t</span><span class="p">))</span>
@@ -496,7 +493,7 @@ the callback to be called at idle time forever. This should suffice for most pur
 </pre></div>
 </div>
 <p>The code creates an instance of the IdleTime class that calls the given handler at idle time, and no more than once every 500 msec.  Here is the output:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">handler</span> <span class="mi">1</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">0.5100</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handler</span> <span class="mi">1</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">0.5100</span>
 <span class="n">handler</span> <span class="mi">2</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">1.0300</span>
 <span class="n">handler</span> <span class="mi">3</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">1.5400</span>
 <span class="n">handler</span> <span class="mi">4</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">2.0500</span>
@@ -505,7 +502,7 @@ the callback to be called at idle time forever. This should suffice for most pur
 </pre></div>
 </div>
 <p>Timer instances are completely independent:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler1</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler1</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
     <span class="n">delta_t</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">time</span><span class="o">-</span><span class="n">it</span><span class="o">.</span><span class="n">starting_time</span>
     <span class="n">g</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%2s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> </span><span class="si">%2.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">count</span><span class="p">,</span><span class="n">it</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">shortFileName</span><span class="p">(),</span><span class="n">delta_t</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">it</span><span class="o">.</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
@@ -527,7 +524,7 @@ the callback to be called at idle time forever. This should suffice for most pur
 </pre></div>
 </div>
 <p>Here is the output:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">handler1</span>  <span class="mi">1</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">0.5200</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">handler1</span>  <span class="mi">1</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">0.5200</span>
 <span class="n">handler2</span>  <span class="mi">1</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">1.0100</span>
 <span class="n">handler1</span>  <span class="mi">2</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">1.0300</span>
 <span class="n">handler1</span>  <span class="mi">3</span> <span class="n">ekr</span><span class="o">.</span><span class="n">leo</span> <span class="mf">1.5400</span>
@@ -554,9 +551,9 @@ the callback to be called at idle time forever. This should suffice for most pur
 <h2><a class="toc-backref" href="#id20">Running code in separate processes</a><a class="headerlink" href="#running-code-in-separate-processes" title="Permalink to this headline">¶</a></h2>
 <p>It is dead easy for scripts, including &#64;button scripts, plugins, etc., to drive any external processes, including compilers and interpreters, from within Leo.</p>
 <ul class="simple">
-<li>The first section discusses three ways of calling subprocess.popen directly or via Leo helper functions.</li>
-<li>The second section discusses the BackgroundProcessManager class.  Leo’s pylint command uses this class to run pylint commands sequentially <em>without blocking Leo</em>. Running processes sequentially prevents unwanted interleaving of output.</li>
-<li>The last two sections discuss using g.execute_shell_commands and g.execute_shell_commands_with_options.</li>
+<li><p>The first section discusses three ways of calling subprocess.popen directly or via Leo helper functions.</p></li>
+<li><p>The second section discusses the BackgroundProcessManager class.  Leo’s pylint command uses this class to run pylint commands sequentially <em>without blocking Leo</em>. Running processes sequentially prevents unwanted interleaving of output.</p></li>
+<li><p>The last two sections discuss using g.execute_shell_commands and g.execute_shell_commands_with_options.</p></li>
 </ul>
 <div class="section" id="using-subprocess-popen">
 <h3><a class="toc-backref" href="#id21">Using subprocess.popen</a><a class="headerlink" href="#using-subprocess-popen" title="Permalink to this headline">¶</a></h3>
@@ -564,12 +561,12 @@ the callback to be called at idle time forever. This should suffice for most pur
 <div class="section" id="call-subprocess-popen-directly">
 <h4><a class="toc-backref" href="#id22">Call subprocess.popen directly</a><a class="headerlink" href="#call-subprocess-popen-directly" title="Permalink to this headline">¶</a></h4>
 <p>Calling subprocess.popen is often simple and good. For example, the following executes the ‘npm run dev’ command in a given directory.  Leo continues, without waiting for the command to return:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
 <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s1">&#39;npm run dev&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following hangs Leo until the command completes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
 <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
 </pre></div>
@@ -579,7 +576,7 @@ the callback to be called at idle time forever. This should suffice for most pur
 <div class="section" id="call-g-execute-shell-commands">
 <h4><a class="toc-backref" href="#id23">Call g.execute_shell_commands</a><a class="headerlink" href="#call-g-execute-shell-commands" title="Permalink to this headline">¶</a></h4>
 <p>Use g.execute_shell_commands is a thin wrapper around subprocess.popen.  It calls subprocess.popen once for every command in a list.  This function waits for commands that start with ‘&amp;’. Here it is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">execute_shell_commands</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">execute_shell_commands</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">isString</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span> <span class="n">commands</span> <span class="o">=</span> <span class="p">[</span><span class="n">commands</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
         <span class="n">wait</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">command</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">)</span>
@@ -590,7 +587,7 @@ the callback to be called at idle time forever. This should suffice for most pur
 </pre></div>
 </div>
 <p>For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">execute_shell_commands</span><span class="p">([</span><span class="s1">&#39;&amp;npm run dev&#39;</span><span class="p">,])</span>
 </pre></div>
 </div>
@@ -598,19 +595,18 @@ the callback to be called at idle time forever. This should suffice for most pur
 <div class="section" id="call-g-execute-shell-commands-with-options">
 <h4><a class="toc-backref" href="#id24">Call g.execute_shell_commands_with_options</a><a class="headerlink" href="#call-g-execute-shell-commands-with-options" title="Permalink to this headline">¶</a></h4>
 <p>g.execute_shell_commands_with_options is more flexible.  It allows scripts to get both the starting directory and the commands themselves from Leo’s settings. Its signature is:</p>
-<dl class="docutils">
-<dt>def execute_shell_commands_with_options(</dt>
-<dd>base_dir = None,
+<dl>
+<dt>def execute_shell_commands_with_options(</dt><dd><p>base_dir = None,
 c = None,
 command_setting = None,
 commands = None,
 path_setting = None,
-warning = None,</dd>
-<dt>):</dt>
-<dd><p class="first">‘’’
+warning = None,</p>
+</dd>
+<dt>):</dt><dd><p>‘’’
 A helper for prototype commands or any other code that
 runs programs in a separate process.</p>
-<p class="last">base_dir:           Base directory to use if no path_setting is given.
+<p>base_dir:           Base directory to use if no path_setting is given.
 commands:           A list of commands, for g.execute_shell_commands.
 commands_setting:   Name of &#64;data setting for commands.
 path_setting:       Name of &#64;string setting for the base directory.
@@ -619,14 +615,14 @@ warning:            A warning to be printed before executing the commands.
 </dd>
 </dl>
 <p>For example, put this in myLeoSettings.leo:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">my</span><span class="o">-</span><span class="n">npm</span><span class="o">-</span><span class="n">commands</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">my</span><span class="o">-</span><span class="n">npm</span><span class="o">-</span><span class="n">commands</span>
 <span class="n">yarn</span> <span class="n">dev</span>
 
 <span class="nd">@string</span> <span class="n">my</span><span class="o">-</span><span class="n">npm</span><span class="o">-</span><span class="n">base</span> <span class="o">=</span> <span class="o">/</span><span class="n">npmtest</span>
 </pre></div>
 </div>
 <p>And then run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">execute_shell_commands_with_options</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">execute_shell_commands_with_options</span><span class="p">(</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="p">,</span>
     <span class="n">command_setting</span> <span class="o">=</span> <span class="s1">&#39;my-npm-commands&#39;</span><span class="p">,</span>
     <span class="n">path_setting</span><span class="o">=</span> <span class="s1">&#39;my-npm-base&#39;</span><span class="p">,</span>
@@ -639,7 +635,7 @@ warning:            A warning to be printed before executing the commands.
 <h3><a class="toc-backref" href="#id25">Using g.app.backgroundProcessManager</a><a class="headerlink" href="#using-g-app-backgroundprocessmanager" title="Permalink to this headline">¶</a></h3>
 <p>g.app.backgroundProcessManager is the singleton instance of the BackgroundProcessManager (BPM) class. This class runs background processes, <em>without blocking Leo</em>. The BPM manages a queue of processes, and runs them <em>one at a time</em> so that their output remains separate.</p>
 <p>BPM.start_process(c, command, kind, fn=None, shell=False) adds a process to the queue that will run the given command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bpm</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">backgroundProcessManager</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bpm</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">backgroundProcessManager</span>
 <span class="n">bpm</span><span class="o">.</span><span class="n">start_process</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="s1">&#39;ls&#39;</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;ls&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -649,7 +645,7 @@ warning:            A warning to be printed before executing the commands.
 <p><strong>Running multiple processes simultaneously</strong></p>
 <p>Only one process at a time should be producing output. All processes that <em>do</em> produce output should be managed by the singleton BPM instance.</p>
 <p>To run processes that <em>don’t</em> produce output, just call subprocess.Popen:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s1">&#39;ls&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -658,7 +654,7 @@ warning:            A warning to be printed before executing the commands.
 <div class="section" id="using-g-execute-shell-commands">
 <h3><a class="toc-backref" href="#id26">Using g.execute_shell_commands</a><a class="headerlink" href="#using-g-execute-shell-commands" title="Permalink to this headline">¶</a></h3>
 <p>g.execute_shell_command tales a single argument, which may be either a string or a list of strings. Each string represents one command. g.execute_shell_command executes each command in order.  Commands starting with ‘&amp;’ are executed without waiting. Commands that do not start with ‘&amp;’ finish before running later commands. Examples:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Run the qml app in a separate process:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the qml app in a separate process:</span>
 <span class="n">g</span><span class="o">.</span><span class="n">execute_shell_commands</span><span class="p">(</span><span class="s1">&#39;qmlscene /test/qml_test.qml&#39;</span><span class="p">)</span>
 
 <span class="c1"># List the contents of a directory:</span>
@@ -677,12 +673,12 @@ warning:            A warning to be printed before executing the commands.
 <div class="section" id="running-leo-in-batch-mode">
 <h2><a class="toc-backref" href="#id27">Running Leo in batch mode</a><a class="headerlink" href="#running-leo-in-batch-mode" title="Permalink to this headline">¶</a></h2>
 <p>On startup, Leo looks for two arguments of the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">script</span> <span class="n">scriptFile</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">script</span> <span class="n">scriptFile</span>
 </pre></div>
 </div>
 <p>If found, Leo enters batch mode. In batch mode Leo does not show any windows. Leo assumes the scriptFile contains a Python script and executes the contents of that file using Leo’s Execute Script command. By default, Leo sends all output to the console window. Scripts in the scriptFile may disable or enable this output by calling app.log.disable or app.log.enable</p>
 <p>Scripts in the scriptFile may execute any of Leo’s commands except the Edit Body and Edit Headline commands. Those commands require interaction with the user. For example, the following batch script reads a Leo file and prints all the headlines in that file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">os_path_finalize_join</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">loadDir</span><span class="p">,</span><span class="s1">&#39;..&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;test.leo&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">os_path_finalize_join</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">loadDir</span><span class="p">,</span><span class="s1">&#39;..&#39;</span><span class="p">,</span><span class="s1">&#39;test&#39;</span><span class="p">,</span><span class="s1">&#39;test.leo&#39;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">os_path_exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span><span class="n">path</span>
 
 <span class="n">g</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span> <span class="c1"># disable reading messages while opening the file</span>
@@ -701,7 +697,7 @@ warning:            A warning to be printed before executing the commands.
 <p>Leo’s &#64;pyplot nodes support
 <a class="reference external" href="https://matplotlib.org/users/index.html">matplotlib</a>.
 &#64;pyplot nodes start with &#64;pyplot in the headline.  The rest of the headline is comments. These nodes should contain matplotlib scripts that create figures or animations.  Like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fig2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fig2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -718,10 +714,9 @@ warning:            A warning to be printed before executing the commands.
 </div>
 <p><strong>Notes</strong></p>
 <ol class="arabic">
-<li><p class="first">If the viewrendered (VR) pane is open, Leo will display the animation in the VR pane whenever the user selects the &#64;pyplot node.  This has been tested only with the viewrendered.py, not the viewrendered2.py plugin.</p>
-</li>
-<li><p class="first">In addition to c, g, and p, the VR code predefines several other vars.  The VR code does the following imports:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib</span>
+<li><p>If the viewrendered (VR) pane is open, Leo will display the animation in the VR pane whenever the user selects the &#64;pyplot node.  This has been tested only with the viewrendered.py, not the viewrendered2.py plugin.</p></li>
+<li><p>In addition to c, g, and p, the VR code predefines several other vars.  The VR code does the following imports:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.animation</span> <span class="k">as</span> <span class="nn">animation</span>
@@ -735,15 +730,15 @@ warning:            A warning to be printed before executing the commands.
 <h3><a class="toc-backref" href="#id30">Displaying images externally</a><a class="headerlink" href="#displaying-images-externally" title="Permalink to this headline">¶</a></h3>
 <p>To display images and animations in an external window, <em>don’t</em> put the script in an &#64;pyplot node. Instead, put the script in a regular node, with the following modifications:</p>
 <ol class="arabic">
-<li><p class="first">Add the required imports:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<li><p>Add the required imports:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib.animation</span> <span class="k">as</span> <span class="nn">animation</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Place the following at the end of the script:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+<li><p>Place the following at the end of the script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
     <span class="c1"># sets interactive mode. Prevents this message:</span>
     <span class="c1"># QCoreApplication::exec: The event loop is already running</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -753,19 +748,19 @@ warning:            A warning to be printed before executing the commands.
 </ol>
 <p><strong>Bugs</strong></p>
 <ol class="arabic simple">
-<li>Once you use the VR pane to display an image, you can’t (at present) display an image externally.</li>
-<li>The VR plugin will refuse to close the VR pane if it ever displays an &#64;pyplot image or animation. This prevents Leo from hard crashing in the pyplot code. As a workaround, you can  resize the VR pane so it is effectively hidden.</li>
+<li><p>Once you use the VR pane to display an image, you can’t (at present) display an image externally.</p></li>
+<li><p>The VR plugin will refuse to close the VR pane if it ever displays an &#64;pyplot image or animation. This prevents Leo from hard crashing in the pyplot code. As a workaround, you can  resize the VR pane so it is effectively hidden.</p></li>
 </ol>
 </div>
 </div>
 <div class="section" id="working-with-directives-and-paths">
 <h2><a class="toc-backref" href="#id31">Working with directives and paths</a><a class="headerlink" href="#working-with-directives-and-paths" title="Permalink to this headline">¶</a></h2>
 <p>Scripts can easily determine what directives are in effect at a particular position in an outline. c.scanAllDirectives(p) returns a Python dictionary whose keys are directive names and whose values are the value in effect at position p. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">scanAllDirectives</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="n">g</span><span class="o">.</span><span class="n">es</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">dictToString</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">scanAllDirectives</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="n">g</span><span class="o">.</span><span class="n">es</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">dictToString</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>In particular, d.get(‘path’) returns the full, absolute path created by all &#64;path directives that are in ancestors of node p. If p is any kind of &#64;file node (including &#64;file, &#64;auto, &#64;clean, etc.), the following script will print the full path to the created file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">)</span>
 <span class="n">name</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">anyAtFileNodeName</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
    <span class="n">name</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">os_path_finalize_join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
@@ -776,7 +771,7 @@ warning:            A warning to be printed before executing the commands.
 <div class="section" id="writing-g-es-output-to-other-tabs">
 <h2><a class="toc-backref" href="#id32">Writing g.es output to other tabs</a><a class="headerlink" href="#writing-g-es-output-to-other-tabs" title="Permalink to this headline">¶</a></h2>
 <p>g.es can send it’s output to tabs other than the log tab:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">selectTab</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">selectTab</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">)</span>
     <span class="c1"># Create Test or make it visible.</span>
 
 <span class="n">g</span><span class="o">.</span><span class="n">es</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span><span class="n">tabName</span><span class="o">=</span><span class="s1">&#39;Test&#39;</span><span class="p">)</span>
@@ -784,7 +779,7 @@ warning:            A warning to be printed before executing the commands.
 </pre></div>
 </div>
 <p>Plugins and scripts may call c.frame.log.createTab to create non-text widgets in the log pane:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">leo.core.leoQt</span> <span class="k">import</span> <span class="n">QtWidgets</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">leo.core.leoQt</span> <span class="k">import</span> <span class="n">QtWidgets</span>
 <span class="n">log</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span>
 <span class="n">w</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">createTab</span><span class="p">(</span><span class="s1">&#39;My Tab&#39;</span><span class="p">,</span> <span class="n">createText</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="p">())</span>
 <span class="n">log</span><span class="o">.</span><span class="n">selectTab</span><span class="p">(</span><span class="s1">&#39;My Tab&#39;</span><span class="p">)</span>
@@ -815,13 +810,13 @@ message to the Log pane.</p>
   <p class="topless"><a href="theory.html"
                         title="next chapter">Exploring Leo’s Code Base</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -846,8 +841,8 @@ message to the Log pane.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jun 17, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Last updated on Jul 14, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>
