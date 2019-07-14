@@ -1,26 +1,33 @@
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Using Vim with Leo &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Embedding Leo with the leoBridge module" href="leoBridge.html" />
     <link rel="prev" title="Leo and Emacs, including org mode" href="emacs.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -47,31 +54,29 @@
 <h1>Using Vim with Leo<a class="headerlink" href="#using-vim-with-leo" title="Permalink to this headline">¶</a></h1>
 <p>This chapter discusses these topics:</p>
 <ul class="simple">
-<li><p>How to enable and use Leo’s new vim-emulation mode.</p></li>
-<li><p>How to import and export vim’s .otl files.</p></li>
-<li><p>How to install and use stand-alone vim-like bindings.</p></li>
+<li>How to enable and use Leo’s new vim-emulation mode.</li>
+<li>How to import and export vim’s .otl files.</li>
+<li>How to install and use stand-alone vim-like bindings.</li>
 </ul>
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#using-leo-s-native-vim-mode" id="id1">Using Leo’s native vim mode</a></p>
-<ul>
-<li><p><a class="reference internal" href="#supported-commands" id="id2">Supported commands</a></p></li>
-<li><p><a class="reference internal" href="#differences-from-the-real-vim" id="id3">Differences from the real vim</a></p></li>
-<li><p><a class="reference internal" href="#abbreviations" id="id4">Abbreviations</a></p></li>
-<li><p><a class="reference internal" href="#colon-commands" id="id5">Colon commands</a></p></li>
-<li><p><a class="reference internal" href="#settings" id="id6">Settings</a></p></li>
+<li><a class="reference internal" href="#using-leo-s-native-vim-mode" id="id1">Using Leo’s native vim mode</a><ul>
+<li><a class="reference internal" href="#supported-commands" id="id2">Supported commands</a></li>
+<li><a class="reference internal" href="#differences-from-the-real-vim" id="id3">Differences from the real vim</a></li>
+<li><a class="reference internal" href="#abbreviations" id="id4">Abbreviations</a></li>
+<li><a class="reference internal" href="#colon-commands" id="id5">Colon commands</a></li>
+<li><a class="reference internal" href="#settings" id="id6">Settings</a></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#using-vimoutline-otl-files-in-leo" id="id7">Using vimoutline (.otl) files in Leo</a></p></li>
-<li><p><a class="reference internal" href="#using-stand-alone-vim-bindings" id="id8">Using stand-alone vim bindings</a></p>
-<ul>
-<li><p><a class="reference internal" href="#installing-vim-bindings" id="id9">Installing vim bindings</a></p></li>
-<li><p><a class="reference internal" href="#general-commands" id="id10">General commands</a></p></li>
-<li><p><a class="reference internal" href="#body-pane-commands" id="id11">Body pane commands</a></p></li>
-<li><p><a class="reference internal" href="#outline-commands" id="id12">Outline commands</a></p></li>
-<li><p><a class="reference internal" href="#commands-not-supported" id="id13">Commands not supported</a></p></li>
-<li><p><a class="reference internal" href="#avoiding-changes-to-tag-files" id="id14">Avoiding changes to ‘tag’ files</a></p></li>
+<li><a class="reference internal" href="#using-vimoutline-otl-files-in-leo" id="id7">Using vimoutline (.otl) files in Leo</a></li>
+<li><a class="reference internal" href="#using-stand-alone-vim-bindings" id="id8">Using stand-alone vim bindings</a><ul>
+<li><a class="reference internal" href="#installing-vim-bindings" id="id9">Installing vim bindings</a></li>
+<li><a class="reference internal" href="#general-commands" id="id10">General commands</a></li>
+<li><a class="reference internal" href="#body-pane-commands" id="id11">Body pane commands</a></li>
+<li><a class="reference internal" href="#outline-commands" id="id12">Outline commands</a></li>
+<li><a class="reference internal" href="#commands-not-supported" id="id13">Commands not supported</a></li>
+<li><a class="reference internal" href="#avoiding-changes-to-tag-files" id="id14">Avoiding changes to ‘tag’ files</a></li>
 </ul>
 </li>
 </ul>
@@ -82,50 +87,50 @@
 <div class="section" id="supported-commands">
 <h3><a class="toc-backref" href="#id2">Supported commands</a><a class="headerlink" href="#supported-commands" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>Cursor motions: ^,$,0,b,e,f,F,gg,gG,j,h,k,l,t,T,w.</p></li>
-<li><p>The gb,ge,gh commands are synonyms for 0,$,^.</p></li>
-<li><p>The h,j,k,l commands work on outlines when entered in the outline pane.</p></li>
-<li><p>0 in outline pane: goto-first-visible-node</p></li>
-<li><p>e in outline pane: goto-last-visible-node.</p></li>
-<li><p>Deleting text: d{motion},{motion}d,v{motion}d,diw,x.</p></li>
-<li><p>Insert commands: a,A,i,o,O and switch to insert mode if entered in the outline pane.</p></li>
-<li><p>Yank &amp; paste commands: y,p. These act on outlines if entered in the outline pane.</p></li>
-<li><p>Search commands: /,?,n,*,#.  These commands are node-only searches.</p></li>
-<li><p>The dot command ‘.’ works for motions, but not yet for inserts or searches.</p></li>
-<li><p>v: start/end visual mode.</p></li>
+<li>Cursor motions: ^,$,0,b,e,f,F,gg,gG,j,h,k,l,t,T,w.</li>
+<li>The gb,ge,gh commands are synonyms for 0,$,^.</li>
+<li>The h,j,k,l commands work on outlines when entered in the outline pane.</li>
+<li>0 in outline pane: goto-first-visible-node</li>
+<li>e in outline pane: goto-last-visible-node.</li>
+<li>Deleting text: d{motion},{motion}d,v{motion}d,diw,x.</li>
+<li>Insert commands: a,A,i,o,O and switch to insert mode if entered in the outline pane.</li>
+<li>Yank &amp; paste commands: y,p. These act on outlines if entered in the outline pane.</li>
+<li>Search commands: /,?,n,*,#.  These commands are node-only searches.</li>
+<li>The dot command ‘.’ works for motions, but not yet for inserts or searches.</li>
+<li>v: start/end visual mode.</li>
 </ul>
 <p>Notes:</p>
 <ul class="simple">
-<li><p>Except as noted above, all vim-mode commands must be entered in the body pane.</p></li>
-<li><p>&lt;Return&gt; in headlines switches to the outline pane.</p></li>
-<li><p>&lt;Return&gt; in the outline pane switches to the body pane.</p></li>
+<li>Except as noted above, all vim-mode commands must be entered in the body pane.</li>
+<li>&lt;Return&gt; in headlines switches to the outline pane.</li>
+<li>&lt;Return&gt; in the outline pane switches to the body pane.</li>
 </ul>
 </div>
 <div class="section" id="differences-from-the-real-vim">
 <h3><a class="toc-backref" href="#id3">Differences from the real vim</a><a class="headerlink" href="#differences-from-the-real-vim" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>The gb,ge,gh commands are synonyms for 0,$,^.</p></li>
-<li><p>The h,j,k,l commands work on outlines when entered in the outline pane.</p></li>
-<li><p>The a,A,i,o,O commands switch to insert mode if entered in the outline pane.</p></li>
-<li><p>The y,p commands act on outlines if entered in the outline pane.</p></li>
-<li><p>Ending visual mode with ‘v’ retains the selection range.</p></li>
-<li><p>Ctrl-H puts the headline in insert mode.</p></li>
-<li><p>Mouse clicks never change vim’s state.</p></li>
+<li>The gb,ge,gh commands are synonyms for 0,$,^.</li>
+<li>The h,j,k,l commands work on outlines when entered in the outline pane.</li>
+<li>The a,A,i,o,O commands switch to insert mode if entered in the outline pane.</li>
+<li>The y,p commands act on outlines if entered in the outline pane.</li>
+<li>Ending visual mode with ‘v’ retains the selection range.</li>
+<li>Ctrl-H puts the headline in insert mode.</li>
+<li>Mouse clicks never change vim’s state.</li>
 </ul>
 </div>
 <div class="section" id="abbreviations">
 <h3><a class="toc-backref" href="#id4">Abbreviations</a><a class="headerlink" href="#abbreviations" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>The <code class="docutils literal notranslate"><span class="pre">jj</span></code> abbreviation switches to normal mode, preserving the changed
-status of the .leo file.</p></li>
-<li><p>Return in visual/normal mode enters insert mode.</p></li>
+<li>The <code class="docutils literal"><span class="pre">jj</span></code> abbreviation switches to normal mode, preserving the changed
+status of the .leo file.</li>
+<li>Return in visual/normal mode enters insert mode.</li>
 </ul>
 </div>
 <div class="section" id="colon-commands">
 <h3><a class="toc-backref" href="#id5">Colon commands</a><a class="headerlink" href="#colon-commands" title="Permalink to this headline">¶</a></h3>
 <p>The ‘:’ command enters Leo’s minibuffer, with ‘:’ pre-inserted. You may
 backspace over the ‘:’. Here are the commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>:! Execute a shell command.
+<div class="highlight-default"><div class="highlight"><pre><span></span>:! Execute a shell command.
 :e! Revert all changes to a .leo file, prompting if there have been changes.
 :gt cycle-focus
 :q Quit, prompting for saves.
@@ -139,7 +144,7 @@ backspace over the ‘:’. Here are the commands:</p>
 </pre></div>
 </div>
 <p>The following colon commands are unique to Leo:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="nb">print</span><span class="o">-</span><span class="n">vim</span><span class="o">-</span><span class="n">dot</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">:</span><span class="nb">print</span><span class="o">-</span><span class="n">vim</span><span class="o">-</span><span class="n">dot</span>
 <span class="p">:</span><span class="n">toggle</span><span class="o">-</span><span class="n">vim</span><span class="o">-</span><span class="n">mode</span>
 <span class="p">:</span><span class="n">toggle</span><span class="o">-</span><span class="n">vim</span><span class="o">-</span><span class="n">trainer</span><span class="o">-</span><span class="n">mode</span>
 </pre></div>
@@ -155,11 +160,11 @@ commands may cross line boundaries.</p>
 <div class="section" id="using-vimoutline-otl-files-in-leo">
 <h2><a class="toc-backref" href="#id7">Using vimoutline (.otl) files in Leo</a><a class="headerlink" href="#using-vimoutline-otl-files-in-leo" title="Permalink to this headline">¶</a></h2>
 <p>Leo can automatically import and export vimoutline (.otl) files. Nodes like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">otl</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="o">.</span><span class="n">otl</span> <span class="n">file</span><span class="o">&gt;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">otl</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="o">.</span><span class="n">otl</span> <span class="n">file</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>or equivalently:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">vimoutline</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="o">.</span><span class="n">otl</span> <span class="n">file</span><span class="o">&gt;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@auto</span><span class="o">-</span><span class="n">vimoutline</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="o">.</span><span class="n">otl</span> <span class="n">file</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>import the .otl as a Leo outline.</p>
@@ -179,13 +184,13 @@ commands may cross line boundaries.</p>
 <h3><a class="toc-backref" href="#id10">General commands</a><a class="headerlink" href="#general-commands" title="Permalink to this headline">¶</a></h3>
 <p>The following commands are always available.</p>
 <p>State change commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">i</span>           <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">insert</span> <span class="kn">from</span> <span class="nn">command</span> <span class="n">state</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">i</span>           <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">insert</span> <span class="kn">from</span> <span class="nn">command</span> <span class="n">state</span>
 <span class="n">Esc</span>         <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">command</span> <span class="kn">from</span> <span class="nn">insert</span> <span class="n">state</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="p">[</span>      <span class="n">Same</span> <span class="k">as</span> <span class="n">ESC</span>
 </pre></div>
 </div>
 <p>Save/Exit/Quite commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">e</span>          <span class="n">Revert</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">e</span>          <span class="n">Revert</span>
 <span class="p">:</span><span class="n">w</span><span class="o">&lt;</span><span class="k">return</span><span class="o">&gt;</span>  <span class="n">Save</span> <span class="s1">&#39;.leo&#39;</span> <span class="n">file</span>
 <span class="p">:</span><span class="n">wq</span><span class="o">&lt;</span><span class="k">return</span><span class="o">&gt;</span> <span class="n">Save</span> <span class="s1">&#39;.leo&#39;</span> <span class="n">file</span> <span class="ow">and</span> <span class="n">quit</span> <span class="n">Leo</span>
 <span class="p">:</span><span class="n">q</span><span class="o">&lt;</span><span class="k">return</span><span class="o">&gt;</span>  <span class="n">Quit</span> <span class="n">Leo</span>   <span class="p">(</span><span class="n">Leo</span> <span class="n">will</span> <span class="n">prompt</span> <span class="k">if</span> <span class="n">file</span> <span class="ow">not</span> <span class="n">saved</span><span class="p">)</span>
@@ -193,12 +198,12 @@ commands may cross line boundaries.</p>
 </pre></div>
 </div>
 <p>Undo/Redo commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">u</span>           <span class="n">Undo</span> <span class="n">previous</span> <span class="n">command</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">u</span>           <span class="n">Undo</span> <span class="n">previous</span> <span class="n">command</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">r</span>      <span class="n">Redo</span> <span class="n">previous</span> <span class="n">command</span>
 </pre></div>
 </div>
 <p>Search options:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-/</span>      <span class="n">Prompt</span> <span class="k">for</span> <span class="n">option</span> <span class="n">to</span> <span class="n">change</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-/</span>      <span class="n">Prompt</span> <span class="k">for</span> <span class="n">option</span> <span class="n">to</span> <span class="n">change</span>
             <span class="n">Options</span><span class="p">:</span>
                 <span class="n">a</span>   <span class="n">Search</span> <span class="nb">all</span> <span class="n">nodes</span> <span class="p">(</span><span class="n">also</span> <span class="o">&lt;</span><span class="n">cr</span><span class="o">&gt;</span> <span class="n">key</span><span class="p">)</span>
                 <span class="n">h</span>   <span class="n">Toggle</span> <span class="n">headline</span> <span class="n">search</span>
@@ -216,7 +221,7 @@ commands may cross line boundaries.</p>
 </pre></div>
 </div>
 <p>Miscellaneous commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Tab</span>         <span class="n">Toggle</span> <span class="n">focus</span> <span class="n">between</span> <span class="n">Outline</span> <span class="ow">and</span> <span class="n">Body</span> <span class="n">pane</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Tab</span>         <span class="n">Toggle</span> <span class="n">focus</span> <span class="n">between</span> <span class="n">Outline</span> <span class="ow">and</span> <span class="n">Body</span> <span class="n">pane</span>
 <span class="o">=</span>           <span class="n">Simulate</span> <span class="n">double</span><span class="o">-</span><span class="n">click</span> <span class="n">on</span> <span class="n">current</span> <span class="n">node</span><span class="s1">&#39;s icon box</span>
 <span class="n">Alt</span><span class="o">-</span><span class="n">G</span>       <span class="n">Go</span> <span class="n">to</span> <span class="n">specified</span> <span class="n">line</span> <span class="n">number</span> <span class="p">(</span><span class="n">relative</span> <span class="n">to</span> <span class="n">external</span> <span class="n">file</span><span class="p">)</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="p">:</span>      <span class="n">Enter</span> <span class="n">Leo</span><span class="s1">&#39;s command line</span>
@@ -226,7 +231,7 @@ commands may cross line boundaries.</p>
 <div class="section" id="body-pane-commands">
 <h3><a class="toc-backref" href="#id11">Body pane commands</a><a class="headerlink" href="#body-pane-commands" title="Permalink to this headline">¶</a></h3>
 <p>Move cursor commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>h           Go back 1 character
+<div class="highlight-default"><div class="highlight"><pre><span></span>h           Go back 1 character
    LtArrow  Mapped to &quot;h&quot; for convenience
 j           Go down 1 line
    DnArrow  Mapped to &quot;j&quot; for convenience
@@ -260,7 +265,7 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Mark commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>m&lt;label&gt;    Assign cursor location to a single character label
+<div class="highlight-default"><div class="highlight"><pre><span></span>m&lt;label&gt;    Assign cursor location to a single character label
 `&lt;label&gt;    Go to location associated with label
 
   Note: Only character count is tracked. Any inserts or deletes will change mark.
@@ -268,12 +273,12 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Select commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">v</span>      <span class="n">Toggle</span> <span class="n">text</span> <span class="n">select</span> <span class="n">mode</span> <span class="p">(</span><span class="n">Vim</span><span class="s1">&#39;s &quot;visual&quot; mode)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">v</span>      <span class="n">Toggle</span> <span class="n">text</span> <span class="n">select</span> <span class="n">mode</span> <span class="p">(</span><span class="n">Vim</span><span class="s1">&#39;s &quot;visual&quot; mode)</span>
    <span class="n">V</span>        <span class="n">Mapped</span> <span class="n">to</span> <span class="s1">&#39;Ctrl-v&#39;</span> <span class="k">for</span> <span class="n">convenience</span> <span class="p">(</span><span class="n">Should</span> <span class="n">toggle</span> <span class="n">line</span> <span class="n">select</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Insert/substitute commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span>           <span class="n">Insert</span> <span class="n">at</span> <span class="n">cursor</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">a</span>           <span class="n">Insert</span> <span class="n">at</span> <span class="n">cursor</span>
 <span class="n">i</span>           <span class="n">Mapped</span> <span class="n">to</span> <span class="s2">&quot;a&quot;</span> <span class="n">until</span> <span class="s2">&quot;cursor on a character&quot;</span> <span class="n">supported</span>
 <span class="n">A</span>           <span class="n">Insert</span> <span class="n">at</span> <span class="n">end</span> <span class="n">of</span> <span class="n">line</span>
 <span class="n">I</span>           <span class="n">Insert</span> <span class="n">at</span> <span class="n">first</span> <span class="n">non</span><span class="o">-</span><span class="n">space</span>
@@ -285,7 +290,7 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Change commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span>           <span class="n">Change</span> <span class="n">to</span> <span class="n">end</span> <span class="n">of</span> <span class="n">line</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span>           <span class="n">Change</span> <span class="n">to</span> <span class="n">end</span> <span class="n">of</span> <span class="n">line</span>
 <span class="n">cc</span>          <span class="n">Change</span> <span class="nb">all</span> <span class="n">of</span> <span class="n">current</span> <span class="n">line</span>
 <span class="n">cw</span>          <span class="n">Change</span> <span class="n">to</span> <span class="n">end</span> <span class="n">of</span> <span class="n">word</span>
 <span class="n">cb</span>          <span class="n">Change</span> <span class="n">to</span> <span class="n">beginning</span> <span class="n">of</span> <span class="n">word</span>
@@ -300,7 +305,7 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Delete commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span>           <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span>           <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
 <span class="n">delete</span>      <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
 <span class="n">D</span>           <span class="n">Delete</span> <span class="n">to</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">line</span>
 <span class="n">dd</span>          <span class="n">Delete</span> <span class="n">current</span> <span class="n">line</span>
@@ -318,7 +323,7 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Yank text commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Y</span>           <span class="n">Yank</span> <span class="n">to</span> <span class="n">end</span> <span class="n">of</span> <span class="n">line</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Y</span>           <span class="n">Yank</span> <span class="n">to</span> <span class="n">end</span> <span class="n">of</span> <span class="n">line</span>
 <span class="n">yy</span>          <span class="n">Yank</span> <span class="n">line</span>
 <span class="n">yw</span>          <span class="n">Yank</span> <span class="n">to</span> <span class="n">beginning</span> <span class="n">of</span> <span class="nb">next</span> <span class="n">word</span>
 <span class="n">yb</span>          <span class="n">Yank</span> <span class="n">to</span> <span class="n">beginning</span> <span class="n">of</span> <span class="n">current</span> <span class="n">word</span>
@@ -333,12 +338,12 @@ G           Go to the last line  (Cursor at column 1)
 </pre></div>
 </div>
 <p>Find character commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
 <span class="n">F</span>           <span class="n">Find</span> <span class="n">previous</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
 </pre></div>
 </div>
 <p>Find text commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/           Search forward within current node&#39;s body text
+<div class="highlight-default"><div class="highlight"><pre><span></span>/           Search forward within current node&#39;s body text
 ?           Search backward within current node&#39;s body text
 n           Find next (same scope, same direction)
 N           Find next (same scope, other direction)
@@ -347,7 +352,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Replace [and find next] commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Commands</span> <span class="n">using</span> <span class="n">Paste</span> <span class="n">buffer</span> <span class="p">(</span><span class="n">clipboard</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Commands</span> <span class="n">using</span> <span class="n">Paste</span> <span class="n">buffer</span> <span class="p">(</span><span class="n">clipboard</span><span class="p">)</span>
 <span class="n">P</span>           <span class="n">Paste</span> <span class="n">text</span> <span class="n">before</span> <span class="n">cursor</span><span class="o">.</span>
 <span class="n">p</span>           <span class="n">Mapped</span> <span class="n">to</span> <span class="s2">&quot;P&quot;</span> <span class="n">until</span> <span class="n">character</span> <span class="n">based</span> <span class="n">cursor</span> <span class="n">supported</span><span class="o">.</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">p</span>      <span class="n">Paste</span> <span class="n">then</span> <span class="n">find</span> <span class="nb">next</span> <span class="n">match</span>
@@ -363,7 +368,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Indent/Unindent line commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span>          <span class="n">Indent</span> <span class="n">the</span> <span class="n">current</span> <span class="n">line</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;</span>          <span class="n">Indent</span> <span class="n">the</span> <span class="n">current</span> <span class="n">line</span>
 <span class="o">&gt;</span><span class="p">)</span>          <span class="n">Indent</span> <span class="n">to</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">sentence</span>
 <span class="o">&gt;</span><span class="p">(</span>          <span class="n">Indent</span> <span class="n">to</span> <span class="n">the</span> <span class="n">beginning</span> <span class="n">of</span> <span class="n">sentence</span>
 <span class="o">&gt;</span><span class="p">}</span>          <span class="n">Indent</span> <span class="n">to</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">paragraph</span>
@@ -381,7 +386,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Format commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gqap</span>        <span class="n">Split</span> <span class="n">long</span> <span class="n">line</span> <span class="n">into</span> <span class="n">separate</span> <span class="n">lines</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gqap</span>        <span class="n">Split</span> <span class="n">long</span> <span class="n">line</span> <span class="n">into</span> <span class="n">separate</span> <span class="n">lines</span>
 <span class="n">gwap</span>        <span class="n">Split</span> <span class="n">long</span> <span class="n">line</span> <span class="n">into</span> <span class="n">separate</span> <span class="n">lines</span>
 <span class="n">gqq</span>         <span class="n">Split</span> <span class="n">long</span> <span class="n">line</span> <span class="n">into</span> <span class="n">separate</span> <span class="n">lines</span>
 <span class="n">gww</span>         <span class="n">Split</span> <span class="n">long</span> <span class="n">line</span> <span class="n">into</span> <span class="n">separate</span> <span class="n">lines</span>
@@ -390,7 +395,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Scroll commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">b</span>      <span class="n">Scroll</span> <span class="n">text</span> <span class="n">up</span> <span class="n">by</span> <span class="n">pane</span><span class="s1">&#39;s height</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">b</span>      <span class="n">Scroll</span> <span class="n">text</span> <span class="n">up</span> <span class="n">by</span> <span class="n">pane</span><span class="s1">&#39;s height</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">f</span>      <span class="n">Scroll</span> <span class="n">text</span> <span class="n">down</span> <span class="n">by</span> <span class="n">pane</span><span class="s1">&#39;s height</span>
    <span class="n">Ctrl</span><span class="o">-</span><span class="n">y</span>   <span class="n">Mapped</span> <span class="n">to</span> <span class="n">Ctrl</span><span class="o">-</span><span class="n">b</span> <span class="n">until</span> <span class="n">scroll</span> <span class="n">up</span> <span class="n">one</span> <span class="n">line</span> <span class="ow">is</span> <span class="n">supported</span>
    <span class="n">Ctrl</span><span class="o">-</span><span class="n">e</span>   <span class="n">Mapped</span> <span class="n">to</span> <span class="n">Ctrl</span><span class="o">-</span><span class="n">f</span> <span class="n">until</span> <span class="n">scroll</span> <span class="n">down</span> <span class="n">one</span> <span class="n">line</span> <span class="ow">is</span> <span class="n">supported</span>
@@ -399,7 +404,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Window commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">w</span> <span class="n">s</span>    <span class="n">Open</span> <span class="n">another</span> <span class="n">view</span> <span class="n">into</span> <span class="n">current</span> <span class="n">node</span><span class="s1">&#39;s body (Vim: Split window)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">w</span> <span class="n">s</span>    <span class="n">Open</span> <span class="n">another</span> <span class="n">view</span> <span class="n">into</span> <span class="n">current</span> <span class="n">node</span><span class="s1">&#39;s body (Vim: Split window)</span>
    <span class="n">Ctrl</span><span class="o">-</span><span class="n">w</span> <span class="n">n</span> <span class="n">Mapped</span> <span class="n">to</span> <span class="s2">&quot;Ctrl-w s&quot;</span> <span class="p">(</span><span class="n">Vim</span><span class="p">:</span> <span class="n">New</span> <span class="n">buffer</span> <span class="ow">in</span> <span class="n">split</span> <span class="n">window</span><span class="p">)</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">w</span> <span class="n">w</span>    <span class="n">Switch</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">view</span> <span class="p">(</span><span class="n">Vim</span><span class="p">:</span> <span class="n">Go</span> <span class="n">to</span> <span class="n">up</span><span class="o">/</span><span class="n">left</span> <span class="n">window</span> <span class="n">w</span><span class="o">/</span><span class="n">wrapping</span><span class="p">)</span>
    <span class="n">Ctrl</span><span class="o">-</span><span class="n">w</span> <span class="n">p</span> <span class="n">Mapped</span> <span class="n">to</span> <span class="s2">&quot;Ctrl-w w&quot;</span> <span class="p">(</span><span class="n">Vim</span><span class="p">:</span> <span class="n">Cycle</span> <span class="n">through</span> <span class="n">windows</span><span class="p">)</span>
@@ -410,7 +415,7 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 </pre></div>
 </div>
 <p>Node commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Go</span> <span class="n">to</span> <span class="n">another</span> <span class="n">node</span> <span class="k">while</span> <span class="n">focus</span> <span class="n">remains</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">body</span> <span class="n">pane</span><span class="o">.</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Go</span> <span class="n">to</span> <span class="n">another</span> <span class="n">node</span> <span class="k">while</span> <span class="n">focus</span> <span class="n">remains</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">body</span> <span class="n">pane</span><span class="o">.</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">j</span>      <span class="n">Go</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">visible</span> <span class="n">node</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">k</span>      <span class="n">Go</span> <span class="n">to</span> <span class="n">previous</span> <span class="n">visible</span> <span class="n">node</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">h</span>      <span class="n">Hide</span> <span class="n">sub</span><span class="o">-</span><span class="n">nodes</span> <span class="ow">or</span><span class="p">,</span> <span class="k">if</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">go</span> <span class="n">up</span> <span class="mi">1</span> <span class="n">level</span>
@@ -426,13 +431,13 @@ Note: See &quot;Search options&quot; in General Commands section to change optio
 <h3><a class="toc-backref" href="#id12">Outline commands</a><a class="headerlink" href="#outline-commands" title="Permalink to this headline">¶</a></h3>
 <p>The following commands are supported when in a headline’s command mode.</p>
 <p>State change commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">i</span>      <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">command</span> <span class="kn">from</span> <span class="nn">grayed</span> <span class="n">state</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">i</span>      <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">command</span> <span class="kn">from</span> <span class="nn">grayed</span> <span class="n">state</span>
 <span class="k">return</span>      <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">command</span> <span class="kn">from</span> <span class="nn">insert</span> <span class="n">state</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="p">]</span>      <span class="n">Change</span> <span class="n">state</span> <span class="n">to</span> <span class="n">grayed</span> <span class="kn">from</span> <span class="nn">command</span> <span class="n">state</span>
 </pre></div>
 </div>
 <p>Cursor movement commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>h           Go to previous character
+<div class="highlight-default"><div class="highlight"><pre><span></span>h           Go to previous character
    LtArrow  Mapped to &#39;h&#39; for convenience
 l           Go to next character
    RtArrow  Mapped to &quot;l&quot; for convenience
@@ -457,7 +462,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Edit commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span>           <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span>           <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
 <span class="n">delete</span>      <span class="n">Delete</span> <span class="nb">next</span> <span class="n">character</span>
 <span class="n">dd</span>          <span class="n">kill</span><span class="o">-</span><span class="n">line</span>
 
@@ -477,12 +482,12 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Find character commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">f</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
 <span class="n">F</span>           <span class="n">Find</span> <span class="n">previous</span> <span class="n">occurrence</span> <span class="n">of</span> <span class="n">user</span> <span class="n">specified</span> <span class="n">character</span>
 </pre></div>
 </div>
 <p>Find text commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>           <span class="n">Search</span> <span class="n">forward</span> <span class="n">within</span> <span class="n">current</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">its</span> <span class="n">subnodes</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span>           <span class="n">Search</span> <span class="n">forward</span> <span class="n">within</span> <span class="n">current</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">its</span> <span class="n">subnodes</span>
 <span class="n">n</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="p">(</span><span class="n">same</span> <span class="n">scope</span><span class="p">,</span> <span class="n">same</span> <span class="n">direction</span><span class="p">)</span>
 <span class="n">N</span>           <span class="n">Find</span> <span class="nb">next</span> <span class="p">(</span><span class="n">same</span> <span class="n">scope</span><span class="p">,</span> <span class="n">other</span> <span class="n">direction</span><span class="p">)</span>
 
@@ -490,7 +495,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Replace [and find next] commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Commands</span> <span class="n">that</span> <span class="n">use</span> <span class="n">Paste</span> <span class="n">buffer</span> <span class="p">(</span><span class="n">clipboard</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Commands</span> <span class="n">that</span> <span class="n">use</span> <span class="n">Paste</span> <span class="n">buffer</span> <span class="p">(</span><span class="n">clipboard</span><span class="p">)</span>
 <span class="n">Note</span><span class="p">:</span> <span class="n">Paste</span><span class="o">-</span><span class="n">then</span><span class="o">-</span><span class="n">search</span> <span class="n">command</span> <span class="ow">not</span> <span class="n">possible</span> <span class="ow">in</span> <span class="n">headlines</span> <span class="p">(</span><span class="n">Use</span> <span class="s1">&#39;pn&#39;</span><span class="p">)</span>
 <span class="n">P</span>           <span class="n">Paste</span> <span class="n">text</span> <span class="n">before</span> <span class="n">cursor</span><span class="o">.</span>
 <span class="n">p</span>           <span class="n">Mapped</span> <span class="n">to</span> <span class="s2">&quot;P&quot;</span> <span class="n">until</span> <span class="n">character</span> <span class="n">based</span> <span class="n">cursor</span> <span class="n">supported</span><span class="o">.</span>
@@ -503,7 +508,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Node edit commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">o</span>           <span class="n">Insert</span> <span class="n">node</span> <span class="n">after</span> <span class="n">current</span> <span class="n">node</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">o</span>           <span class="n">Insert</span> <span class="n">node</span> <span class="n">after</span> <span class="n">current</span> <span class="n">node</span>
 
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">x</span>      <span class="n">Delete</span> <span class="n">current</span> <span class="n">node</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">c</span>      <span class="n">Yank</span> <span class="n">current</span> <span class="n">node</span>
@@ -511,7 +516,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Node goto commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">G</span>           <span class="n">Go</span> <span class="n">to</span> <span class="n">the</span> <span class="n">outline</span><span class="s1">&#39;s last node</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">G</span>           <span class="n">Go</span> <span class="n">to</span> <span class="n">the</span> <span class="n">outline</span><span class="s1">&#39;s last node</span>
 <span class="n">gg</span>          <span class="n">Go</span> <span class="n">to</span> <span class="n">the</span> <span class="n">outline</span><span class="s1">&#39;s first node</span>
 
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">j</span>      <span class="n">Go</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">visible</span> <span class="n">node</span>
@@ -529,7 +534,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Node move commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">Shift</span><span class="o">-</span><span class="n">k</span>    <span class="n">Move</span> <span class="n">node</span> <span class="n">down</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">Shift</span><span class="o">-</span><span class="n">k</span>    <span class="n">Move</span> <span class="n">node</span> <span class="n">down</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">Shift</span><span class="o">-</span><span class="n">h</span>    <span class="n">Move</span> <span class="n">node</span> <span class="n">left</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">Shift</span><span class="o">-</span><span class="n">l</span>    <span class="n">Move</span> <span class="n">node</span> <span class="n">right</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">Shift</span><span class="o">-</span><span class="n">j</span>    <span class="n">Move</span> <span class="n">node</span> <span class="n">up</span>
@@ -541,13 +546,13 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Node mark commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">m</span>           <span class="n">Toggle</span> <span class="n">node</span> <span class="n">mark</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">m</span>           <span class="n">Toggle</span> <span class="n">node</span> <span class="n">mark</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">m</span>      <span class="n">Go</span> <span class="n">to</span> <span class="nb">next</span> <span class="n">marked</span> <span class="n">node</span>
 <span class="n">Alt</span><span class="o">-</span><span class="n">m</span>       <span class="n">Clear</span> <span class="nb">all</span> <span class="n">marked</span> <span class="n">nodes</span>
 </pre></div>
 </div>
 <p>Outline scroll commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">y</span>       <span class="n">Scroll</span> <span class="n">outline</span> <span class="n">up</span> <span class="n">one</span> <span class="n">line</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ctrl</span><span class="o">-</span><span class="n">y</span>       <span class="n">Scroll</span> <span class="n">outline</span> <span class="n">up</span> <span class="n">one</span> <span class="n">line</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">e</span>       <span class="n">scroll</span> <span class="n">outline</span> <span class="n">down</span> <span class="n">one</span> <span class="n">line</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">u</span>       <span class="n">Scroll</span> <span class="n">outline</span> <span class="n">up</span> <span class="n">one</span> <span class="n">half</span> <span class="n">page</span>
 <span class="n">Ctrl</span><span class="o">-</span><span class="n">d</span>       <span class="n">scroll</span> <span class="n">outline</span> <span class="n">down</span> <span class="n">one</span> <span class="n">half</span> <span class="n">page</span>
@@ -559,7 +564,7 @@ $           Go to end of line
 <div class="section" id="commands-not-supported">
 <h3><a class="toc-backref" href="#id13">Commands not supported</a><a class="headerlink" href="#commands-not-supported" title="Permalink to this headline">¶</a></h3>
 <p>Notable missing editing commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">t</span><span class="o">&lt;</span><span class="n">char</span><span class="o">&gt;</span>     <span class="n">Move</span> <span class="n">cursor</span> <span class="n">to</span> <span class="n">character</span> <span class="n">before</span> <span class="n">specified</span> <span class="n">character</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">t</span><span class="o">&lt;</span><span class="n">char</span><span class="o">&gt;</span>     <span class="n">Move</span> <span class="n">cursor</span> <span class="n">to</span> <span class="n">character</span> <span class="n">before</span> <span class="n">specified</span> <span class="n">character</span>
 <span class="n">r</span>           <span class="n">Replace</span> <span class="n">a</span> <span class="n">single</span> <span class="n">character</span> <span class="k">with</span> <span class="n">a</span> <span class="n">single</span> <span class="n">character</span>
 <span class="mi">0</span>           <span class="n">Go</span> <span class="n">to</span> <span class="mi">1</span><span class="n">st</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">line</span> <span class="p">(</span><span class="n">Use</span> <span class="s1">&#39;|&#39;</span> <span class="n">instead</span><span class="p">)</span>
 <span class="n">bksp</span>        <span class="n">Move</span> <span class="n">one</span> <span class="n">character</span> <span class="n">to</span> <span class="n">the</span> <span class="n">left</span>
@@ -571,7 +576,7 @@ $           Go to end of line
 </pre></div>
 </div>
 <p>Notable missing body pane commands:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;num&gt;G      Go to specified line number
+<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;num&gt;G      Go to specified line number
 z&lt;movement&gt; Slide buffer to put current line at top/middle/bottom of pane
 &#39;&lt;command&gt;  Go to line of last edit, jump, ...
 `&lt;command&gt;  Go to character of last edit, jump, ...
@@ -583,12 +588,12 @@ z&lt;movement&gt; Slide buffer to put current line at top/middle/bottom of pane
 <p>If you use the open-with command to open a node text in Vim and your Vim’s “tag” file refers to external files then there is a risk that a external file that is initially displayed via the “tag” command” in Vim is accidentally edited and saved from the external Vim editor while your Leo session still contains the external file’s original text that may later recreate the original external file during a Leo save operation (overwriting the changes saved from the Vim editor).</p>
 <p>To prevent this problem, modifications to external files can be avoided by using Vim’s “modeline” feature to disable editing of external files.</p>
 <p>Vim’s “modeline” feature scans each loaded buffer for text at the top or bottom of the file containing ” vim:” followed by a series of Vim options. The text is usually embedded within a comment. The following example prevents modifications to a buffer in a Python file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># vim:noma (A space is required between the &#39;#&#39; and &quot;vim:noma&quot;)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># vim:noma (A space is required between the &#39;#&#39; and &quot;vim:noma&quot;)</span>
 </pre></div>
 </div>
 <p>If this line is placed in a separate Leo node at the top or bottom of the list of nodes under a external file node (ex: &#64;file) then any external file saved and then later loaded into Vim will, by default, not be modifiable. If a derived file does need to be edited then modifications can be re-enabled on a file-by-file basis by issuing Vim’s “:ma” command while viewing the derived file.</p>
 <p>The number of lines that Vim checks at the top and bottom of the buffer is configurable. The following Vim command must be placed in the vimrc file to allow for Leo’s trailing sentinel lines:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">modelines</span><span class="o">=</span><span class="mi">8</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">modelines</span><span class="o">=</span><span class="mi">8</span>
 </pre></div>
 </div>
 <p>Issue the “:help modeline” command within Vim for the more information about modelines.</p>
@@ -612,13 +617,13 @@ z&lt;movement&gt; Slide buffer to put current line at top/middle/bottom of pane
   <p class="topless"><a href="leoBridge.html"
                         title="next chapter">Embedding Leo with the leoBridge module</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
+  <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -643,8 +648,8 @@ z&lt;movement&gt; Slide buffer to put current line at top/middle/bottom of pane
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jul 14, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Last updated on Jun 17, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

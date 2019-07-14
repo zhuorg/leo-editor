@@ -1,26 +1,33 @@
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Leo University &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Appendices" href="appendices.html" />
     <link rel="prev" title="The Leonine World" href="leonine-world.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -83,9 +90,9 @@ This can save you a lot of time.</p>
 <h2>Lesson 3: Running unit tests<a class="headerlink" href="#lesson-3-running-unit-tests" title="Permalink to this headline">¶</a></h2>
 <p>​All devs must run all unit tests before commit anything. Here’s how:</p>
 <ul class="simple">
-<li><p>Open leo/test/unitTest.leo in a console.</p></li>
-<li><p>The “Active Unit Tests” node should already be selected. If not, select it.</p></li>
-<li><p>Do Alt-4. It is bound in the file to run-selected-unit-tests-locally.</p></li>
+<li>Open leo/test/unitTest.leo in a console.</li>
+<li>The “Active Unit Tests” node should already be selected. If not, select it.</li>
+<li>Do Alt-4. It is bound in the file to run-selected-unit-tests-locally.</li>
 </ul>
 <p><strong>Important</strong>: Some unit tests may fail on your environment.  Don’t worry about them.  You need only ensure that your new code causes no <em>other</em> unit tests to fail.  If in doubt, ask on leo-editor.</p>
 </div>
@@ -98,7 +105,7 @@ This can save you a lot of time.</p>
 <h2>Lesson 5: c.recursiveImport imports files recursively<a class="headerlink" href="#lesson-5-c-recursiveimport-imports-files-recursively" title="Permalink to this headline">¶</a></h2>
 <p>c.recursiveImport is a wrapper on the RecursiveImportController class.​ ​You can find the related code by doing a regex cff (ignoring case) on ​ ​”recursive?import”.</p>
 <p>Here is how to use c.recursiveImport:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">recursiveImport</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">recursiveImport</span><span class="p">(</span>
     <span class="n">dir_</span> <span class="o">=</span> <span class="o">&lt;&lt;</span> <span class="n">path</span> <span class="n">to</span> <span class="n">root</span> <span class="n">directory</span> <span class="o">&gt;&gt;</span><span class="p">,</span>
         <span class="c1"># You must expand ~ yourself</span>
     <span class="n">add_path</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -117,10 +124,10 @@ This can save you a lot of time.</p>
 <a class="reference external" href="https://groups.google.com/d/msg/leo-editor/p_6ljMQL660/57Z8lYuQAAAJ">https://groups.google.com/d/msg/leo-editor/p_6ljMQL660/57Z8lYuQAAAJ</a></p>
 <p>Here are his remarks, slightly edited:</p>
 <ul class="simple">
-<li><p><strong>master</strong> is stable.</p></li>
-<li><p><strong>devel</strong> is “mostly” stable.</p></li>
-<li><p><strong>feature branches</strong> off devel can be wildly unstable.</p></li>
-<li><p><strong>release branches</strong> are candidates for master, so should be stable.</p></li>
+<li><strong>master</strong> is stable.</li>
+<li><strong>devel</strong> is “mostly” stable.</li>
+<li><strong>feature branches</strong> off devel can be wildly unstable.</li>
+<li><strong>release branches</strong> are candidates for master, so should be stable.</li>
 </ul>
 <p>Everything new comes from devel and goes to devel. Devs <strong>must</strong> run unit tests before pushing to devel, so devel should usually be stable.</p>
 <p>All experimental code should reside in a feature branch.</p>
@@ -132,58 +139,58 @@ This can save you a lot of time.</p>
 </div>
 <div class="section" id="lesson-7-how-to-make-complex-changes-to-a-code-base">
 <h2>Lesson 7: How to make complex changes to a code base<a class="headerlink" href="#lesson-7-how-to-make-complex-changes-to-a-code-base" title="Permalink to this headline">¶</a></h2>
-<dl class="simple">
-<dt>This lesson discusses the <em>process</em> of making arbitrarily complex changes throughout a code base.</dt><dd><p>It’s an elaboration of Lesson 1: Think process, not knowledge, but it’s worth reading because it contains helpful hints about tackling <em>any</em> big project.  I used this general method when making Leo’s code base work with Python 3 as well as Python 2.</p>
-</dd>
+<dl class="docutils">
+<dt>This lesson discusses the <em>process</em> of making arbitrarily complex changes throughout a code base.</dt>
+<dd>It’s an elaboration of Lesson 1: Think process, not knowledge, but it’s worth reading because it contains helpful hints about tackling <em>any</em> big project.  I used this general method when making Leo’s code base work with Python 3 as well as Python 2.</dd>
 </dl>
 <p>The grand summary:</p>
 <ol class="arabic simple">
-<li><p>Study the code first with clone-find commands.</p></li>
-<li><p>Let python crashes &amp; failed unit tests guide you.</p></li>
+<li>Study the code first with clone-find commands.</li>
+<li>Let python crashes &amp; failed unit tests guide you.</li>
 </ol>
 <p>In detail:</p>
 <ol class="arabic simple">
-<li><p>Create a new git branch for the work.</p></li>
-<li><p>Create a <strong>global master switch**that separates and marks the old and new versions of the code. This is a boolean.  It selects the new code if True and the old code otherwise.  We say the switch is either in the “**new</strong>” position or the “<strong>legacy</strong>” position.</p></li>
+<li>Create a new git branch for the work.</li>
+<li>Create a <strong>global master switch**that separates and marks the old and new versions of the code. This is a boolean.  It selects the new code if True and the old code otherwise.  We say the switch is either in the “**new</strong>” position or the “<strong>legacy</strong>” position.</li>
 </ol>
 <ul class="simple">
-<li><p><strong>All unit tests should continue to pass when the switch selects legacy code.</strong></p></li>
-<li><p><strong>All pushes should have the legacy code selected until every works.</strong></p></li>
+<li><strong>All unit tests should continue to pass when the switch selects legacy code.</strong></li>
+<li><strong>All pushes should have the legacy code selected until every works.</strong></li>
 </ul>
 <p>These two requirements make it safe to pause work on the project.</p>
 <ol class="arabic simple" start="3">
-<li><p>Make sure you understand what needs to be done.  Use the clone find commands to answer any and all questions about the code and how it should be changed.</p></li>
-<li><p>Make the fundamental changes required, <strong>without worrying about the consequences</strong>.</p></li>
+<li>Make sure you understand what needs to be done.  Use the clone find commands to answer any and all questions about the code and how it should be changed.</li>
+<li>Make the fundamental changes required, <strong>without worrying about the consequences</strong>.</li>
 </ol>
 <p>For the “keys” branch I changed the representation of settings so that they are NewLeoKey objects.</p>
 <ol class="arabic simple" start="5">
-<li><p>With the switch in the “new” position, run a test copy of Leo.</p></li>
+<li>With the switch in the “new” position, run a test copy of Leo.</li>
 </ol>
 <p>Because of step 4, we <em>expect</em> crashes.  Fix each as they happen, separating the old and new code with a test on the switch.  Repeat this step until no crashes happen.</p>
 <p>When this phase works, set the switch to “legacy”, re-run all unit tests, and commit the code.</p>
 <ol class="arabic simple" start="6">
-<li><p>For the “keys” branch, getting through startup is only half the task.  When I type a key I <em>expect</em> more crashes.  I’ll follow step 5 until no crashes happen when I type various key combination.</p></li>
+<li>For the “keys” branch, getting through startup is only half the task.  When I type a key I <em>expect</em> more crashes.  I’ll follow step 5 until no crashes happen when I type various key combination.</li>
 </ol>
 <p>Again, I’ll set the switch to “legacy”, re-run all unit tests and commit the code.</p>
 <ol class="arabic simple" start="7">
-<li><p>When normal operation appears to work with the switch in the “new” position, <strong>run all unit tests</strong> and fix any crashes or unit tests failures.</p></li>
+<li>When normal operation appears to work with the switch in the “new” position, <strong>run all unit tests</strong> and fix any crashes or unit tests failures.</li>
 </ol>
 <p>Now you can commit the code with the switch in the “new” position.</p>
 <ol class="arabic simple" start="8">
-<li><p>At this point you can start eating your own dog food.  When satisfied that the code is stable enough, you can do the following:</p></li>
+<li>At this point you can start eating your own dog food.  When satisfied that the code is stable enough, you can do the following:</li>
 </ol>
 <ul class="simple">
-<li><p>Remove the switch and all code disabled when the switch is in the “legacy” position.</p></li>
-<li><p>Run all unit tests.</p></li>
-<li><p>Continue to eat your own dog food.</p></li>
-<li><p>Commit the branch to “devel” when all seems well.</p></li>
+<li>Remove the switch and all code disabled when the switch is in the “legacy” position.</li>
+<li>Run all unit tests.</li>
+<li>Continue to eat your own dog food.</li>
+<li>Commit the branch to “devel” when all seems well.</li>
 </ul>
 <p>That’s the process.  It’s extremely effective.  You don’t have to remember your changes because a cff on the switch should yield <em>all</em> changed code.  Naturally, you can make clones of nodes containing the most important changes.</p>
 </div>
 <div class="section" id="leou-unit-tests-should-not-depend-on-settings">
 <h2>LeoU: Unit tests should not depend on settings<a class="headerlink" href="#leou-unit-tests-should-not-depend-on-settings" title="Permalink to this headline">¶</a></h2>
 <p>Relying on settings nodes in unitTest.leo risks creating hard-to-find dependencies between seemingly unrelated unit tests.  Instead, unit tests can follow the pattern for, say, <cite>&#64;test add python comments</cite>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">wrapper</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">wrapper</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">findNodeInTree</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">p</span><span class="p">,</span><span class="s1">&#39;not found: python&#39;</span>
 <span class="c1"># Save the initial value of the setting.</span>
@@ -222,7 +229,7 @@ This can save you a lot of time.</p>
 </pre></div>
 </div>
 <p>This code saves and restores the actual value of the <cite>&#64;bool indent_added_comments</cite> setting. It uses:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="s1">&#39;indent_added_comments&#39;</span><span class="p">,</span> <span class="n">indent</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;bool&#39;</span><span class="p">,</span> <span class="s1">&#39;indent_added_comments&#39;</span><span class="p">,</span> <span class="n">indent</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>to set the setting to the value of ‘indent’.  Note that c.config.set is seldom (never?) used in Leo’s core.</p>
@@ -232,7 +239,7 @@ This can save you a lot of time.</p>
 <p>I recommend using the organization of leo/themes/EKRDark.leo as a guide. <strong>Note</strong>: Syntax coloring settings are required because they are <em>not</em> used in the css.</p>
 <p>To avoid confusion, it’s best if theme .leo files contain no <strong>unbound settings</strong>. This will ensure that the appearance of a theme does not unwittingly depend on settings in myLeoSettings.leo.</p>
 <p><strong>Important</strong>: Theme devs should set the following <strong>theme description settings</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@string</span> <span class="n">theme_name</span>   <span class="c1"># crucial</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@string</span> <span class="n">theme_name</span>   <span class="c1"># crucial</span>
 <span class="nd">@bool</span> <span class="n">color_theme_is_dark</span>
 <span class="nd">@string</span> <span class="n">color_theme</span> <span class="o">=</span> <span class="n">ekr_dark</span>
 </pre></div>
@@ -274,8 +281,8 @@ Not everyone agrees with everything I say here.</p>
 <p>The VNode class is, in fact, an excellent example of information hiding.  The boundary between the VNode class is well defined and well enforced.</p>
 <p><strong>Possible improvements</strong></p>
 <ol class="arabic">
-<li><p>A new c.new_vnode method could help instantiate VNodes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">new_vnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gnx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<li><p class="first">A new c.new_vnode method could help instantiate VNodes:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">new_vnode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gnx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span>
     <span class="k">return</span> <span class="n">leoNodes</span><span class="o">.</span><span class="n">VNode</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">gnx</span><span class="o">=</span><span class="n">gnx</span><span class="p">)</span>
 </pre></div>
@@ -284,7 +291,7 @@ Not everyone agrees with everything I say here.</p>
 </ol>
 <p>The (small) advantage is that clients of c.new_vnode(gnx) would no longer need to import leo.core.leoNodes.</p>
 <ol class="arabic simple" start="2">
-<li><p>The  v.saveCursorAndScroll and v.restoreCursorAndScroll could be moved elsewhere. At present, these methods cause no problems, but moving them would be part of #883.</p></li>
+<li>The  v.saveCursorAndScroll and v.restoreCursorAndScroll could be moved elsewhere. At present, these methods cause no problems, but moving them would be part of #883.</li>
 </ol>
 </div>
 </div>
@@ -305,13 +312,13 @@ Not everyone agrees with everything I say here.</p>
   <p class="topless"><a href="appendices.html"
                         title="next chapter">Appendices</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
+  <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -336,8 +343,8 @@ Not everyone agrees with everything I say here.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jul 14, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Last updated on Jun 17, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

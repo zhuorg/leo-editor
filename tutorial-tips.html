@@ -1,26 +1,33 @@
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Useful Tips &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Leo’s Users Guide" href="usersguide.html" />
     <link rel="prev" title="Writing Leo scripts in Python" href="tutorial-scripting.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,47 +57,43 @@
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#the-most-important-tips" id="id1">The most important tips</a></p>
-<ul>
-<li><p><a class="reference internal" href="#you-don-t-have-to-remember-command-names" id="id2">You don’t have to remember command names</a></p></li>
-<li><p><a class="reference internal" href="#learn-to-use-clones" id="id3">Learn to use clones</a></p></li>
+<li><a class="reference internal" href="#the-most-important-tips" id="id1">The most important tips</a><ul>
+<li><a class="reference internal" href="#you-don-t-have-to-remember-command-names" id="id2">You don’t have to remember command names</a></li>
+<li><a class="reference internal" href="#learn-to-use-clones" id="id3">Learn to use clones</a></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#learning-to-use-leo" id="id4">Learning to use Leo</a></p>
-<ul>
-<li><p><a class="reference internal" href="#leo-s-most-important-plugins" id="id5">Leo’s most important plugins</a></p></li>
-<li><p><a class="reference internal" href="#move-clones-to-the-last-top-level-node" id="id6">Move clones to the last top-level node</a></p></li>
-<li><p><a class="reference internal" href="#put-personal-settings-myleosettings-leo" id="id7">Put personal settings myLeoSettings.leo</a></p></li>
-<li><p><a class="reference internal" href="#search-for-settings-in-leosettings-leo" id="id8">Search for settings in leoSettings.leo</a></p></li>
-<li><p><a class="reference internal" href="#use-abbreviations" id="id9">Use abbreviations</a></p></li>
+<li><a class="reference internal" href="#learning-to-use-leo" id="id4">Learning to use Leo</a><ul>
+<li><a class="reference internal" href="#leo-s-most-important-plugins" id="id5">Leo’s most important plugins</a></li>
+<li><a class="reference internal" href="#move-clones-to-the-last-top-level-node" id="id6">Move clones to the last top-level node</a></li>
+<li><a class="reference internal" href="#put-personal-settings-myleosettings-leo" id="id7">Put personal settings myLeoSettings.leo</a></li>
+<li><a class="reference internal" href="#search-for-settings-in-leosettings-leo" id="id8">Search for settings in leoSettings.leo</a></li>
+<li><a class="reference internal" href="#use-abbreviations" id="id9">Use abbreviations</a></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#useful-commands" id="id10">Useful commands</a></p>
-<ul>
-<li><p><a class="reference internal" href="#the-beautify-command-nobeautify-directive" id="id11">The beautify command &amp; &#64;nobeautify directive</a></p></li>
-<li><p><a class="reference internal" href="#the-find-quick-selected-command" id="id12">The find-quick-selected command</a></p></li>
-<li><p><a class="reference internal" href="#the-parse-body-command" id="id13">The parse-body command</a></p></li>
-<li><p><a class="reference internal" href="#the-pyflakes-command" id="id14">The pyflakes command</a></p></li>
-<li><p><a class="reference internal" href="#the-pylint-command" id="id15">The pylint command</a></p></li>
-<li><p><a class="reference internal" href="#the-rst3-command" id="id16">The rst3 command</a></p></li>
-<li><p><a class="reference internal" href="#the-sort-siblings-command" id="id17">The sort-siblings command</a></p></li>
-<li><p><a class="reference internal" href="#use-alt-n-goto-next-clone-to-find-primary-clones" id="id18">Use Alt-N (goto-next-clone) to find “primary” clones</a></p></li>
-<li><p><a class="reference internal" href="#use-cffm-to-gather-outline-nodes" id="id19">Use cffm to gather outline nodes</a></p></li>
-<li><p><a class="reference internal" href="#use-ctrl-p-repeat-complex-command-to-avoid-key-bindings" id="id20">Use Ctrl-P (repeat-complex-command) to avoid key bindings</a></p></li>
+<li><a class="reference internal" href="#useful-commands" id="id10">Useful commands</a><ul>
+<li><a class="reference internal" href="#the-beautify-command-nobeautify-directive" id="id11">The beautify command &amp; &#64;nobeautify directive</a></li>
+<li><a class="reference internal" href="#the-find-quick-selected-command" id="id12">The find-quick-selected command</a></li>
+<li><a class="reference internal" href="#the-parse-body-command" id="id13">The parse-body command</a></li>
+<li><a class="reference internal" href="#the-pyflakes-command" id="id14">The pyflakes command</a></li>
+<li><a class="reference internal" href="#the-pylint-command" id="id15">The pylint command</a></li>
+<li><a class="reference internal" href="#the-rst3-command" id="id16">The rst3 command</a></li>
+<li><a class="reference internal" href="#the-sort-siblings-command" id="id17">The sort-siblings command</a></li>
+<li><a class="reference internal" href="#use-alt-n-goto-next-clone-to-find-primary-clones" id="id18">Use Alt-N (goto-next-clone) to find “primary” clones</a></li>
+<li><a class="reference internal" href="#use-cffm-to-gather-outline-nodes" id="id19">Use cffm to gather outline nodes</a></li>
+<li><a class="reference internal" href="#use-ctrl-p-repeat-complex-command-to-avoid-key-bindings" id="id20">Use Ctrl-P (repeat-complex-command) to avoid key bindings</a></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#scripting-tips" id="id21">Scripting tips</a></p>
-<ul>
-<li><p><a class="reference internal" href="#clearing-the-log-window" id="id22">Clearing the Log window</a></p></li>
-<li><p><a class="reference internal" href="#g-callers-returns-a-list-of-callers" id="id23">g.callers() returns a list of callers</a></p></li>
-<li><p><a class="reference internal" href="#the-button-make-md-toc-script-in-leodocs-leo" id="id24">The &#64;button make-md-toc script in LeoDocs.leo</a></p></li>
-<li><p><a class="reference internal" href="#use-button-nodes" id="id25">Use &#64;button nodes</a></p></li>
-<li><p><a class="reference internal" href="#use-test-nodes" id="id26">Use &#64;test nodes</a></p></li>
-<li><p><a class="reference internal" href="#use-a-universal-shortcut-for-your-scripts" id="id27">Use a universal shortcut for your scripts</a></p></li>
-<li><p><a class="reference internal" href="#use-cff-to-gather-nodes-matching-a-pattern" id="id28">Use cff to gather nodes matching a pattern</a></p></li>
-<li><p><a class="reference internal" href="#use-g-pdb-from-the-console" id="id29">Use g.pdb from the console</a></p></li>
-<li><p><a class="reference internal" href="#use-g-trace-to-debug-scripts" id="id30">Use g.trace to debug scripts</a></p></li>
-<li><p><a class="reference internal" href="#use-section-references-sparingly" id="id31">Use section references sparingly</a></p></li>
+<li><a class="reference internal" href="#scripting-tips" id="id21">Scripting tips</a><ul>
+<li><a class="reference internal" href="#clearing-the-log-window" id="id22">Clearing the Log window</a></li>
+<li><a class="reference internal" href="#g-callers-returns-a-list-of-callers" id="id23">g.callers() returns a list of callers</a></li>
+<li><a class="reference internal" href="#the-button-make-md-toc-script-in-leodocs-leo" id="id24">The &#64;button make-md-toc script in LeoDocs.leo</a></li>
+<li><a class="reference internal" href="#use-button-nodes" id="id25">Use &#64;button nodes</a></li>
+<li><a class="reference internal" href="#use-test-nodes" id="id26">Use &#64;test nodes</a></li>
+<li><a class="reference internal" href="#use-a-universal-shortcut-for-your-scripts" id="id27">Use a universal shortcut for your scripts</a></li>
+<li><a class="reference internal" href="#use-cff-to-gather-nodes-matching-a-pattern" id="id28">Use cff to gather nodes matching a pattern</a></li>
+<li><a class="reference internal" href="#use-g-pdb-from-the-console" id="id29">Use g.pdb from the console</a></li>
+<li><a class="reference internal" href="#use-g-trace-to-debug-scripts" id="id30">Use g.trace to debug scripts</a></li>
+<li><a class="reference internal" href="#use-section-references-sparingly" id="id31">Use section references sparingly</a></li>
 </ul>
 </li>
 </ul>
@@ -114,13 +117,13 @@ See the <a class="reference external" href="tutorial-pim.html#clones">clones tut
 <h3><a class="toc-backref" href="#id5">Leo’s most important plugins</a><a class="headerlink" href="#leo-s-most-important-plugins" title="Permalink to this headline">¶</a></h3>
 <p>Become familiar with Leo’s most important plugins:</p>
 <ul class="simple">
-<li><p>bookmarks.py manages bookmarks.</p></li>
-<li><p>contextmenu.py shows a menu when when right-clicking.</p></li>
-<li><p>mod_scripting.py supports &#64;button and &#64;command nodes.</p></li>
-<li><p>quicksearch.py adds a Nav tab for searching.</p></li>
-<li><p>todo.py handles to-do lists and is a project manager.</p></li>
-<li><p>valuespace.py creates an outline-oriented spreadsheet.</p></li>
-<li><p>viewrendered.py renders content in the rendering pane.</p></li>
+<li>bookmarks.py manages bookmarks.</li>
+<li>contextmenu.py shows a menu when when right-clicking.</li>
+<li>mod_scripting.py supports &#64;button and &#64;command nodes.</li>
+<li>quicksearch.py adds a Nav tab for searching.</li>
+<li>todo.py handles to-do lists and is a project manager.</li>
+<li>valuespace.py creates an outline-oriented spreadsheet.</li>
+<li>viewrendered.py renders content in the rendering pane.</li>
 </ul>
 </div>
 <div class="section" id="move-clones-to-the-last-top-level-node">
@@ -134,9 +137,9 @@ outline without altering the structure of &#64;file nodes.</p>
 <h3><a class="toc-backref" href="#id7">Put personal settings myLeoSettings.leo</a><a class="headerlink" href="#put-personal-settings-myleosettings-leo" title="Permalink to this headline">¶</a></h3>
 <p>Put your <a class="reference external" href="customizing.html#specifying-settings">personal settings</a> in myLeoSettings.leo, not leoSettings.leo.</p>
 <ul class="simple">
-<li><p>The leo-settings command opens leoSettings.leo.</p></li>
-<li><p>The my-leo-settings command opens myLeoSettings.leo.</p></li>
-<li><p>Copy the desired settings nodes from leoSettings.leo to myLeoSettings.leo.</p></li>
+<li>The leo-settings-leo command opens leoSettings.leo.</li>
+<li>The my-leo-settings-leo command opens myLeoSettings.leo.</li>
+<li>Copy the desired settings nodes from leoSettings.leo to myLeoSettings.leo.</li>
 </ul>
 </div>
 <div class="section" id="search-for-settings-in-leosettings-leo">
@@ -171,7 +174,7 @@ See the <a class="reference external" href="tutorial-pim.html#using-abbreviation
 <h3><a class="toc-backref" href="#id14">The pyflakes command</a><a class="headerlink" href="#the-pyflakes-command" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference external" href="https://pypi.python.org/pypi/pyflakes">pyflakes</a> is a superb programming tool. It checks python files almost instantly.</p>
 <p>These settings cause Leo to run pyflakes whenever saving a .py file and to raise a dialog if any errors are found:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@bool</span> <span class="n">run</span><span class="o">-</span><span class="n">pyflakes</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">write</span> <span class="o">=</span> <span class="kc">True</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@bool</span> <span class="n">run</span><span class="o">-</span><span class="n">pyflakes</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">write</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="nd">@bool</span> <span class="n">syntax</span><span class="o">-</span><span class="n">error</span><span class="o">-</span><span class="n">popup</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -216,7 +219,7 @@ button using Ctrl-P.</p>
 <p>When developing scripts that use Log window to display results, it is
 sometimes useful to clear Log window by inserting the following two lines
 at the beginning of your script:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">selectTab</span><span class="p">(</span><span class="s1">&#39;Log&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">selectTab</span><span class="p">(</span><span class="s1">&#39;Log&#39;</span><span class="p">)</span>
 <span class="n">c</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">clearLog</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -226,7 +229,7 @@ at the beginning of your script:</p>
 <p>g.callers() returns the last n callers (default 4) callers of a function or
 method. The verbose option shows each caller on a separate line. For
 example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">callers</span><span class="p">())</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">callers</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>You must <a class="reference external" href="running.html#running-leo-from-a-console-window">launch Leo from a console window</a>.</p>
@@ -277,7 +280,7 @@ You must <a class="reference external" href="running.html#running-leo-from-a-con
 <h3><a class="toc-backref" href="#id31">Use section references sparingly</a><a class="headerlink" href="#use-section-references-sparingly" title="Permalink to this headline">¶</a></h3>
 <p>Within scripts, use section references only when code must be placed
 exactly. Here is a common pattern for &#64;file nodes for python files:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1"># -*- coding: utf-8 -*-</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nd">@first</span> <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="o">&lt;&lt;</span><span class="n">imports</span><span class="o">&gt;&gt;</span>
 <span class="nd">@others</span>
 </pre></div>
@@ -302,13 +305,13 @@ exactly. Here is a common pattern for &#64;file nodes for python files:</p>
   <p class="topless"><a href="usersguide.html"
                         title="next chapter">Leo’s Users Guide</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
+  <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -333,8 +336,8 @@ exactly. Here is a common pattern for &#64;file nodes for python files:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jul 14, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Last updated on Jun 17, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

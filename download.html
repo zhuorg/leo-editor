@@ -1,26 +1,33 @@
 
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Downloading Leo &#8212; Leo 6.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installing Leo" href="installing.html" />
     <link rel="prev" title="Downloading, Installing &amp; Running Leo" href="getting-started.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -47,39 +54,39 @@
 <h1>Downloading Leo<a class="headerlink" href="#downloading-leo" title="Permalink to this headline">¶</a></h1>
 <p>There are four ways to download Leo:</p>
 <ul class="simple">
-<li><p><strong>New</strong>: Leo 5.7 final will have a <a class="reference external" href="https://pythonwheels.com/">Python wheel</a>, so <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">leo</span></code> will automatically download <em>and</em> install Leo, including all Leo’s dependencies. See <a class="reference external" href="installing.html#installing-leo-with-pip">Installing Leo with pip</a>.</p></li>
-<li><p>We recommend installing Leo using <a class="reference external" href="https://git-scm.com/">git</a>, see <a class="reference external" href="installing.html#installing-leo-with-git">Installing Leo with git</a>. Git gives you the latest, thoroughly tested code. All of Leo’s developers use git.</p></li>
-<li><p>If you prefer a new development version, or a version from from 1, 2, 5, 10, 30 or 90 days ago, download a <a class="reference external" href="download.html#snapshots">Nightly snapshot</a>.</p></li>
+<li><strong>New</strong>: Leo 5.7 final will have a <a class="reference external" href="https://pythonwheels.com/">Python wheel</a>, so <code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">leo</span></code> will automatically download <em>and</em> install Leo, including all Leo’s dependencies. See <a class="reference external" href="installing.html#installing-leo-with-pip">Installing Leo with pip</a>.</li>
+<li>We recommend installing Leo using <a class="reference external" href="https://git-scm.com/">git</a>, see <a class="reference external" href="installing.html#installing-leo-with-git">Installing Leo with git</a>. Git gives you the latest, thoroughly tested code. All of Leo’s developers use git.</li>
+<li>If you prefer a new development version, or a version from from 1, 2, 5, 10, 30 or 90 days ago, download a <a class="reference external" href="download.html#snapshots">Nightly snapshot</a>.</li>
 </ul>
 <div class="section" id="snapshots">
 <h2>Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
 <p>.zip snapshots can be downloaded directly from <a class="reference external" href="https://github.com/leo-editor">GitHub</a>. No account is required.  The downloaded file will have a name like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">leo</span><span class="o">-</span><span class="n">editor</span><span class="o">-</span><span class="mi">50</span><span class="n">c070b715b9fec50c31be5853055a0ebc72cad5</span><span class="o">.</span><span class="n">zip</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">leo</span><span class="o">-</span><span class="n">editor</span><span class="o">-</span><span class="mi">50</span><span class="n">c070b715b9fec50c31be5853055a0ebc72cad5</span><span class="o">.</span><span class="n">zip</span>
 </pre></div>
 </div>
-<p>where the <code class="docutils literal notranslate"><span class="pre">50c0...cad5</span></code> part is the ID or fingerprint of the version you’ve downloaded.  Except “Latest”, which is just <code class="docutils literal notranslate"><span class="pre">leo-editor-master.zip</span></code>.</p>
+<p>where the <code class="docutils literal"><span class="pre">50c0...cad5</span></code> part is the ID or fingerprint of the version you’ve downloaded.  Except “Latest”, which is just <code class="docutils literal"><span class="pre">leo-editor-master.zip</span></code>.</p>
 <p>Here are direct download links for the “devel” branch, which changes frequently and contains all recent bug fixes:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel.zip">Latest devel</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{1%20day%20ago}.zip">devel: 1 day ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{2%20days%20ago}.zip">devel: 2 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{5%20days%20ago}.zip">devel: 5 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{10%20days%20ago}.zip">devel: 10 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{30%20days%20ago}.zip">devel: 30 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{90%20days%20ago}.zip">devel: 90 days ago</a></p></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel.zip">Latest devel</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{1%20day%20ago}.zip">devel: 1 day ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{2%20days%20ago}.zip">devel: 2 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{5%20days%20ago}.zip">devel: 5 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{10%20days%20ago}.zip">devel: 10 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{30%20days%20ago}.zip">devel: 30 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/devel&#64;{90%20days%20ago}.zip">devel: 90 days ago</a></li>
 </ul>
 </div></blockquote>
 <p>Here are direct download links for the “master” branch, which rarely changes and contains the most stable code:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master.zip">Latest master</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{1%20day%20ago}.zip">master: 1 day ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{2%20days%20ago}.zip">master: 2 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{5%20days%20ago}.zip">master: 5 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{10%20days%20ago}.zip">master: 10 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{30%20days%20ago}.zip">master: 30 days ago</a></p></li>
-<li><p><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{90%20days%20ago}.zip">master: 90 days ago</a></p></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master.zip">Latest master</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{1%20day%20ago}.zip">master: 1 day ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{2%20days%20ago}.zip">master: 2 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{5%20days%20ago}.zip">master: 5 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{10%20days%20ago}.zip">master: 10 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{30%20days%20ago}.zip">master: 30 days ago</a></li>
+<li><a class="reference external" href="https://github.com/leo-editor/leo-editor/archive/master&#64;{90%20days%20ago}.zip">master: 90 days ago</a></li>
 </ul>
 </div></blockquote>
 </div>
@@ -101,13 +108,13 @@
   <p class="topless"><a href="installing.html"
                         title="next chapter">Installing Leo</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
+  <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -132,8 +139,8 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 1997-2019, Edward K. Ream.
-      Last updated on Jul 14, 2019.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+      Last updated on Jun 17, 2019.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
