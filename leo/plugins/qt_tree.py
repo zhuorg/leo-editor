@@ -98,6 +98,7 @@ class LeoQtTree(leoFrame.LeoTree):
         tw.customContextMenuRequested.connect(self.onContextMenu)
         # tw.onItemChanged.connect(self.onItemChanged)
         g.app.gui.setFilter(c, tw, self, tag='tree')
+        self.treeWidget.set_style()
         # 2010/01/24: Do not set this here.
         # The read logic sets c.changed to indicate nodes have changed.
         # c.setChanged(False)
@@ -497,23 +498,23 @@ class LeoQtTree(leoFrame.LeoTree):
         if trace:
             t1 = time.clock()
         c = self.c
-        self.clear()
+        w = self.treeWidget
+
         # Draw all top-level nodes and their visible descendants.
         if c.hoistStack:
             bunch = c.hoistStack[-1]
             p = bunch.p; h = p.h
             if len(c.hoistStack) == 1 and h.startswith('@chapter') and p.hasChildren():
-                p = p.firstChild()
-                while p:
-                    self.drawTree(p)
-                    p.moveToNext()
+                v = p.v
             else:
-                self.drawTree(p)
+                v = p.v.parents[0]
+            w.root = v
+            w.refresh_visibles()
+            w.update()
         else:
-            p = c.rootPosition()
-            while p:
-                self.drawTree(p)
-                p.moveToNext()
+            w.root = c.hiddenRootNode
+            w.refresh_visibles()
+            w.update()
         if trace:
             t2 = time.clock()
             g.trace('%5.2f sec.' % (t2-t1), g.callers(5))
@@ -640,7 +641,7 @@ class LeoQtTree(leoFrame.LeoTree):
         expand = c.shouldBeExpanded(p)
         if 'drawing' in g.app.debug:
             g.trace('expand' if expand else 'contract')
-        item = self.position2itemDict.get(p.key())
+        item = self.position2item(p)
         if p:
             try:
                 # These generate events, which would trigger a full redraw.
@@ -1090,7 +1091,14 @@ class LeoQtTree(leoFrame.LeoTree):
         return self.item2vnodeDict.get(itemHash) # was item
 
     def position2item(self, p):
-        item = self.position2itemDict.get(p.key())
+        w = self.treeWidget.qtree
+        if p.stack:
+            item = w.topLevelItem(p.stack[0][1])
+            for v, i in p.stack[1:]:
+                item = item.child(i)
+            item = item.child(p._childIndex)
+        else:
+            item = w.topLevelItem(p._childIndex)
         return item
 
     def vnode2items(self, v):
@@ -1387,6 +1395,8 @@ class LeoQtTree(leoFrame.LeoTree):
             # This won't do anything in the new redraw scheme.
         item = self.position2item(p)
         if item:
+            self.treeWidget.tree_painter.edit_item(item)
+            return None, None
             if self.use_declutter:
                 item.setText(0, item._real_text)
             e, wrapper = self.editLabelHelper(item, selectAll, selection)

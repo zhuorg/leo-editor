@@ -16,6 +16,7 @@ from leo.core.leoQt import Qsci
 import leo.plugins.qt_events as qt_events
 import leo.plugins.qt_text as qt_text
 import leo.plugins.qt_tree as qt_tree
+from leo.plugins.qt_tree_incremental import MyTree
 from leo.plugins.mod_scripting import build_rclick_tree
 import os
 import sys
@@ -911,7 +912,7 @@ class DynamicWindow(QtWidgets.QMainWindow):
             w.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
             w.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
         w.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        w.setHeaderHidden(False)
+        w.setHeaderHidden(True)
         self.setName(w, name)
         return w
     #@+node:ekr.20110605121601.18165: *4* dw.log tabs
@@ -3972,11 +3973,11 @@ class LeoQtMenu(leoMenu.LeoMenu):
         return None
     #@-others
 #@+node:ekr.20110605121601.18363: ** class LeoQTreeWidget (QTreeWidget)
-class LeoQTreeWidget(QtWidgets.QTreeWidget):
+class LeoQTreeWidget(MyTree):
     # To do: Generate @auto or @file nodes when appropriate.
 
     def __init__(self, c, parent):
-        super().__init__(parent)
+        super().__init__(c, parent, c.hiddenRootNode)
         self.setAcceptDrops(True)
         enable_drag = c.config.getBool('enable-tree-dragging')
         self.setDragEnabled(bool(enable_drag))
