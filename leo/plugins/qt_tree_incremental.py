@@ -198,8 +198,10 @@ class MyTreePainter(QtWidgets.QWidget):
                     return
 
                 # otherwise just select node
-                self.qtree.setCurrentItem(z.item)
-                self.c.setCurrentPosition(p)
+                # self.qtree.setCurrentItem(z.item)
+                self.mytree.busy = True
+                self.c.selectPosition(p)
+                self.mytree.busy = False
                 self.update()
     #@+node:vitalije.20190717110119.1: *3* mouseDoubleClickEvent
     def mouseDoubleClickEvent(self, mev):
