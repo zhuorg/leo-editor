@@ -43,6 +43,7 @@
 <v t="ekr.20170811173924.1"><vh>@button backup-repo</vh></v>
 <v t="ekr.20150413091056.1"><vh>@button check-clones</vh></v>
 <v t="ekr.20190406154306.1"><vh>@button open-pyzo</vh></v>
+<v t="vitalije.20190718171146.1"><vh>@button redraw-speed</vh></v>
 </v>
 </v>
 <v t="ekr.20140103105930.16446"><vh>@views</vh>
@@ -2209,5 +2210,10 @@ def openDesktopIntegration(self, event=None):
         if c2: return
     g.es('not found:', fileName)
 </t>
+<t tx="vitalije.20190718171146.1">import time
+t1 = time.process_time_ns()
+c.expandAllHeadlines()
+t2 = (time.process_time_ns() - t1) * 1e-6
+g.es('Finished in: %.2fms'%t2)</t>
 </tnodes>
 </leo_file>
