@@ -42,7 +42,7 @@
 </v>
 </v>
 </v>
-<v t="DSR.20181126072740.2"><vh>@file git_install.py</vh></v>
+<v t="DSR.20181126072740.2" descendentVnodeUnknownAttributes="7d710058010000003071017d7102580b0000005f5f626f6f6b6d61726b7371037d7104580700000069735f6475706571054930300a7373732e"><vh>@file git_install.py</vh></v>
 <v t="ekr.20150416081546.1"><vh>Scripts</vh>
 <v t="ekr.20150416081546.2"><vh>Catch mixed newlines in distribution files</vh>
 <v t="ekr.20150416081546.3"><vh>check</vh></v>
@@ -186,7 +186,7 @@
 <v t="mhw.20191116202814.1"><vh>research</vh>
 <v t="mhw.20191116204624.1"><vh>xx-shell-cmd</vh></v>
 <v t="mhw.20191116204124.1"><vh>Snippets</vh></v>
-<v t="mhw.20191118220012.1"><vh>newHeadline</vh></v>
+<v t="mhw.20191118220012.1"><vh>search dirs for string</vh></v>
 </v>
 </v>
 </vnodes>
@@ -383,7 +383,7 @@ for a terrific tool!!!!
  
 Julian S. Fecteau 
 </t>
-<t tx="ekr.20070325123540"></t>
+<t tx="ekr.20070325123540" __bookmarks="7d7100580700000069735f6475706571014930300a732e"></t>
 <t tx="ekr.20070425092712">Leo--especially with its feature of user-controllable outlining and
 overview--has for the last 4-5 years had the greatest positive effect
 on my overall programming quality of life than anything else out there
@@ -596,7 +596,7 @@ leo/core/leoPy.leo              export-ignore
 leo/core/ekrLeoPy.leo           export-ignore
 leo/test/unittest/.leo_shadow/  export-ignore
 </t>
-<t tx="ekr.20141117135127.2"></t>
+<t tx="ekr.20141117135127.2" __bookmarks="7d7100580700000069735f6475706571014930300a732e"></t>
 <t tx="ekr.20141117135127.3"></t>
 <t tx="ekr.20141118074110.3">https://groups.google.com/forum/#!topic/leo-editor/VvnDYjV4aIk</t>
 <t tx="ekr.20150326055410.1">@language rest
@@ -611,7 +611,7 @@ leo/test/unittest/.leo_shadow/  export-ignore
     Latest copyright date: 2019.
 
     Note: install.txt file embeds a copyright message in the nsi installer.</t>
-<t tx="ekr.20150416081546.1"></t>
+<t tx="ekr.20150416081546.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e"></t>
 <t tx="ekr.20150416081546.2">import glob
 
 @others
@@ -1599,7 +1599,7 @@ end</t>
 <t tx="ekr.20170316104916.1">- Create Release on SourceForge: http://sourceforge.net/projects/leo/
     - Make sure to upload readme.md and Readme-quick-install.txt.
 </t>
-<t tx="ekr.20170911061827.1">'''Make sure no distributed .leo file contains xml-stylesheet elements.'''
+<t tx="ekr.20170911061827.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e">'''Make sure no distributed .leo file contains xml-stylesheet elements.'''
 # g.cls()
 &lt;&lt; define files &gt;&gt;
 for fn in files:
@@ -1702,7 +1702,7 @@ git tag -a v6.0-b2-dev -m "Added v6.0-b2-dev tag"
 git push --follow-tags
 update version in leoVersion.py.
 </t>
-<t tx="ekr.20190429113053.1"># Commit all files before running this script.
+<t tx="ekr.20190429113053.1" __bookmarks="7d7100580700000069735f6475706571014930300a732e"># Commit all files before running this script.
 
 '''
 This script is OBSOLETE. It used NSIS to create a full distribution to SourceForge.
@@ -2528,7 +2528,55 @@ From inside a file, you can use os.path.dirname(__file__).
 
 -- EKR, 2019, https://groups.google.com/d/msg/leo-editor/BOSclbiArmc/-RELsmzeDgAJ</t>
 <t tx="mhw.20191116204624.1">os.chdir(base_dir)
-subprocess.Popen('findstr /i "text string" *" ', shell=True)</t>
+subprocess.Popen('findstr /i "text string" *" ', shell=True)
+
+QQQ
+The recommended approach to invoking subprocesses is to use the run() function for all use cases it can handle. For more advanced use cases, the underlying Popen interface can be used directly.
+
+The run() function was added in Python 3.5; if you need to retain compatibility with older versions, see the Older high-level API section.
+
+subprocess.run(args, *, 
+    stdin=None, 
+    input=None, 
+    stdout=None, 
+    stderr=None, 
+    capture_output=False, 
+    shell=False, 
+    cwd=None, 
+    timeout=None, 
+    check=False, 
+    encoding=None, 
+    errors=None, 
+    text=None, 
+    env=None, 
+    universal_newlines=None)
+
+QQQ
+-- https://docs.python.org/3/library/subprocess.html#using-the-subprocess-module
+
+capture_output is 3.7+
+
+dir=os.path.join(g.app.loadDir, '../../')
+pattern="text string"
+p = subprocess.run('findstr', '/i', '/s', f'{pattern}', dir, 
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=None)
+out, err = p.communicate()
+lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
+return lines
+    
+    
+    p = subprocess.Popen(
+        shlex.split(command),
+        stdout=subprocess.PIPE,
+        stderr=None, # Shows error traces.
+        shell=False,
+    )
+    out, err = p.communicate()
+    lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
+    return lines
+    </t>
 <t tx="mhw.20191118213918.1"></t>
 <t tx="mhw.20191118214004.1"># when opening LeoPyRef.leo #
 
@@ -2550,10 +2598,36 @@ load-leo.html - ref from LeoDocs &amp; LeoReleaseNotes, but only as information 
 
 Identifying references. Other side of pipe is to ignore .git folder:
 findstr /i /s "load-leo.html" * | findstr /v "^.git"</t>
-<t tx="mhw.20191118220012.1">#import os
+<t tx="mhw.20191118220012.1">@language python
+import os
+import shlex
+import subprocess
 #dir of the Leo file we're in right now
 #   leo-editor/leo/dist
 g.es_print(g.os_path_dirname(c.fileName()))
+
+
+g.es_print('='*40)
+
+dir=os.path.join(g.app.loadDir, '../../')
+pattern="dist.leo"
+
+command = f'findstr /i /s "{pattern}" {dir}'
+
+g.es_print(shlex.split(command))
+
+p = subprocess.run(shlex.split(command), 
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=None)
+
+out = p.stdout
+#err = p.stderr()
+lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
+#return lines
+g.es_print(lines)
+g.es_print(p)
+
 </t>
 </tnodes>
 </leo_file>
