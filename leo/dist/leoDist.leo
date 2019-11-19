@@ -178,6 +178,16 @@
 <v t="mhw.20191107063030.1"><vh>To Move</vh>
 <v t="ekr.20150416081546.7"></v>
 </v>
+<v t="mhw.20191118215016.1"><vh>Moved</vh>
+<v t="mhw.20191118213918.1"><vh>to fix</vh>
+<v t="mhw.20191118214004.1"><vh>not found: ./leo-editor/leo_to_html.xsl</vh></v>
+</v>
+</v>
+<v t="mhw.20191116202814.1"><vh>research</vh>
+<v t="mhw.20191116204624.1"><vh>xx-shell-cmd</vh></v>
+<v t="mhw.20191116204124.1"><vh>Snippets</vh></v>
+<v t="mhw.20191118220012.1"><vh>newHeadline</vh></v>
+</v>
 </v>
 </vnodes>
 <tnodes>
@@ -2460,7 +2470,10 @@ they should be kept.
 
 This is an organizer node of clones for the things-to-be-moved, e.g. use "Go to
 clone" and move that. These nodes can be removed when satisfied nothing was
-broken.</t>
+broken.
+
+run_pytest_tests.py - mv to ./test, but needs code change and testing
+run_travis_unit_tests.py - mv to ./test, but needs code change and testing</t>
 <t tx="mhw.20191107063807.1">Refresh / audit MANIFEST.in excludes and includes
 https://github.com/leo-editor/leo-editor/issues/1077
 
@@ -2480,6 +2493,67 @@ Terminal=true
 Exec=/snap/bin/leo-editor.leo
 Name=Leo Editor
 Icon=/snap/meta/gui/icon.png
+</t>
+<t tx="mhw.20191116202814.1">There's a way to fire any shell command from Leo and then capture the result in a new
+node. Where is that?
+
+
+findstr /i /s "run_travis_unit_tests.py" * | findstr /v "^.git"
+
+.travis.yml:    - python run_travis_unit_tests.py
+leo\core\LeoPyRef.leo:&lt;v t="ekr.20181009072707.1"&gt;&lt;vh&gt;@clean ../../run_travis_unit_tests.py&lt;/vh&gt;
+leo\dist\leoDist.leo:    - python run_travis_unit_tests.py
+leo\dist\leoDist.leo:    - python run_travis_unit_tests.py</t>
+<t tx="mhw.20191116204124.1">&gt; Send to shell and execute.
+&gt; Return result back to Leo into a new node (perhaps a child, perhaps not).
+
+-- Rob, 2019 https://groups.google.com/d/msg/leo-editor/DWS8NbMZssQ/zbKUV3glAgAJ
+
+
+-----
+How to get contents of Log pane into a variable
+
+    c.frame.log.setAllText('')  # clears log
+    [do stuff sending output to log]
+    text = c.frame.log.getAllText()
+    
+-- Terry Brown, 2013, https://groups.google.com/d/msg/leo-editor/SeeglUSxNhs/j6yHllDx3n4J
+
+-----
+g.app.loadDir is the leo/core directory.
+
+c.fileName() is the .leo file itself, so you can use os.path.dirname(c.fileName()) to get the directory containing the .leo file.
+
+From inside a file, you can use os.path.dirname(__file__).
+
+-- EKR, 2019, https://groups.google.com/d/msg/leo-editor/BOSclbiArmc/-RELsmzeDgAJ</t>
+<t tx="mhw.20191116204624.1">os.chdir(base_dir)
+subprocess.Popen('findstr /i "text string" *" ', shell=True)</t>
+<t tx="mhw.20191118213918.1"></t>
+<t tx="mhw.20191118214004.1"># when opening LeoPyRef.leo #
+
+Leo Log Window
+Leo 6.2-b1-devel, clean-up-root branch, build 9ca48970cb
+2019-11-11 22:00:08 -0800
+Python 3.6.2, PyQt version 5.12.3
+Windows 10 AMD64 (build 10.0.17134) SP0
+not found: C:/users/mattw/code/leo-editor/leo_to_html.xsl
+read 175 files in 4.81 seconds
+read outline in 5.05 seconds</t>
+<t tx="mhw.20191118215016.1">Moved to ./tools/webroot
+
+do-leo.php - only referenced from load-leo.html
+leo_to_html.xsl - used by do-leo.
+load-leo.html - ref from LeoDocs &amp; LeoReleaseNotes, but only as information to it's published location on web. Haven't found out how it get's pushed to the website yet.
+
+    xslt-test.leo - ref in release_notest.txt, doesn't appear to be used by anything directly
+
+Identifying references. Other side of pipe is to ignore .git folder:
+findstr /i /s "load-leo.html" * | findstr /v "^.git"</t>
+<t tx="mhw.20191118220012.1">#import os
+#dir of the Leo file we're in right now
+#   leo-editor/leo/dist
+g.es_print(g.os_path_dirname(c.fileName()))
 </t>
 </tnodes>
 </leo_file>

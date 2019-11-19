@@ -189,17 +189,12 @@
 <v t="ekr.20180225010644.1"><vh>Other files</vh>
 <v t="ekr.20180225010707.1"><vh>In leo-editor directory</vh>
 <v t="maphew.20180224170853.1"><vh>@file ../../setup.py</vh></v>
-<v t="ekr.20150304125314.4"><vh>@clean ../../leo_to_html.xsl</vh>
-<v t="ekr.20150304130753.5"><vh>&lt;&lt;style&gt;&gt;</vh></v>
-<v t="ekr.20150304130753.6"><vh>&lt;&lt;scripts&gt;&gt;</vh></v>
-</v>
 <v t="ekr.20181009072707.1"><vh>@clean ../../run_travis_unit_tests.py</vh>
 <v t="ekr.20181009084156.1"><vh>&lt;&lt; imports &gt;&gt;</vh></v>
 <v t="ekr.20181009084245.1"><vh>&lt;&lt; compute path &gt;&gt;</vh></v>
 <v t="ekr.20181009084323.1"><vh>&lt;&lt; run tests &gt;&gt;</vh></v>
 </v>
 <v t="ekr.20181014073705.1"><vh>@file ../../run_pytest_tests.py</vh></v>
-<v t="ekr.20150304130753.4"><vh>leo-viewer/leo_to_html.xsl</vh></v>
 </v>
 <v t="ekr.20180225010913.1"><vh>In leo/core</vh>
 <v t="ekr.20031218072017.2605"><vh>@file runLeo.py</vh></v>
@@ -306,6 +301,13 @@
 </v>
 </v>
 <v t="ekr.20181013081645.1"><vh>In leo/core/test</vh></v>
+<v t="mhw.20191118214232.1"><vh>In tools/webroot</vh>
+<v t="ekr.20150304125314.4"><vh>@clean leo_to_html.xsl</vh>
+<v t="ekr.20150304130753.5"><vh>&lt;&lt;style&gt;&gt;</vh></v>
+<v t="ekr.20150304130753.6"><vh>&lt;&lt;scripts&gt;&gt;</vh></v>
+</v>
+<v t="ekr.20150304130753.4"><vh>leo-viewer/leo_to_html.xsl</vh></v>
+</v>
 </v>
 <v t="ekr.20080730161153.8"><vh>Testing</vh>
 <v t="ekr.20160517182239.1"><vh>@file ../../flake8-leo.py</vh></v>
@@ -609,7 +611,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
 
 &lt;/xsl:stylesheet&gt;
 </t>
-<t tx="ekr.20150304130753.4">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<t tx="ekr.20150304130753.4">## this node seems to be a working copy remnant, no longer needed?
+## exists in leo-editor/tools/webroot/
+##
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
 
@@ -2243,5 +2248,13 @@ viewrendered.py
 # xdb_pane.py
 </t>
 <t tx="ekr.20190607124533.1"></t>
+<t tx="mhw.20191118214232.1"># Disabled, pending github issue #1443
+#
+##g.app.loadDir is the leo/core directory.
+#g.es_print(g.app.loadDir + '/../../../tools/webroot')
+#@path g.app.loadDir + /../../../tools/webroot
+
+@path ../../tools/webroot
+</t>
 </tnodes>
 </leo_file>
