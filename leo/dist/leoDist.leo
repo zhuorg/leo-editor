@@ -187,6 +187,7 @@
 <v t="mhw.20191116204624.1"><vh>xx-shell-cmd</vh></v>
 <v t="mhw.20191116204124.1"><vh>Snippets</vh></v>
 <v t="mhw.20191118220012.1"><vh>search dirs for string</vh></v>
+<v t="maphew.20191127221130.1"><vh>Find results: dist.leo</vh></v>
 </v>
 </v>
 </vnodes>
@@ -2376,6 +2377,47 @@ universal=1
 pyenchant  # spell check support. No wheels for some platforms, e.g. amd64
 pyxml; python_version &lt; "3.0"   # Used for XML import. Appears to be only python 2 package
 </t>
+<t tx="maphew.20191127221130.1">--- Matches for dist.leo under:
+--- D:/matt/code/leo-editor/leo/core\../../*
+
+leo\commands\commanderHelpCommands.py:@g.commander_command('open-leo-dist-leo')
+leo\commands\commanderHelpCommands.py:@g.commander_command('leo-dist-leo')
+leo\commands\commanderHelpCommands.py:    """Open leoDist.leo in a new Leo window."""
+leo\commands\commanderHelpCommands.py:    name = "leoDist.leo"
+leo\config\leoSettings.leo:&lt;v t="ekr.20161025090757.1"&gt;&lt;vh&gt;@item open-leo-dist-leo&lt;\vh&gt;&lt;\v&gt;
+leo\config\leoSettings.leo:open-leo-dist-leo               = None
+leo\config\leoSettings.leo:open-leo-dist-leo                   = None
+leo\config\leoSettings.leo:&lt;t tx="ekr.20161025090757.1"&gt;Leo&amp;amp;Dist.leo&lt;\t&gt;
+leo\dist\leoDist.leo:  Run @button check .leo files in leo-dist.leo.
+leo\dist\leoDist.leo:- Copy release notes to leoDist.leo.
+leo\dist\leoDist.leo:LeoDist.leo:
+leo\dist\leoDist.leo:- Update version numbers: search leoDist.leo for ##version.
+leo\dist\leoDist.leo:- Run make-leo button in leoDist.leo.
+leo\dist\leoDist.leo:- Rename leo\dist\LeoAppFolder to LeoApp (fixes windows naming problem).
+leo\dist\leoDist.leo:    'dist\leoDist.leo',
+leo\dist\leoDist.leo:- twine upload dist\leo*.whl
+leo\dist\leoDist.leo:- Copy release notes to leoDist.leo.
+leo\dist\leoDist.leo:LeoDist.leo:
+leo\dist\leoDist.leo:  Run @button check .leo files in leo-dist.leo.
+leo\dist\leoDist.leo:Root: these files should only be involved in building installers and similar activities (e.g. leoDist.leo). Work from a git checkout or source tarball instead: https:\github.com\leo-editor\leo-editor&lt;\t&gt;
+leo\dist\leoDist.leo:    pip install dist\Leo-*.whl
+leo\dist\leoDist.leo:    pip install dist\leo-5.7.dev344-py2.py3-none-any.whl
+leo\dist\leoDist.leo:    twine upload --repository-url https:\test.pypi.org\legacy\ dist\leo-5.7.dev344-py2.py3-none-any
+leo\dist\leoDist.leo:leo\dist\leoDist.leo:    - python run_travis_unit_tests.py
+leo\dist\leoDist.leo:leo\dist\leoDist.leo:    - python run_travis_unit_tests.py&lt;\t&gt;
+leo\dist\leoDist.leo:pattern="dist.leo"
+leo\doc\LeoDocs.leo:&lt;v t="ekr.20170123084609.25"&gt;&lt;vh&gt;leoDist.leo appears in the File menu&lt;\vh&gt;&lt;\v&gt;
+leo\doc\LeoDocs.leo:    leo-dist-leo
+leo\doc\LeoReleaseNotes.leo:&lt;v t="ekr.20150313054219.308"&gt;&lt;vh&gt;Fixed file association in leoDist.leo&lt;\vh&gt;&lt;\v&gt;
+leo\doc\LeoReleaseNotes.leo:&lt;v t="ekr.20170316113933.81"&gt;&lt;vh&gt;leoDist.leo appears in the File menu&lt;\vh&gt;&lt;\v&gt;
+leo\doc\LeoReleaseNotes.leo:&lt;t tx="ekr.20150313054219.1434"&gt;Unlike previous installers, the manifest is created from the @button make leo.nsi script in dist.leo.
+leo\doc\slideshows.txt:in the Leo file leo\dist\leoDist.leo.
+leo\test\inactiveTests.leo:&lt;v t="ekr.20040803090901"&gt;&lt;vh&gt;@@test leoDist.leo&lt;\vh&gt;&lt;\v&gt;
+leo\test\inactiveTests.leo:&lt;t tx="ekr.20040803090901"&gt;path = g.os_path_join(g.app.loadDir,"..","dist","leoDist.leo")
+leo\test\inactiveTests.txt:#@+node:ekr.20040803090901: *3* @test leoDist.leo
+leo\test\inactiveTests.txt:path = g.os_path_join(g.app.loadDir,"..","dist","leoDist.leo")
+
+</t>
 <t tx="matt.20181004031246.1">@language md
 
 _Initiating issue: https://github.com/leo-editor/leo-editor/issues/672_
@@ -2599,22 +2641,29 @@ load-leo.html - ref from LeoDocs &amp; LeoReleaseNotes, but only as information 
 Identifying references. Other side of pipe is to ignore .git folder:
 findstr /i /s "load-leo.html" * | findstr /v "^.git"</t>
 <t tx="mhw.20191118220012.1">@language python
+''' Search folder tree for the specified pattern
+
+Windows only at present.
+
+matt wilkie &lt;maphew@gmail.com&gt; Nov 2019
+'''
 import os
 import shlex
 import subprocess
-#dir of the Leo file we're in right now
-#   leo-editor/leo/dist
-g.es_print(g.os_path_dirname(c.fileName()))
 
+# what to search for
+pattern="dist.leo"
+    #Todo: make this a parameter or prompt!
 
 g.es_print('='*40)
+g.es_print('Running search-dirs-for-string')
 
-dir=os.path.join(g.app.loadDir, '../../')
-pattern="dist.leo"
+searchdir=os.path.join(g.app.loadDir, '../../*')
 
-command = f'findstr /i /s "{pattern}" {dir}'
+command = f'findstr -i -s -p "{pattern}" {searchdir}'
+    # windows specific cmd
 
-g.es_print(shlex.split(command))
+#g.es_print(shlex.split(command))  # debug
 
 p = subprocess.run(shlex.split(command), 
         shell=True,
@@ -2624,10 +2673,35 @@ p = subprocess.run(shlex.split(command),
 out = p.stdout
 #err = p.stderr()
 lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
-#return lines
-g.es_print(lines)
-g.es_print(p)
+lines = [os.path.relpath(z, searchdir[:-2]) for z in lines]
+    # Remove Leo app dir prefix, less noise
 
+p2 = c.p.insertAfter()
+p2.h = f"Find results: {pattern}"
+p2.b = f"""--- Matches for {pattern} under:
+--- {searchdir}
+
+{''.join(lines)}
+"""
+c.selectPosition(p2)
+c.redraw()
+g.es_print('Results in next node')
+
+'''Sources:
+
+Run shell command and capture results:
+LeoPyRef.leo#Found:shlex.split(command)--&gt;g.execGitCommand
+
+Put results into new node and redraw (EKR):
+https://groups.google.com/d/topic/leo-editor/s16fP2pcxqM/discussion
+
+Removing a path prefix (Mitch):
+https://stackoverflow.com/questions/8693024/how-to-remove-a-path-prefix-in-python
+'''
+### Scrabpbook ###
+#dir of the Leo file we're in right now
+#   leo-editor/leo/dist
+#g.es_print(g.os_path_dirname(c.fileName()))
 </t>
 </tnodes>
 </leo_file>
