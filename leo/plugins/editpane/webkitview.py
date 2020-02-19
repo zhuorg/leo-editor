@@ -6,7 +6,8 @@ import os
 import leo.core.leoGlobals as g
 assert g
 from leo.core.leoQt import QtWebKit, QtWebKitWidgets
-if not QtWebKitWidgets or 'engine' in g.os_path_basename(QtWebKitWidgets.__file__).lower():
+if not QtWebKitWidgets or 'engine' in g.os_path_basename(
+    QtWebKitWidgets.__file__).lower():
     # not loading webkit view, webengine masquerading as webkit
     raise ImportError
 #@-<< webkitview.py imports >>
@@ -28,7 +29,7 @@ def _path_from_pos(c, p):
     def atfile(p):
         word0 = p.h.split()[0]
         return (
-            word0 in g.app.atFileNames|set(['@auto']) or
+            word0 in g.app.atFileNames | set(['@auto']) or
             word0.startswith('@auto-')
         )
 

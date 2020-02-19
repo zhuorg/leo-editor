@@ -27,7 +27,7 @@ if 1:
 #@+node:ekr.20110605121601.18134: ** init (qt_gui.py)
 def init():
 
-    if g.app.unitTesting: # Not Ok for unit testing!
+    if g.app.unitTesting:  # Not Ok for unit testing!
         return False
     if not QtCore:
         return False
@@ -47,11 +47,11 @@ class LeoQtGui(leoGui.LeoGui):
         super().__init__('qt')
              # Initialize the base class.
         self.active = True
-        self.consoleOnly = False # Console is separate from the log.
+        self.consoleOnly = False  # Console is separate from the log.
         self.iconimages = {}
         self.globalFindDialog = None
         self.idleTimeClass = qt_idle_time.IdleTime
-        self.insert_char_flag = False # A flag for eventFilter.
+        self.insert_char_flag = False  # A flag for eventFilter.
         self.mGuiName = 'qt'
         self.main_window = None
             # The *singleton* QMainWindow.
@@ -69,7 +69,8 @@ class LeoQtGui(leoGui.LeoGui):
         # Define various classes key stokes.
         #@+<< define FKeys >>
         #@+node:ekr.20180419110303.1: *4* << define FKeys >>
-        self.FKeys = ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']
+        self.FKeys = [
+            'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
             # These do not generate keystrokes on MacOs.
         #@-<< define FKeys >>
         #@+<< define ignoreChars >>
@@ -85,9 +86,9 @@ class LeoQtGui(leoGui.LeoGui):
                 # 'BackSpace', 'Linefeed', 'Return', 'Tab',
             # F-Keys are also ok.
                 # 'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
-            'KP_0','KP_1','KP_2','KP_3','KP_4','KP_5','KP_6','KP_7','KP_8','KP_9',
+            'KP_0', 'KP_1', 'KP_2', 'KP_3', 'KP_4', 'KP_5', 'KP_6', 'KP_7', 'KP_8', 'KP_9',
             'KP_Multiply, KP_Separator,KP_Space, KP_Subtract, KP_Tab',
-            'KP_F1','KP_F2','KP_F3','KP_F4',
+            'KP_F1', 'KP_F2', 'KP_F3', 'KP_F4',
             'KP_Add', 'KP_Decimal', 'KP_Divide', 'KP_Enter', 'KP_Equal',
                 # Keypad chars should be have been converted to other keys.
                 # Users should just bind to the corresponding normal keys.
@@ -140,10 +141,10 @@ class LeoQtGui(leoGui.LeoGui):
             self.outlines_dock = self.make_global_outlines_dock()
             # Careful: g.app.gui does not exist yet.
         else:
-            pass # g.app.main_window is None.
+            pass  # g.app.main_window is None.
         self.frameFactory = qt_frame.TabbedFrameFactory()
             # qtFrame.finishCreate does all the other work.
-        
+
     def reloadSettings(self):
         pass
     #@+node:ekr.20110605121601.18484: *3*  qt_gui.destroySelf (calls qtApp.quit)
@@ -265,11 +266,11 @@ class LeoQtGui(leoGui.LeoGui):
     #@+node:ekr.20110605121601.18492: *4* qt_gui.panels
     def createComparePanel(self, c):
         """Create a qt color picker panel."""
-        return None # This window is optional.
+        return None  # This window is optional.
 
     def createFindTab(self, c, parentFrame):
         """Create a qt find tab in the indicated frame."""
-        pass # Now done in dw.createFindTab.
+        pass  # Now done in dw.createFindTab.
 
     def createLeoFrame(self, c, title):
         """Create a new Leo frame."""
@@ -286,8 +287,7 @@ class LeoQtGui(leoGui.LeoGui):
             return
         b = QtWidgets.QMessageBox
         d = b(c.frame.top)
-        d.setText('%s\n%s\n%s\n%s' % (
-            version, theCopyright, url, email))
+        d.setText(f"{version}\n{theCopyright}\n{url}\n{email}")
         d.setIcon(b.Information)
         yes = d.addButton('Ok', b.YesRole)
         d.setDefaultButton(yes)
@@ -316,6 +316,7 @@ class LeoQtGui(leoGui.LeoGui):
 
         """
 
+
         class DateTimeEditStepped(QtWidgets.QDateTimeEdit):
             """QDateTimeEdit which allows you to set minimum steps on fields, e.g.
               DateTimeEditStepped(parent, {QtWidgets.QDateTimeEdit.MinuteSection: 5})
@@ -333,8 +334,9 @@ class LeoQtGui(leoGui.LeoGui):
             def stepBy(self, step):
                 cs = self.currentSection()
                 if cs in self.step_min and abs(step) < self.step_min[cs]:
-                    step = self.step_min[cs] if step > 0 else - self.step_min[cs]
+                    step = self.step_min[cs] if step > 0 else -self.step_min[cs]
                 QtWidgets.QDateTimeEdit.stepBy(self, step)
+
 
         class Calendar(QtWidgets.QDialog):
 
@@ -389,7 +391,8 @@ class LeoQtGui(leoGui.LeoGui):
         s, ok = QtWidgets.QInputDialog.getText(parent, title, message)
         return s
     #@+node:ekr.20110605121601.18491: *4* qt_gui.runAskOkCancelNumberDialog
-    def runAskOkCancelNumberDialog(self, c, title, message, cancelButtonText=None, okButtonText=None):
+    def runAskOkCancelNumberDialog(
+        self, c, title, message, cancelButtonText=None, okButtonText=None):
         """Create and run askOkCancelNumber dialog ."""
         if g.unitTesting: return None
         # n,ok = QtWidgets.QInputDialog.getDouble(None,title,message)
@@ -565,15 +568,10 @@ class LeoQtGui(leoGui.LeoGui):
         func = dialog.getOpenFileNames if multiple else dialog.getOpenFileName
         c.in_qt_dialog = True
         try:
-            val = func(
-                parent=None,
-                caption=title,
-                directory=startpath,
-                filter=filter_,
-            )
+            val = func(parent=None, caption=title, directory=startpath, filter=filter_)
         finally:
             c.in_qt_dialog = False
-        if isQt5: # this is a *Py*Qt change rather than a Qt change
+        if isQt5:  # this is a *Py*Qt change rather than a Qt change
             val, junk_selected_filter = val
         if multiple:
             files = [g.os_path_normslashes(s) for s in val]
@@ -609,7 +607,7 @@ class LeoQtGui(leoGui.LeoGui):
             """
             # Adjust sys.path.
             g.trace()
-            path = g.os_path_finalize_join(g.app.loadDir,'..','plugins')
+            path = g.os_path_finalize_join(g.app.loadDir, '..', 'plugins')
             assert g.os_path_exists(path), repr(path)
             if not path in sys.path:
                 sys.path.append(path)
@@ -633,7 +631,7 @@ class LeoQtGui(leoGui.LeoGui):
             """Init the real pyzo, which has already been inited by pyzo_support.py"""
             # pylint: disable=import-error
             g.trace()
-            if 0: # Probably already done.
+            if 0:  # Probably already done.
                 import pyzo
                 import pyzo.core.menu as menu
                 pyzo.core.menu = menu
@@ -646,7 +644,7 @@ class LeoQtGui(leoGui.LeoGui):
             """Open pyzo's file browser."""
             w = self.file_browser.PyzoFileBrowser(parent=parent)
                 # Instantiate a file browser.
-            g.app.permanentScriptDict ['file_browser'] = w
+            g.app.permanentScriptDict['file_browser'] = w
                 # Save reference to the window so it won't disappear.
             g.trace('startpath:', startpath)
             g.app.gui.attachLeoIcon(w)
@@ -657,7 +655,7 @@ class LeoQtGui(leoGui.LeoGui):
             #
             # Monkey patch double-clicks.
             tree = w._browsers[0]._tree
-            
+
             def double_click_callback(event, self=tree):
                 # From Tree.mouseDoubleClickEvent
                 item = self.itemAt(event.x(), event.y())
@@ -667,7 +665,7 @@ class LeoQtGui(leoGui.LeoGui):
                 if g.os_path_isfile(path):
                     callback(c, False, path)
                         # This is the open_completer function.
-            
+
             tree.mouseDoubleClickEvent = double_click_callback
             #
             # Show it!
@@ -687,7 +685,8 @@ class LeoQtGui(leoGui.LeoGui):
         result = 'Cancel'
         return result, data
     #@+node:ekr.20110605121601.18502: *4* qt_gui.runSaveFileDialog
-    def runSaveFileDialog(self, c, initialfile='', title='Save', filetypes=None, defaultextension=''):
+    def runSaveFileDialog(
+        self, c, initialfile='', title='Save', filetypes=None, defaultextension=''):
         """Create and run an Qt save file dialog ."""
         if filetypes is None:
             filetypes = []
@@ -746,7 +745,8 @@ class LeoQtGui(leoGui.LeoGui):
             pc = g.app.pluginsController
             # 2011/10/20: load viewrendered (and call vr.onCreate)
             # *only* if not already loaded.
-            if not pc.isLoaded('viewrendered.py') and not pc.isLoaded('viewrendered2.py'):
+            if not pc.isLoaded(
+                'viewrendered.py') and not pc.isLoaded('viewrendered2.py'):
                 vr = pc.loadOnePlugin('viewrendered.py')
                 if vr:
                     g.blue('viewrendered plugin loaded.')
@@ -757,13 +757,12 @@ class LeoQtGui(leoGui.LeoGui):
             #@+<< no dialog error >>
             #@+node:ekr.20110605121601.18506: *5* << no dialog error >>
             g.es_print_error(
-                'No handler for the "scrolledMessage" hook.\n\t%s' % (
-                    g.callers()))
+                f'No handler for the "scrolledMessage" hook.\n\t{g.callers()}')
             #@-<< no dialog error >>
         #@+<< emergency fallback >>
         #@+node:ekr.20110605121601.18507: *5* << emergency fallback >>
         b = QtWidgets.QMessageBox
-        d = b(None) # c.frame.top)
+        d = b(None)  # c.frame.top)
         d.setWindowFlags(QtCore.Qt.Dialog)
             # That is, not a fixed size dialog.
         d.setWindowTitle(title)
@@ -788,7 +787,7 @@ class LeoQtGui(leoGui.LeoGui):
             features |= dock.DockWidgetClosable
         dock.setFeatures(features)
         dock.setMinimumHeight(height)
-        dock.setObjectName(f'dock.{name.lower()}')
+        dock.setObjectName(f"dock.{name.lower()}")
         dock.setWindowTitle(name.capitalize())
         # #1327: frameFactory.createFrame now ensures that the main window is visible.
             # g.app.use_global_docks:
@@ -807,7 +806,7 @@ class LeoQtGui(leoGui.LeoGui):
         dock = self.create_dock_widget(
             closeable=not is_central,
             moveable=not is_central,
-            height=50, # was 100: #1339.
+            height=50,  # was 100: #1339.
             name="Leo Outlines")
         if is_central:
             main_window.setCentralWidget(dock)
@@ -818,7 +817,7 @@ class LeoQtGui(leoGui.LeoGui):
     #@+node:ekr.20110607182447.16456: *3* qt_gui.Event handlers
     #@+node:ekr.20190824094650.1: *4* qt_gui.close_event (new)
     def close_event(self, event):
-        
+
         noclose = False
         if g.app.sessionManager and g.app.loaded_session:
             g.app.sessionManager.save_snapshot()
@@ -832,6 +831,7 @@ class LeoQtGui(leoGui.LeoGui):
             event.accept()
     #@+node:ekr.20110605121601.18481: *4* qt_gui.onDeactiveEvent
     # deactivated_name = ''
+
     deactivated_widget = None
 
     def onDeactivateEvent(self, event, c, obj, tag):
@@ -878,7 +878,7 @@ class LeoQtGui(leoGui.LeoGui):
         self.active = True
             # Used only by c.idle_focus_helper.
         if g.isMac:
-            pass # Fix #757: MacOS: replace-then-find does not work in headlines.
+            pass  # Fix #757: MacOS: replace-then-find does not work in headlines.
         else:
             # Leo 5.6: Recover from missing focus.
             # c.idle_focus_handler can't do this.
@@ -993,12 +993,12 @@ class LeoQtGui(leoGui.LeoGui):
         """Required to handle syntax coloring."""
         if isinstance(size, str):
             if size.endswith('pt'):
-                size = size[: -2].strip()
+                size = size[:-2].strip()
             elif size.endswith('px'):
                 if size not in self.size_warnings:
                     self.size_warnings.append(size)
                     g.es(f"px ignored in font setting: {size}")
-                size = size[: -2].strip()
+                size = size[:-2].strip()
         try:
             size = int(size)
         except Exception:
@@ -1025,7 +1025,11 @@ class LeoQtGui(leoGui.LeoGui):
             return font
         except Exception:
             g.es("exception setting font", g.callers(4))
-            g.es("", "family,size,slant,weight:", "", family, "", size, "", slant, "", weight)
+            g.es(
+                f"family: {family}\n"
+                f"  size: {size}\n"
+                f" slant: {slant}\n"
+                f"weight: {weight}")
             # g.es_exception() # This just confuses people.
             return g.app.config.defaultFont
     #@+node:ekr.20110605121601.18511: *3* qt_gui.getFullVersion
@@ -1057,7 +1061,7 @@ class LeoQtGui(leoGui.LeoGui):
             for theDir in (homeIconsDir, iconsDir):
                 fullname = g.os_path_finalize_join(theDir, name)
                 if g.os_path_exists(fullname):
-                    if 0: # Not needed: use QTreeWidget.setIconsize.
+                    if 0:  # Not needed: use QTreeWidget.setIconsize.
                         pixmap = QtGui.QPixmap()
                         pixmap.load(fullname)
                         image = QtGui.QIcon(pixmap)
@@ -1091,10 +1095,10 @@ class LeoQtGui(leoGui.LeoGui):
         trace = 'themes' in g.app.debug
         exists = g.os_path_exists
         getString = g.app.config.getString
-        
+
         def dump(var, val):
-            print('%20s: %s' % (var, val))
-            
+            print(f"{var:20}: {val}")
+
         join = g.os_path_join
         #
         # "Just works" for --theme and theme .leo files *provided* that
@@ -1136,7 +1140,7 @@ class LeoQtGui(leoGui.LeoGui):
         for base_dir in table:
             path = join(base_dir, name)
             if exists(path):
-                if trace: g.trace('%s is  in %s\n' % (name, base_dir))
+                if trace: g.trace(f"{name} is  in {base_dir}\n")
                 return path
             if trace:
                 g.trace(name, 'not in', base_dir)
@@ -1185,7 +1189,7 @@ class LeoQtGui(leoGui.LeoGui):
         self.runAtIdle(self.set_main_window_style_sheet)
             # No StyleSheetManager exists yet.
         return window
-        
+
     def set_main_window_style_sheet(self):
         """Style the main window, using the first .leo file."""
         commanders = g.app.commanders()
@@ -1198,12 +1202,12 @@ class LeoQtGui(leoGui.LeoGui):
     #@+node:ekr.20110605121601.18528: *3* qt_gui.makeScriptButton
     def makeScriptButton(self, c,
         args=None,
-        p=None, # A node containing the script.
-        script=None, # The script itself.
+        p=None,  # A node containing the script.
+        script=None,  # The script itself.
         buttonText=None,
         balloonText='Script Button',
         shortcut=None, bg='LightSteelBlue1',
-        define_g=True, define_name='__main__', silent=False, # Passed on to c.executeScript.
+        define_g=True, define_name='__main__', silent=False,  # Passed on to c.executeScript.
     ):
         """
         Create a script button for the script in node p.
@@ -1241,6 +1245,7 @@ class LeoQtGui(leoGui.LeoGui):
                     b.pack_forget()
             # Do not assume the script will want to remain in this commander.
         #@-<< define the callbacks for b >>
+
         b.configure(command=executeScriptCallback)
         if shortcut:
             #@+<< bind the shortcut to executeScriptCallback >>
@@ -1256,7 +1261,7 @@ class LeoQtGui(leoGui.LeoGui):
         #@+<< create press-buttonText-button command >>
         #@+node:ekr.20110605121601.18532: *4* << create press-buttonText-button command >> qt_gui.makeScriptButton
         # #1121. Like sc.cleanButtonText
-        buttonCommandName = 'press-%s-button' % buttonText.replace(' ','-').strip('-')
+        buttonCommandName = f"press-{buttonText.replace(' ', '-').strip('-')}-button"
         #
         # This will use any shortcut defined in an @shortcuts node.
         k.registerCommand(buttonCommandName, executeScriptCallback, pane='button')
@@ -1266,7 +1271,7 @@ class LeoQtGui(leoGui.LeoGui):
         """Put the help command."""
         s = g.adjustTripleString(s.rstrip(), c.tab_width)
         if s.startswith('<') and not s.startswith('<<'):
-            pass # how to do selective replace??
+            pass  # how to do selective replace??
         pc = g.app.pluginsController
         table = (
             'viewrendered3.py',
@@ -1297,7 +1302,7 @@ class LeoQtGui(leoGui.LeoGui):
             pass
         else:
             g.es(s)
-        return vr # For unit tests
+        return vr  # For unit tests
     #@+node:ekr.20110605121601.18521: *3* qt_gui.runAtIdle
     def runAtIdle(self, aFunc):
         """This can not be called in some contexts."""
@@ -1346,7 +1351,8 @@ class LeoQtGui(leoGui.LeoGui):
     @g.command('show-next-tip')
     def show_next_tip(self, event=None):
         g.app.gui.show_tips(force=True)
-        
+
+
     class DialogWithCheckBox(QtWidgets.QMessageBox):
 
         def __init__(self, controller, tip):
@@ -1362,7 +1368,7 @@ class LeoQtGui(leoGui.LeoGui):
             self.setWindowTitle('Leo Tips')
             self.setText(repr(tip))
             self.next_tip_button = self.addButton('Show Next Tip', self.ActionRole)
-            self.setStandardButtons(self.Ok) # | self.Close)
+            self.setStandardButtons(self.Ok)  # | self.Close)
             self.setDefaultButton(self.Ok)
             c.styleSheetManager.set_style_sheets(w=self)
             if isQt5:
@@ -1375,11 +1381,12 @@ class LeoQtGui(leoGui.LeoGui):
                 cb.setCheckState(2)
                 cb.stateChanged.connect(controller.onClick)
                 layout.addWidget(cb, 4, 0, -1, -1)
-                if 0: # Does not work well.
+                if 0:  # Does not work well.
                     sizePolicy = QtWidgets.QSizePolicy
-                    vSpacer =QtWidgets.QSpacerItem(200, 200, sizePolicy.Minimum, sizePolicy.Expanding)
+                    vSpacer = QtWidgets.QSpacerItem(
+                        200, 200, sizePolicy.Minimum, sizePolicy.Expanding)
                     layout.addItem(vSpacer)
-            
+
     def show_tips(self, force=False):
         import leo.core.leoTips as leoTips
         if g.app.unitTesting:
@@ -1387,15 +1394,15 @@ class LeoQtGui(leoGui.LeoGui):
         c = g.app.log and g.app.log.c
         if not c:
             g.pr('qt_gui:show_tips: NO g.app.log')
-            return # pyzo guard.
+            return  # pyzo guard.
         self.show_tips_flag = c.config.getBool('show-tips', default=False)
         if not force and not self.show_tips_flag:
             return
         tm = leoTips.TipManager()
-        if 1: # QMessageBox is always a modal dialog.
+        if 1:  # QMessageBox is always a modal dialog.
             while True:
                 tip = tm.get_next_tip()
-                m = self.DialogWithCheckBox(controller=self,tip=tip)
+                m = self.DialogWithCheckBox(controller=self, tip=tip)
                 c.in_qt_dialog = True
                 m.exec_()
                 c.in_qt_dialog = False
@@ -1438,8 +1445,7 @@ class LeoQtGui(leoGui.LeoGui):
             if g.os_path_exists(fn):
                 pm = QtGui.QPixmap(fn)
                 if not pm.isNull():
-                    splash = QtWidgets.QSplashScreen(pm,
-                        qt.WindowStaysOnTopHint)
+                    splash = QtWidgets.QSplashScreen(pm, qt.WindowStaysOnTopHint)
                     splash.show()
                     # This sleep is required to do the repaint.
                     QtCore.QThread.msleep(10)
@@ -1467,7 +1473,8 @@ class LeoQtGui(leoGui.LeoGui):
 
     def isTextWrapper(self, w):
         """Return True if w is a Text widget suitable for text-oriented commands."""
-        return w and hasattr(w, 'supportsHighLevelInterface') and w.supportsHighLevelInterface
+        return w and hasattr(
+            w, 'supportsHighLevelInterface') and w.supportsHighLevelInterface
     #@+node:ekr.20110605121601.18527: *4* qt_gui.widget_name
     def widget_name(self, w):
         # First try the widget's getName method.
@@ -1599,13 +1606,12 @@ class LeoQtGui(leoGui.LeoGui):
         sizePolicy = QtWidgets.QSizePolicy(kind1, kind2)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            widget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(widget.sizePolicy().hasHeightForWidth())
         widget.setSizePolicy(sizePolicy)
     #@-others
 #@+node:tbrown.20150724090431.1: ** class StyleClassManager
 class StyleClassManager:
-    style_sclass_property = 'style_class' # name of QObject property for styling
+    style_sclass_property = 'style_class'  # name of QObject property for styling
     #@+others
     #@+node:tbrown.20150724090431.2: *3* update_view
     def update_view(self, w):
@@ -1660,12 +1666,16 @@ class StyleClassManager:
 
         # pylint: disable=len-as-condition
 
+
         class Test_W:
             """simple standin for QWidget for testing"""
+
             def __init__(self):
                 self.x = ''
+
             def property(self, name, default=None):
                 return self.x or default
+
             def setProperty(self, name, value):
                 self.x = value
 
@@ -1715,7 +1725,7 @@ class StyleClassManager:
     #@+node:tbrown.20150724090431.9: *3* set_sclasses
     def set_sclasses(self, w, classes):
         """Set style classes for QWidget w to list in classes"""
-        w.setProperty(self.style_sclass_property, ' %s ' % ' '.join(set(classes)))
+        w.setProperty(self.style_sclass_property, f" {' '.join(set(classes))} ")
     #@+node:tbrown.20150724090431.10: *3* toggle_sclass
     def toggle_sclass(self, w, prop):
         """Toggle style class or list of classes prop on QWidget w"""
@@ -1808,7 +1818,7 @@ class StyleSheetManager:
         c = self.c
         s = c.config.getString(setting)
         if not s:
-            return None # Not an error.
+            return None  # Not an error.
         for directory in self.compute_icon_directories():
             path = g.os_path_finalize_join(directory, s)
             if g.os_path_exists(path):
@@ -1862,7 +1872,7 @@ class StyleSheetManager:
         """Show the top-level style sheet."""
         w = self.get_master_widget()
         sheet = w.styleSheet()
-        print('style sheet for: %s...\n\n%s' % (w, sheet))
+        print(f"style sheet for: {w}...\n\n{sheet}")
     #@+node:ekr.20110605121601.18175: *4* ssm.set_style_sheets
     def set_style_sheets(self, all=True, top=None, w=None):
         """Set the master style sheet for all widgets using config settings."""
@@ -1883,7 +1893,7 @@ class StyleSheetManager:
                 else:
                     sheet = '\n'.join(sheet)
             if sheet and sheet.strip():
-                line0 = '\n/* ===== From %s ===== */\n\n' % (name)
+                line0 = f"\n/* ===== From {name} ===== */\n\n"
                 sheet = line0 + sheet
                 sheets.append(sheet)
         if sheets:
@@ -1926,13 +1936,13 @@ class StyleSheetManager:
             g.trace('Unresolved @constants')
             g.printObj(to_do)
         sheet = self.resolve_urls(sheet)
-        sheet = sheet.replace('\\\n', '') # join lines ending in \
+        sheet = sheet.replace('\\\n', '')  # join lines ending in \
         return sheet
     #@+node:ekr.20150617085045.1: *5* ssm.adjust_sizes
     def adjust_sizes(self, font_size_delta, settingsDict):
         """Adjust constants to reflect c._style_deltas."""
         c = self.c
-        constants = {} # old: self.find_constants_defined(sheet)
+        constants = {}  # old: self.find_constants_defined(sheet)
         deltas = c._style_deltas
         # legacy
         if font_size_delta:
@@ -1956,7 +1966,7 @@ class StyleSheetManager:
         return constants, deltas
     #@+node:ekr.20180316093159.1: *5* ssm.do_pass
     def do_pass(self, constants, deltas, settingsDict, sheet, to_do):
-        
+
         to_do.sort(key=len, reverse=True)
         for const in to_do:
             value = None
@@ -2038,7 +2048,7 @@ class StyleSheetManager:
         """
         pattern = re.compile(r"^\s*(@[A-Za-z_][-A-Za-z0-9_]*)\s*=\s*(.*)$")
         ans = {}
-        text = text.replace('\\\n', '') # merge lines ending in \
+        text = text.replace('\\\n', '')  # merge lines ending in \
         for line in text.split('\n'):
             test = pattern.match(line)
             if test:
@@ -2087,7 +2097,7 @@ class StyleSheetManager:
         open_path = self.find_icon_path('tree-image-open')
         # Make all substitutions in the stylesheet.
         table = (
-            (open_path,  re.compile(r'\bimage:\s*@tree-image-open', re.IGNORECASE)),
+            (open_path, re.compile(r'\bimage:\s*@tree-image-open', re.IGNORECASE)),
             (close_path, re.compile(r'\bimage:\s*@tree-image-closed', re.IGNORECASE)),
             # (open_path,  re.compile(r'\bimage:\s*at-tree-image-open', re.IGNORECASE)),
             # (close_path, re.compile(r'\bimage:\s*at-tree-image-closed', re.IGNORECASE)),
@@ -2122,13 +2132,13 @@ class StyleSheetManager:
             for directory in directories:
                 path = join(directory, url)
                 if g.os_path_exists(path):
-                    if trace: g.trace('%35s ==> %s' % (url, path))
+                    if trace: g.trace(f"{url:35} ==> {path}")
                     old = mo.group(0)
                     new = f"url({path})"
                     replacements.append((old, new),)
                     break
             else:
-                g.trace('%35s ==> %s' % (url, 'NOT FOUND'))
+                g.trace(f"{url:35} ==> NOT FOUND")
                 if not paths_traced:
                     paths_traced = True
                     g.trace('Search paths...')

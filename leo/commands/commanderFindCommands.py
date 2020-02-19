@@ -83,12 +83,12 @@ def cloneFindMarkedHelper(c, flatten):
         return p.isMarked()
 
     c.cloneFindByPredicate(
-        generator = c.all_unique_positions,
-        predicate = isMarked,
-        failMsg = 'No marked nodes',
-        flatten = flatten,
-        redraw = True,
-        undoType = 'clone-find-marked',
+        generator=c.all_unique_positions,
+        predicate=isMarked,
+        failMsg='No marked nodes',
+        flatten=flatten,
+        redraw=True,
+        undoType='clone-find-marked',
     )
     # Unmarking all nodes is convenient.
     for v in c.all_unique_nodes():
@@ -96,6 +96,6 @@ def cloneFindMarkedHelper(c, flatten):
             v.clearMarked()
     found = c.lastTopLevel()
     c.selectPosition(found)
-    found.b = '# Found %s marked nodes' % found.numberOfChildren()
+    found.b = f"# Found {found.numberOfChildren()} marked nodes"
 #@-others
 #@-leo
