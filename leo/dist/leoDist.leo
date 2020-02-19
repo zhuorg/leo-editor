@@ -187,6 +187,7 @@
 <v t="mhw.20191116204624.1"><vh>xx-shell-cmd</vh></v>
 <v t="mhw.20191116204124.1"><vh>Snippets</vh></v>
 <v t="mhw.20191118220012.1"><vh>search dirs for string</vh></v>
+<v t="maphew.20200218224437.1"><vh>Find results: run_pytest_test</vh></v>
 <v t="maphew.20191127221130.1"><vh>Find results: dist.leo</vh></v>
 </v>
 </v>
@@ -2418,6 +2419,14 @@ leo\test\inactiveTests.txt:#@+node:ekr.20040803090901: *3* @test leoDist.leo
 leo\test\inactiveTests.txt:path = g.os_path_join(g.app.loadDir,"..","dist","leoDist.leo")
 
 </t>
+<t tx="maphew.20200218224437.1">--- Matches for run_pytest_test under:
+--- D:/matt/code/leo-editor/leo/core\../../*
+
+core\LeoPyRef.leo:&lt;v t="ekr.20181014073705.1"&gt;&lt;vh&gt;@file ../../run_pytest_tests.py&lt;/vh&gt;&lt;/v&gt;
+dist\leoDist.leo:run_pytest_tests.py - mv to ./test, but needs code change and testing
+scripts\scripts.leo:prog = g.os_path_finalize_join(loadDir, '..', '..', 'run_pytest_tests.py')
+
+</t>
 <t tx="matt.20181004031246.1">@language md
 
 _Initiating issue: https://github.com/leo-editor/leo-editor/issues/672_
@@ -2512,8 +2521,16 @@ This is an organizer node of clones for the things-to-be-moved, e.g. use "Go to
 clone" and move that. These nodes can be removed when satisfied nothing was
 broken.
 
-run_pytest_tests.py - mv to ./test, but needs code change and testing
-run_travis_unit_tests.py - mv to ./test, but needs code change and testing</t>
+## run_pytest_tests.py - mv to ./test, but needs code change and testing
+## References:
+  - leo/scripts/scripts.leo#Leo 5.8.1--&gt;script: run pytest in separate process
+  - leo/core/LeoPyRef.leo#Code--&gt;Other files--&gt;In leo-editor directory--&gt;@file ../../run_pytest_tests.py
+
+
+
+## run_travis_unit_tests.py - mv to ./test, but needs code change and testing
+## References:
+</t>
 <t tx="mhw.20191107063807.1">Refresh / audit MANIFEST.in excludes and includes
 https://github.com/leo-editor/leo-editor/issues/1077
 
@@ -2650,7 +2667,7 @@ import shlex
 import subprocess
 
 # what to search for
-pattern="dist.leo"
+pattern="run_pytest_test"
     #Todo: make this a parameter or prompt!
 
 g.es_print('='*40)
@@ -2671,8 +2688,10 @@ p = subprocess.run(shlex.split(command),
 out = p.stdout
 #err = p.stderr()
 lines = [g.toUnicode(z) for z in g.splitLines(out or [])]
-lines = [os.path.relpath(z, searchdir[:-2]) for z in lines]
-    # Remove Leo app dir prefix, less noise
+
+# Remove Leo app dir prefix, less noise
+trim = len(searchdir[:-2])
+lines = [z[trim:] for z in lines]
 
 p2 = c.p.insertAfter()
 p2.h = f"Find results: {pattern}"
