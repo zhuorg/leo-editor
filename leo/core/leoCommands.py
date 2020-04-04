@@ -1297,7 +1297,7 @@ class Commands:
             p.setDirty()
             if not c.isChanged():
                 c.setChanged()
-            c.redraw_after_icons_changed()
+            c.frame.tree.updateIcon(p)
     #@+node:ekr.20031218072017.2989: *5* c.setChanged
     def setChanged(self, redrawFlag=True):
         """Set the marker that indicates that the .leo file has been changed."""

@@ -12,6 +12,7 @@ import leo.core.leoPlugins as leoPlugins  # Uses leoPlugins.TryNext.
 import leo.plugins.qt_text as qt_text
 from leo.core.leoQt import QtConst, QtCore, QtGui, QtWidgets
 import re
+from collections import defaultdict
 import time
 assert time
 #@-<< imports >>
@@ -52,6 +53,9 @@ class LeoQtTree(leoFrame.LeoTree):
         self.declutter_patterns = None  # list of pairs of patterns for decluttering
         self.declutter_data = {}
         self.loaded_images = {}
+        self.links_snapshot = set() # this contains last snapshot of node links
+        self.root_item = QtWidgets.QTreeWidgetItem() # this is the root of hidden tree of items
+        self.items_pool = {}
         if 0:  # Drag and drop
             w.setDragEnabled(True)
             w.viewport().setAcceptDrops(True)
@@ -292,7 +296,7 @@ class LeoQtTree(leoFrame.LeoTree):
             c.setCurrentPosition(p)
         assert not self.busy, g.callers()
         self.redrawCount += 1
-        self.initData()
+        #self.initData()
         try:
             self.busy = True
             self.drawTopTree(p)
@@ -317,7 +321,7 @@ class LeoQtTree(leoFrame.LeoTree):
         returns composite icon for this node
         """
         dd = self.declutter_data
-        iconVal = p.v.computeIcon()
+        iconVal = p.v.iconVal = p.v.computeIcon()
         iconName = f'box{iconVal:02d}.png'
         loaded_images = self.loaded_images
         #@+others
@@ -339,21 +343,16 @@ class LeoQtTree(leoFrame.LeoTree):
             """
             # pylint: disable=undefined-loop-variable
             if cmd == 'REPLACE':
-                s = pattern.sub(arg, text)
-                item.setText(0, s)
+                text[0] = pattern.sub(arg, text[0])
                 return True
             if cmd == 'REPLACE-HEAD':
-                s = text[: m.start()]
-                item.setText(0, s.rstrip())
+                text[0] = text[0][: m.start()]
                 return True
             if cmd == 'REPLACE-TAIL':
-                s = text[m.end() :]
-                item.setText(0, s.lstrip())
+                text[0] = text[0][m.end() :].lstrip()
                 return True
             if cmd == 'REPLACE-REST':
-                s = text[:m.start] + text[m.end() :]
-                item.setText(0, s.strip())
-                return True
+                text[0] = (text[0][:m.start] + text[0][m.end() :]).strip()
             return False
         #@+node:ekr.20171122055719.1: *7* declutter_style
         def declutter_style(arg, cmd):
@@ -401,13 +400,15 @@ class LeoQtTree(leoFrame.LeoTree):
             item.setText(0, text)
             new_icons = sorted_icons(p) + new_icons
         else:
-            text = p.h
+            text = [p.h]
             new_icons = []
             for pattern, cmds in self.get_declutter_patterns():
-                m = pattern.match(text) or pattern.search(text)
+                m = pattern.match(text[0]) or pattern.search(text[0])
                 if m:
                     apply_declutter_rules(cmds)
-            dd[(p.h, iconVal)] = item.text(0), new_icons
+            item.setText(0, text[0])
+            dd[(p.h, iconVal)] = text[0], new_icons
+            p.v.iconVal = iconVal
             new_icons = sorted_icons(p) + new_icons
             preload_images()
         self.nodeIconsDict[p.gnx] = new_icons
@@ -506,30 +507,162 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20110605121601.17876: *5* qtree.drawTopTree
     def drawTopTree(self, p):
         """Draw the tree rooted at p."""
-        trace = 'drawing' in g.app.debug and not g.unitTesting
-        if trace:
-            t1 = time.process_time()
         c = self.c
-        self.clear()
-        # Draw all top-level nodes and their visible descendants.
-        if c.hoistStack:
-            bunch = c.hoistStack[-1]
-            p = bunch.p; h = p.h
-            if len(c.hoistStack) == 1 and h.startswith('@chapter') and p.hasChildren():
-                p = p.firstChild()
-                while p:
-                    self.drawTree(p)
-                    p.moveToNext()
+        tw = self.treeWidget
+        root_item = self.root_item
+        gnxDict = c.fileCommands.gnxDict
+        use_declutter = self.use_declutter
+        dd = self.declutter_data
+        v2i = self.vnode2itemsDict
+        #@+others
+        #@+node:vitalije.20200404143911.1: *6* all_links_from_v
+        def all_links_from_v(root):
+            parent_counter = defaultdict(int)
+            child_counter = defaultdict(int)
+            def it(v):
+                j = parent_counter[v]
+                parent_counter[v] += 1
+                for i, ch in enumerate(v.children):
+                    yield j, v.gnx, ch.gnx, i, child_counter[ch]
+                    child_counter[ch] += 1
+                    yield from it(ch)
+            return set(it(root))
+        #@+node:vitalije.20200404195829.1: *6* all_positions
+        Position = leoNodes.Position
+        def all_positions():
+            def subtree_positions(v, ci, stack):
+                yield v, ci, Position(v, ci, stack[:])
+                stack.append((v, ci))
+                for i, ch in enumerate(v.children):
+                    yield from subtree_positions(ch, i, stack)
+                stack.pop()
+            for i, v in enumerate(c.hiddenRootNode.children):
+                yield from subtree_positions(v, i, [])
+        #@+node:vitalije.20200404144210.1: *6* differ_links
+        def differ_links(a, b):
+            deletes = defaultdict(list)
+            inserts = defaultdict(list)
+            for ind, par, ch, i, chind in a - b:
+                deletes[(par, ind)].append((ch, i, chind))
+            for ind, par, ch, i, chind in b - a:
+                inserts[(par, ind)].append((ch, i, chind))
+            return deletes, inserts
+        #@+node:vitalije.20200404155530.1: *6* makeitem
+        def makeitem(v):
+            item = QtWidgets.QTreeWidgetItem()
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable | item.DontShowIndicatorWhenChildless)
+            p = leoNodes.Position(v, 0)
+            if use_declutter:
+                icon = self.declutter_node(c, p, item)
+                h = dd[(v.h, v.iconVal)][0]
+                item.setText(0, h)
+                item._real_text = v.h
+                assert icon
             else:
-                self.drawTree(p)
-        else:
-            p = c.rootPosition()
-            while p:
-                self.drawTree(p)
-                p.moveToNext()
-        if trace:
-            t2 = time.process_time()
-            g.trace(f"{t2 - t1:5.2f} sec.", g.callers(5))
+                item.setText(0, v.h)
+                item._real_text = v.h
+                v.iconVal = iv = v.computeIcon()
+                icon = self.getCompositeIconImage(p, iv)
+                assert icon
+            item.setIcon(0, icon)
+            return item
+        #@+node:vitalije.20200404150718.1: *6* getitem
+        def getitem(pgnx, ind):
+            if pgnx == 'hidden-root-vnode-gnx':
+                return root_item
+            vpar = gnxDict.get(pgnx)
+            items = v2i.get(vpar)
+            if not items:
+                v2i[vpar] = items = []
+            n = len(items)
+            while n <= ind:
+                items.append(makeitem(vpar))
+                n += 1
+            return items[ind]
+        #@+node:vitalije.20200404144408.1: *6* apply_deletes
+        def apply_deletes(dels):
+            for par_ind, changes in dels.items():
+                par, ind = par_ind
+                changes.sort(key=lambda x:-x[1])
+                paritem = getitem(par, ind)
+                for ch, i, chind in changes:
+                    vch = gnxDict[ch]
+                    chitem = paritem.takeChild(i)
+                    v2i[vch].remove(chitem)
+        #@+node:vitalije.20200404222115.1: *6* apply_inserts
+        def apply_inserts(inserts):
+            for par_ind in inserts:
+                par, ind = par_ind
+                getitem(par, ind) # this will create if necessary new item(s)
+                                  # and store them in v2i
+            # now we are sure that for each pair (par, ind) there is a single item
+            for par_ind, changes in inserts.items():
+                changes.sort(key=lambda x:x[1])
+                par, ind = par_ind
+                paritem = getitem(par, ind)
+                for ch, i, chind in changes:
+                    vch = gnxDict[ch]
+                    chitem = getitem(ch, chind)
+                    if vch in v2i:
+                        v2i[vch].append(chitem)
+                    else:
+                        v2i[vch] = [chitem]
+                    paritem.insertChild(i, chitem)
+        #@+node:vitalije.20200404193453.1: *6* move_top_levels_to_tw
+        def move_top_levels_to_tw():
+            children = root_item.takeChildren()
+            for ch in children:
+                tw.addTopLevelItem(ch)
+        #@+node:vitalije.20200404193457.1: *6* move_top_levels_to_root
+        def move_top_levels_to_root():
+            n = tw.topLevelItemCount()
+            for i in range(n-1, -1, -1):
+                item = tw.takeTopLevelItem(i)
+                root_item.insertChild(0, item)
+        #@-others
+        t1 = time.process_time()
+        move_top_levels_to_root()
+        lsa = self.links_snapshot
+        lsb = all_links_from_v(c.hiddenRootNode)
+        deletes, inserts = differ_links(lsa, lsb)
+        self.last_diffs = deletes, inserts
+        apply_deletes(deletes)
+        apply_inserts(inserts)
+        self.links_snapshot = lsb
+        move_top_levels_to_tw()
+        if deletes or inserts:
+            p2i = dict()
+            counter = defaultdict(int)
+            for ch, i, p in all_positions():
+                j = counter[ch]
+                item = v2i[ch][j]
+                item.setData(0, 1000, p)
+                p2i[p.key()] = item
+                counter[ch] += 1
+            self.position2itemDict = p2i
+        self.last_redraw_duration = (time.process_time() - t1)*1000
+        c.frame.update()
+        return
+    #@+at
+    #     #self.clear()
+    #     # Draw all top-level nodes and their visible descendants.
+    #     if c.hoistStack:
+    #         bunch = c.hoistStack[-1]
+    #         p = bunch.p; h = p.h
+    #         if len(c.hoistStack) == 1 and h.startswith('@chapter') and p.hasChildren():
+    #             self.hoist_p_children(p)
+    #         else:
+    #             self.hoist_p(p)
+    #     else:
+    #         tw = self.treeWidget
+    #         tw.clear()
+    #         ri = self.root_item
+    #         n = self.root_item.childCount()
+    #         for i in range(n):
+    #             tw.addTopLevelItem(ri.child(i).clone())
+    #     if trace:
+    #         t2 = time.process_time()
+    #         g.trace(f"{t2 - t1:5.2f} sec.", g.callers(5))
     #@+node:ekr.20110605121601.17877: *5* qtree.drawTree
     def drawTree(self, p, parent_item=None):
         if g.app.gui.isNullGui:
@@ -553,14 +686,14 @@ class LeoQtTree(leoFrame.LeoTree):
         self.update_expansion(p)
     #@+node:ekr.20110605121601.17881: *4* qtree.redraw_after_expand
     def redraw_after_expand(self, p):
-
-        if 0:  # Does not work. Newly visible nodes do not show children correctly.
-            c = self.c
-            c.selectPosition(p)
-            self.update_expansion(p)
-        else:
-            self.full_redraw(p)
-                # Don't try to shortcut this!
+        return self.update_expansion(p)
+        #if 0:  # Does not work. Newly visible nodes do not show children correctly.
+        #    c = self.c
+        #    c.selectPosition(p)
+        #    self.update_expansion(p)
+        #else:
+        #    self.full_redraw(p)
+        #        # Don't try to shortcut this!
     #@+node:ekr.20110605121601.17882: *4* qtree.redraw_after_head_changed
     def redraw_after_head_changed(self):
 
@@ -579,8 +712,9 @@ class LeoQtTree(leoFrame.LeoTree):
 
         if self.busy:
             return
-        self.redrawCount += 1  # To keep a unit test happy.
         c = self.c
+        self.redrawCount += 1  # To keep a unit test happy.
+        return self.updateIcon(c.p)
         try:
             self.busy = True
                 # Suppress call to setHeadString in onItemChanged!
@@ -595,7 +729,7 @@ class LeoQtTree(leoFrame.LeoTree):
         """Redraw the entire tree when an invisible node is selected."""
         if self.busy:
             return
-        self.full_redraw(p)
+        #self.full_redraw(p)
         # c.redraw_after_select calls tree.select indirectly.
         # Do not call it again here.
     #@+node:ekr.20140907201613.18986: *4* qtree.repaint (not used)
@@ -617,13 +751,15 @@ class LeoQtTree(leoFrame.LeoTree):
             try:
                 # These generate events, which would trigger a full redraw.
                 self.busy = True
+                #w.blockSignals(True)
                 if expand:
                     w.expandItem(item)
                 else:
                     w.collapseItem(item)
+                #w.blockSignals(False)
             finally:
                 self.busy = False
-            w.repaint()
+            #w.repaint()
         else:
             g.trace('NO P')
             c.redraw()
@@ -851,7 +987,7 @@ class LeoQtTree(leoFrame.LeoTree):
         # Only methods that actually generate events should set lockouts.
         if not p.isExpanded():
             p.expand()
-            c.redraw_after_expand(p)
+            #c.redraw_after_expand(p)
         self.select(p)
         c.outerUpdate()
     #@+node:ekr.20110605121601.17899: *4* qtree.onTreeSelect
@@ -861,7 +997,11 @@ class LeoQtTree(leoFrame.LeoTree):
             return
         c = self.c
         item = self.getCurrentItem()
-        p = self.item2position(item)
+        if not item:
+            g.trace(g.callers())
+            p = c.p
+        else:
+            p = self.item2position(item)
         if not p:
             self.error(f"no p for item: {item}")
             return
@@ -1028,7 +1168,7 @@ class LeoQtTree(leoFrame.LeoTree):
             # Update all cloned items.
             items = self.vnode2items(p.v)
             if not items:
-                g.trace(f'no-items for {p.h}[{p.gnx}]')
+                g.trace(g.callers(), f'no-items for {p.h}[{p.gnx}]')
             for item in items:
                 self.setItemIcon(item, icon)
     #@+node:ekr.20110605121601.17952: *4* qtree.updateVisibleIcons
@@ -1045,6 +1185,7 @@ class LeoQtTree(leoFrame.LeoTree):
         return f"{repr(item)} at {str(id(item))}"
 
     def item2position(self, item):
+        return item.data(0, 1000)
         itemHash = self.itemHash(item)
         p = self.item2positionDict.get(itemHash)  # was item
         return p
@@ -1115,6 +1256,7 @@ class LeoQtTree(leoFrame.LeoTree):
             c = self.c
             w = self.treeWidget
             self.onHeadChanged(p=c.p, e=e)
+            item._real_text = item.text(0)
             w.setCurrentItem(item)
 
         e.editingFinished.connect(editingFinishedCallback)

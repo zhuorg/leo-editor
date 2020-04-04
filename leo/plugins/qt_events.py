@@ -138,7 +138,8 @@ class LeoQtEventFilter(QtCore.QObject):
         c = self.c
         ev = QtCore.QEvent
         t = event.type()
-        isEditWidget = (obj == c.frame.tree.edit_widget(c.p))
+        isEditWidget = (obj == c.frame.tree.edit_widget(c.p)
+                     or obj.objectName() == 'headline')
         if isEditWidget:
             return t != ev.KeyRelease
                 # QLineEdit: ignore all key events except keyRelease events.
