@@ -40,7 +40,7 @@ class LeoQtTree(leoFrame.LeoTree):
         self.item2vnodeDict = {}
         self.nodeIconsDict = {} # keys are gnx, values are declutter generated icons
         self.position2itemDict = {}
-        self.vnode2itemsDict = {}  # values are lists of items.
+        self.vnode2itemsDict = defaultdict(list)  # values are lists of items.
         self.editWidgetsDict = {}  # keys are native edit widgets, values are wrappers.
         self.reloadSettings()
         # Components.
@@ -143,6 +143,13 @@ class LeoQtTree(leoFrame.LeoTree):
         """Clear all widgets in the tree."""
         w = self.treeWidget
         w.clear()
+    def clear_cache(self):
+        self.item2positionDict = {}
+        self.item2vnodeDict = {}
+        self.position2itemDict = {}
+        self.vnode2itemsDict = defaultdict(list)
+        self.links_snapshot = set()
+        self.treeWidget.clear()
     #@+node:ekr.20180810052056.1: *4* qtree.drawVisible & helpers (not used)
     def drawVisible(self, p):
         """
@@ -571,9 +578,7 @@ class LeoQtTree(leoFrame.LeoTree):
             if pgnx == 'hidden-root-vnode-gnx':
                 return root_item
             vpar = gnxDict.get(pgnx)
-            items = v2i.get(vpar)
-            if not items:
-                v2i[vpar] = items = []
+            items = v2i[vpar]
             n = len(items)
             while n <= ind:
                 items.append(makeitem(vpar))
@@ -608,6 +613,7 @@ class LeoQtTree(leoFrame.LeoTree):
                     else:
                         v2i[vch] = [chitem]
                     paritem.insertChild(i, chitem)
+
         #@+node:vitalije.20200404193453.1: *6* move_top_levels_to_tw
         def move_top_levels_to_tw():
             children = root_item.takeChildren()
@@ -637,6 +643,11 @@ class LeoQtTree(leoFrame.LeoTree):
                 j = counter[ch]
                 item = v2i[ch][j]
                 item.setData(0, 1000, p)
+                if ch.children and ch.isExpanded():
+                    exp = not ch.expandedPositions or p in ch.expandedPositions
+                else:
+                    exp = False
+                item.setExpanded(exp)
                 p2i[p.key()] = item
                 counter[ch] += 1
             self.position2itemDict = p2i
@@ -685,15 +696,7 @@ class LeoQtTree(leoFrame.LeoTree):
             return
         self.update_expansion(p)
     #@+node:ekr.20110605121601.17881: *4* qtree.redraw_after_expand
-    def redraw_after_expand(self, p):
-        return self.update_expansion(p)
-        #if 0:  # Does not work. Newly visible nodes do not show children correctly.
-        #    c = self.c
-        #    c.selectPosition(p)
-        #    self.update_expansion(p)
-        #else:
-        #    self.full_redraw(p)
-        #        # Don't try to shortcut this!
+    redraw_after_expand = update_expansion
     #@+node:ekr.20110605121601.17882: *4* qtree.redraw_after_head_changed
     def redraw_after_head_changed(self):
 
@@ -738,6 +741,12 @@ class LeoQtTree(leoFrame.LeoTree):
         w = self.treeWidget
         w.repaint()
         w.resizeColumnToContents(0)  # 2009/12/22
+    #@+node:vitalije.20200405150022.1: *4* qtree.selectAndShow
+    def selectAndShow(self, p):
+        item = self.position2item(p)
+        if item:
+            self.treeWidget.setCurrentItem(item)
+            self.treeWidget.scrollToItem(item)
     #@+node:ekr.20180817043619.1: *4* qtree.update_expansion
     def update_expansion(self, p):
         """Update expansion bits for p, including all clones."""
@@ -935,21 +944,13 @@ class LeoQtTree(leoFrame.LeoTree):
             self.busy = False
     #@+node:ekr.20110605121601.17895: *4* qtree.onItemCollapsed
     def onItemCollapsed(self, item):
-
         if self.busy:
             return
-        c = self.c
         p = self.item2position(item)
         if not p:
             self.error('no p')
             return
-        # Do **not** set lockouts here.
-        # Only methods that actually generate events should set lockouts.
-        if p.isExpanded():
-            p.contract()
-            c.redraw_after_contract(p)
-        self.select(p)
-        c.outerUpdate()
+        p.contract()
     #@+node:ekr.20110605121601.17897: *4* qtree.onItemDoubleClicked
     def onItemDoubleClicked(self, item, col):
         """Handle a double click in a BaseNativeTree widget item."""
@@ -976,20 +977,10 @@ class LeoQtTree(leoFrame.LeoTree):
     #@+node:ekr.20110605121601.17898: *4* qtree.onItemExpanded
     def onItemExpanded(self, item):
         """Handle and tree-expansion event."""
-        if self.busy:  # Required
+        if self.busy:
             return
-        c = self.c
         p = self.item2position(item)
-        if not p:
-            self.error('no p')
-            return
-        # Do **not** set lockouts here.
-        # Only methods that actually generate events should set lockouts.
-        if not p.isExpanded():
-            p.expand()
-            #c.redraw_after_expand(p)
-        self.select(p)
-        c.outerUpdate()
+        p.expand()
     #@+node:ekr.20110605121601.17899: *4* qtree.onTreeSelect
     def onTreeSelect(self):
         """Select the proper position when a tree node is selected."""

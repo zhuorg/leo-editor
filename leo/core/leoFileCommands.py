@@ -731,6 +731,7 @@ class FileCommands:
     def updateFromRefFile(self):
         """Updates public part of outline from the specified file."""
         fc = self; c = self.c
+        c.frame.tree.clear_cache()
         #@+others
         #@+node:vitalije.20170831144827.2: *6* get_ref_filename
         def get_ref_filename():
@@ -765,18 +766,26 @@ class FileCommands:
         #@+node:vitalije.20170831144827.7: *6* restore_priv
         def restore_priv(prdata, topgnxes):
             vnodes = []
+            pv = lambda x: fc.gnxDict.get(x, c.hiddenRootNode)
             for row in prdata:
                 (gnx, h, b, children, parents, iconVal, statusBits, ua) = row
-                v = leoNodes.VNode(context=c, gnx=gnx)
-                v._headString = h
-                v._bodyString = b
-                v.children = children
-                v.parents = parents
-                v.iconVal = iconVal
-                v.statusBits = statusBits
-                v.u = ua
-                vnodes.append(v)
-            pv = lambda x: fc.gnxDict.get(x, c.hiddenRootNode)
+                if gnx in fc.gnxDict:
+                    v = fc.gnxDict[gnx]
+                    parents = [x for x in parents if x not in fc.gnxDict]
+                    parents[:0] = [x.fileIndex for x in v.parents]
+                    v.parents = [x.fileIndex for x in v.parents] + parents
+                    v.children = [x.fileIndex for x in v.children]
+                    vnodes.append(v)
+                else:
+                    v = leoNodes.VNode(context=c, gnx=gnx)
+                    v._headString = h
+                    v._bodyString = b
+                    v.children = children
+                    v.parents = parents
+                    v.iconVal = iconVal
+                    v.statusBits = statusBits
+                    v.u = ua
+                    vnodes.append(v)
             for v in vnodes:
                 v.children = [pv(x) for x in v.children]
                 v.parents = [pv(x) for x in v.parents]
@@ -821,7 +830,7 @@ class FileCommands:
             fc.initIvars()
             fc.getLeoFile(theFile, fname, checkOpenFiles=False)
         restore_priv(privnodes, toppriv)
-        c.redraw()
+        c.frame.tree.drawTopTree(None)
     #@+node:vitalije.20170831154734.1: *5* fc.setReferenceFile
     def setReferenceFile(self, fileName):
         c = self.c

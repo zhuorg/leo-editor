@@ -266,13 +266,8 @@ def expandAllHeadlines(self, event=None):
 def expandAllSubheads(self, event=None):
     """Expand all children of the presently selected node."""
     c = self; p = c.p
-    if not p: return
-    child = p.firstChild()
-    c.expandSubtree(p)
-    while child:
-        c.expandSubtree(child)
-        child = child.next()
-    c.redraw(p)
+    c.expandSubtree(c.p)
+
 #@+node:ekr.20031218072017.2905: *3* c_oc.expandLevel1..9
 @g.commander_command('expand-to-level-1')
 def expandLevel1(self, event=None):
@@ -348,9 +343,7 @@ def expandNodeAndGoToFirstChild(self, event=None):
     c, p = self, self.p
     c.endEditing()
     if p.hasChildren():
-        if not p.isExpanded():
-            c.expandNode()
-        c.selectPosition(p.firstChild())
+        c.frame.tree.selectAndShow(p.firstChild())
     c.treeFocusHelper()
 #@+node:ekr.20171125082744.1: *3* c_oc.expandNodeOrGoToFirstChild
 @g.commander_command('expand-or-go-right')
@@ -364,25 +357,19 @@ def expandNodeOrGoToFirstChild(self, event=None):
     c, p = self, self.p
     c.endEditing()
     if p.hasChildren():
-        if p.isExpanded():
-            c.redraw_after_expand(p.firstChild())
+        item = c.frame.tree.position2item(p)
+        if item.isExpanded():
+            c.frame.tree.setCurrentItem(item.child(0))
         else:
-            c.expandNode()
+            item.setExpanded(True)
+
 #@+node:ekr.20060928062431: *3* c_oc.expandOnlyAncestorsOfNode
 @g.commander_command('expand-ancestors-only')
 def expandOnlyAncestorsOfNode(self, event=None, p=None):
     """Contract all nodes in the outline."""
     c = self
-    level = 1
-    if p: c.selectPosition(p)  # 2013/12/25
-    root = c.p
-    for p in c.all_unique_positions():
-        p.v.expandedPositions = []
-        p.v.contract()
-    for p in root.parents():
-        p.expand()
-        level += 1
-    c.expansionLevel = level  # Reset expansion level.
+    c.frame.tree.treeWidget.collapseAll()
+    c.frame.tree.selectAndShow(p or c.p)
 #@+node:ekr.20031218072017.2908: *3* c_oc.expandPrevLevel
 @g.commander_command('expand-prev-level')
 def expandPrevLevel(self, event=None):

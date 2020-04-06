@@ -2785,7 +2785,7 @@ class LeoQtFrame(leoFrame.LeoFrame):
                 fcol_part = '' if fcol is None else f" fcol: {fcol}"
                 # For now, it seems to0 difficult to get alignment *exactly* right.
                 trms = getattr(self.c.frame.tree, 'last_redraw_duration', 0)
-                self.put1(f"line: {row:d} col: {col:d} {fcol_part} words: {words} t.redraw[{trms}ms]")
+                self.put1(f"line: {row:d} col: {col:d} {fcol_part} words: {words} t.redraw[{trms:6.2f}ms]")
             else:
                 # #283 is not ready yet, and probably will never be.
                 fline = self.file_line()
