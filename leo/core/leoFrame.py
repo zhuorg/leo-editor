@@ -2027,6 +2027,12 @@ class NullTree(LeoTree):
 
     def scrollTo(self, p):
         pass
+    #@+node:vitalije.20200407132000.1: *3* NullTree - new drawing compatibility
+    def updateIcon(self, p):
+        pass
+
+    def selectAndShow(self, p):
+        self.select(p)
     #@+node:ekr.20070228160345: *3* NullTree.setHeadline
     def setHeadline(self, p, s):
         """Set the actual text of the headline widget.

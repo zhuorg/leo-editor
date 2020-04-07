@@ -266,7 +266,7 @@ def expandAllHeadlines(self, event=None):
 def expandAllSubheads(self, event=None):
     """Expand all children of the presently selected node."""
     c = self; p = c.p
-    c.expandSubtree(c.p)
+    c.expandSubtree(p)
 
 #@+node:ekr.20031218072017.2905: *3* c_oc.expandLevel1..9
 @g.commander_command('expand-to-level-1')
@@ -368,7 +368,8 @@ def expandNodeOrGoToFirstChild(self, event=None):
 def expandOnlyAncestorsOfNode(self, event=None, p=None):
     """Contract all nodes in the outline."""
     c = self
-    c.frame.tree.treeWidget.collapseAll()
+    if g.app.gui.guiName() == 'qt':
+        c.frame.tree.treeWidget.collapseAll()
     c.frame.tree.selectAndShow(p or c.p)
 #@+node:ekr.20031218072017.2908: *3* c_oc.expandPrevLevel
 @g.commander_command('expand-prev-level')

@@ -3121,37 +3121,39 @@ class Commands:
         p = c.p
         while p and p.hasParent():
             p.moveToParent()
-        if redrawFlag:
-            # Do a *full* redraw.
-            # c.redraw_after_contract(p) only contracts a single position.
-            c.redraw(p)
+        if g.app.gui.guiName() == 'qt' and not g.unitTesting:
+            c.frame.tree.treeWidget.collapseAll()
         c.expansionLevel = 1  # Reset expansion level.
     #@+node:ekr.20031218072017.2910: *5* c.contractSubtree
     def contractSubtree(self, p):
+        tree = self.c.frame.tree
         for p in p.subtree():
             p.contract()
+            tree.update_expansion(p)
     #@+node:ekr.20031218072017.2911: *5* c.expandSubtree
     def expandSubtree(self, v, redraw=True):
         c = self
         last = v.lastNode()
         while v and v != last:
             v.expand()
+            c.frame.tree.update_expansion(v)
             v = v.threadNext()
-        if redraw:
-            c.redraw()
     #@+node:ekr.20031218072017.2912: *5* c.expandToLevel
     def expandToLevel(self, level):
 
         c = self
+        tree = c.frame.tree
         n = c.p.level()
         old_expansion_level = c.expansionLevel
         max_level = 0
         for p in c.p.self_and_subtree(copy=False):
             if p.level() - n + 1 < level:
                 p.expand()
+                tree.update_expansion(p)
                 max_level = max(max_level, p.level() - n + 1)
             else:
                 p.contract()
+                tree.update_expansion(p)
         c.expansionNode = c.p.copy()
         c.expansionLevel = max_level + 1
         if c.expansionLevel != old_expansion_level:

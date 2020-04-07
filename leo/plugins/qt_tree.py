@@ -696,7 +696,7 @@ class LeoQtTree(leoFrame.LeoTree):
             return
         self.update_expansion(p)
     #@+node:ekr.20110605121601.17881: *4* qtree.redraw_after_expand
-    redraw_after_expand = update_expansion
+    # redraw_after_expand = update_expansion
     #@+node:ekr.20110605121601.17882: *4* qtree.redraw_after_head_changed
     def redraw_after_head_changed(self):
 
@@ -772,6 +772,8 @@ class LeoQtTree(leoFrame.LeoTree):
         else:
             g.trace('NO P')
             c.redraw()
+
+    redraw_after_expand = update_expansion
     #@+node:ekr.20110605121601.17885: *3* qtree.Event handlers
     #@+node:ekr.20110605121601.17887: *4*  qtree.Click Box
     #@+node:ekr.20110605121601.17888: *5* qtree.onClickBoxClick
