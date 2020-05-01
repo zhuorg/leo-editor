@@ -7908,22 +7908,20 @@ last line
 # main after
 # mainto
 
-ac = c.abbrevCommands
 w = c.frame.body.wrapper
 s = w.getAllText()
 w.setInsertPoint(4)
 # i,j = g.getWord(s,4)
 # word = s[i:j]
 event = g.bunch(widget=w)
-ac.dynamicCompletion(event)
+c.k.simulateCommand('dabbrev-completion', event=event)
 try:
     i = s.find('main')
     assert i == 2,i
 finally:
     if 1:
         c.undoer.undo(event=event)
-
-#@+node:ekr.20150414144038.1: *5* @test dabbrev-expand
+#@+node:ekr.20150414144038.1: *5* @test dabbrev-expands
 # main after
 # mainto
 
@@ -7935,8 +7933,8 @@ i,j = g.getWord(s,4)
 word = s[i:j]
 aList = ac.getDynamicList(w,word)
 c.k.arg = aList[1]
-event = g.bunch(char=None, stroke=None, widget=w)
-ac.dynamicExpandHelper(event)
+event = g.bunch(widget=w)
+c.k.simulateCommand('dabbrev-expands', event=event)
     # This *does* support undo.
 s = w.getAllText()
 try:

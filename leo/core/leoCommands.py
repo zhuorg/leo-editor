@@ -2192,18 +2192,19 @@ class Commands:
                 g.trace(message)
             return expr
     #@+node:ekr.20171123201514.1: *3* c.Executing commands & scripts
-    #@+node:ekr.20110605040658.17005: *4* c.check_event
+    #@+node:ekr.20110605040658.17005: *4* c.check_event (changed)
     def check_event(self, event):
         """Check an event object."""
-        # c = self
+        c = self
         import leo.core.leoGui as leoGui
-
         if not event:
             return
-        stroke = event.stroke
-        got = event.char
-        if g.unitTesting:
-            return
+        # Leo 6.3: Add defaults for event.c, event.char and event.stroke.
+        event.c = getattr(event, 'c', c)
+        stroke = event.stroke = getattr(event, 'stroke', '')
+        got = event.char = getattr(event, 'char', '')
+        ### if g.unitTesting:
+        ###    return
         if stroke and (stroke.find('Alt+') > -1 or stroke.find('Ctrl+') > -1):
             expected = event.char
                 # Alas, Alt and Ctrl bindings must *retain* the char field,
@@ -2213,7 +2214,9 @@ class Commands:
                 # disable the test.
                 # We will use the (weird) key value for, say, Ctrl-s,
                 # if there is no binding for Ctrl-s.
-        if not isinstance(event, leoGui.LeoKeyEvent):
+        #
+        # Allow shims during unit testing.
+        if not g.unitTesting and not isinstance(event, leoGui.LeoKeyEvent):
             if g.app.gui.guiName() not in ('console', 'curses'):
                 g.trace(f"not leo event: {event!r}, callers: {g.callers()}")
         if expected != got:

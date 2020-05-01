@@ -192,6 +192,12 @@
 <v t="ekr.20101220161557.6016"><vh>Active Unit Tests</vh>
 <v t="edward.20160314170027.56" descendentVnodeUnknownAttributes="7d7100285808000000302e332e31322e3471017d71025809000000756e69745f7465737471035804000000616263647104735809000000302e332e31382e333571057d710658090000006d795f706c7567696e7107580300000076616c710873752e"><vh>@file activeUnitTests.txt</vh></v>
 </v>
+<v t="ekr.20200501113726.1"><vh>Found:abbrevCommands</vh>
+<v t="ekr.20150430053825.1"></v>
+<v t="ekr.20100902074747.5970"><vh>@test addAbbrevHelper</vh></v>
+<v t="ekr.20150414144038.1"><vh>@test dabbrev-expands</vh></v>
+<v t="ekr.20100131180007.5453"><vh>@test dynamicExpandHelper</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="bwmulder.20050108100437.1">@killcolor
@@ -1025,6 +1031,11 @@ for tag,aList in table:
         d2 = inspect.getargspec(func2)
         assert d1==d2,'\n%s\n\nd1 %s\n\nd2 %s' % (z,d1,d2)
 </t>
+<t tx="ekr.20100131180007.5453"># A totally wimpy test.
+# And it somehow prints a newline to the console.
+if 0:
+    c.abbrevCommands.dynamicExpandHelper(event=None,prefix='',aList=[],w=None)
+</t>
 <t tx="ekr.20100204165850.5373">if g.app.inBridge:
     self.skipTest('in bridge')
 k = c.k
@@ -1066,6 +1077,29 @@ for obj,ivar,command in table:
 if not result:
     self.skipTest('no settings')
 assert result.strip().lower()=='f1', repr(result)
+</t>
+<t tx="ekr.20100902074747.5970">f = c.abbrevCommands.addAbbrevHelper
+d = c.abbrevCommands.abbrevs
+
+# New in Leo 4.10: whitespace (blank,tab,newline) *is* significant in definitions.
+table = (
+    ('ut1','ut1=aa','aa'),
+    # ('ut2','ut2 =bb','bb'),
+    ('ut3','ut3=cc=dd','cc=dd'),
+    ('ut4','ut4= ee',' ee'),
+    ('ut5','ut5= ff = gg',' ff = gg'),
+    ('ut6','ut6= hh==ii',' hh==ii'),
+    ('ut7','ut7=j=k','j=k'),
+    ('ut8','ut8=l==m','l==m'),
+    ('@ut1','@ut1=@a','@a'),
+)
+
+for name,s,expected in table:
+    for s2,kind in ((s,'(no nl)'),(s+'\n','(nl)')):
+        f(s2,tag='unit-test')
+        result,tag = d.get(name,(None,None),)
+        assert result==expected, '%s &lt;%s&gt; expected &lt;%s&gt;, got &lt;%s&gt;' % (
+            kind,s,expected,result)
 </t>
 <t tx="ekr.20101220161557.6016"># Nov. 2016: 878 tests.
 # Nov. 2017: 916 tests, 25 skipped.
@@ -1460,6 +1494,28 @@ char t
 <t tx="ekr.20150216110251.11"># Do not delete this node.
 # It is used by unit tests.</t>
 <t tx="ekr.20150321155210.11"></t>
+<t tx="ekr.20150414144038.1"># main after
+# mainto
+
+ac = c.abbrevCommands
+w = c.frame.body.wrapper
+s = w.getAllText()
+w.setInsertPoint(4)
+i,j = g.getWord(s,4)
+word = s[i:j]
+aList = ac.getDynamicList(w,word)
+c.k.arg = aList[1]
+event = g.bunch(widget=w)
+c.k.simulateCommand('dabbrev-expands', event=event)
+    # This *does* support undo.
+s = w.getAllText()
+try:
+    i = s.find('main')
+    assert i == 2,i
+finally:
+    if 0:
+        c.undoer.undo()
+</t>
 <t tx="ekr.20150430053825.1">ac = c.abbrevCommands
 assert ac
 if c.abbrev_place_start is None or c.abbrev_place_end is None:
@@ -1593,5 +1649,10 @@ nodeB
 <t tx="ekr.20200205065723.3">def eggs():
     pass
 </t>
+<t tx="ekr.20200501113726.1">@nosearch
+
+# flattened, word, ignore-case, head, body
+
+# found 4 nodes</t>
 </tnodes>
 </leo_file>

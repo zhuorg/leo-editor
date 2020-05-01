@@ -11,12 +11,58 @@ import functools
 import re
 import string
 #@-<< imports >>
-
-def cmd(name):
-    """Command decorator for the abbrevCommands class."""
-    return g.new_cmd_decorator(name, ['c', 'abbrevCommands',])
-
 #@+others
+#@+node:ekr.20200501100513.1: ** Commands (new: abbrevCommands.py)
+#@+node:ekr.20200501100211.1: *3* 'dabbrev-completion'
+@g.command('dabbrev-completion')
+def dabbrev_completion(event):
+    """
+    dabbrev-completion
+
+    Insert the common prefix of all dynamic abbrev's matching the present word.
+    This corresponds to C-M-/ in Emacs.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.abbrevCommands.dynamicCompletion(event=event)
+#@+node:ekr.20200501100545.1: *3* 'dabbrev-expands'
+@g.command('dabbrev-expands')
+def dabbrev_expands(event):
+    """
+    dabbrev-expands (M-/ in Emacs).
+
+    Inserts the longest common prefix of the word at the cursor. Displays
+    all possible completions if the prefix is the same as the word.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.abbrevCommands.dynamicExpansion(event=event)
+#@+node:ekr.20200501100911.1: *3* 'abbrev-kill-all'
+@g.command('abbrev-kill-all')
+def abbrev_kill_all(event):
+    """Delete all abbreviations."""
+    c = event.get('c')
+    if not c:
+        return
+    c.abbrevCommands.killAllAbbrevs(event=event)
+#@+node:ekr.20200501101055.1: *3* 'abbrev-list'
+@g.command('abbrev-list')
+def abbrev_list(event):
+    """List all abbreviations."""
+    c = event.get('c')
+    if not c:
+        return
+    c.abbrevCommands.listAbbrevs(event=event)
+#@+node:ekr.20200501101318.1: *3* 'toggle-abbrev-mode'
+@g.command('toggle-abbrev-mode')
+def toggle_abbrev_mode(event):
+    """Toggle abbreviation mode."""
+    c = event.get('c')
+    if not c:
+        return
+    c.abbrevCommands.toggleAbbrevMode(event=event)
 #@+node:ekr.20160514095531.1: ** class AbbrevCommands
 class AbbrevCommandsClass(BaseEditCommandsClass):
     """
@@ -601,13 +647,8 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
         return s, i, j, prefixes
     #@+node:ekr.20150514043850.19: *3* abbrev.dynamic abbreviation...
     #@+node:ekr.20150514043850.20: *4* abbrev.dynamicCompletion C-M-/
-    @cmd('dabbrev-completion')
     def dynamicCompletion(self, event=None):
-        """
-        dabbrev-completion
-        Insert the common prefix of all dynamic abbrev's matching the present word.
-        This corresponds to C-M-/ in Emacs.
-        """
+        """Helper for dabbrev-completion command."""
         c, p = self.c, self.c.p
         w = self.editWidget(event)
         if not w: return
@@ -633,14 +674,8 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
                 command='dabbrev-completion', bunch=b)
             c.recolor()
     #@+node:ekr.20150514043850.21: *4* abbrev.dynamicExpansion M-/ & helper
-    @cmd('dabbrev-expands')
     def dynamicExpansion(self, event=None):
-        """
-        dabbrev-expands (M-/ in Emacs).
-
-        Inserts the longest common prefix of the word at the cursor. Displays
-        all possible completions if the prefix is the same as the word.
-        """
+        """Helper for dabbrev-expands commands (M-/ in Emacs)."""
         w = self.editWidget(event)
         if not w:
             return
@@ -696,7 +731,7 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
             c.undoer.afterChangeNodeContents(p,
                 command='dabbrev-expand', bunch=b)
             c.recolor()
-    #@+node:ekr.20150514043850.23: *4* abbrev.getDynamicList (helper)
+    #@+node:ekr.20150514043850.23: *4* abbrev.getDynamicList
     def getDynamicList(self, w, s):
         """Return a list of dynamic abbreviations."""
         if self.globalDynamicAbbrevs:
@@ -731,12 +766,10 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
         except ValueError:
             g.es_print(f"bad abbreviation: {s}")
     #@+node:ekr.20150514043850.28: *4* abbrev.killAllAbbrevs
-    @cmd('abbrev-kill-all')
     def killAllAbbrevs(self, event):
         """Delete all abbreviations."""
         self.abbrevs = {}
     #@+node:ekr.20150514043850.29: *4* abbrev.listAbbrevs
-    @cmd('abbrev-list')
     def listAbbrevs(self, event=None):
         """List all abbreviations."""
         d = self.abbrevs
@@ -753,7 +786,6 @@ class AbbrevCommandsClass(BaseEditCommandsClass):
         else:
             g.es_print('No present abbreviations')
     #@+node:ekr.20150514043850.32: *4* abbrev.toggleAbbrevMode
-    @cmd('toggle-abbrev-mode')
     def toggleAbbrevMode(self, event=None):
         """Toggle abbreviation mode."""
         k = self.c.k

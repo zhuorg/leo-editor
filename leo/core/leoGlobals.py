@@ -111,7 +111,7 @@ global_commands_dict = {}
 
 cmd_instance_dict = {
     # Keys are class names, values are attribute chains.
-    'AbbrevCommandsClass':      ['c', 'abbrevCommands'],
+    ### 'AbbrevCommandsClass':      ['c', 'abbrevCommands'],
     'AtFile':                   ['c', 'atFileCommands'],
     'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
     'ChapterController':        ['c', 'chapterController'],
