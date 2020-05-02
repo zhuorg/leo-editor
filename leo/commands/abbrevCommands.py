@@ -12,7 +12,7 @@ import re
 import string
 #@-<< imports >>
 #@+others
-#@+node:ekr.20200501100513.1: ** Commands (new: abbrevCommands.py)
+#@+node:ekr.20200501100513.1: ** commands: abbrevCommands.py
 #@+node:ekr.20200501100211.1: *3* 'dabbrev-completion'
 @g.command('dabbrev-completion')
 def dabbrev_completion(event):

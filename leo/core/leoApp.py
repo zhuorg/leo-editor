@@ -22,6 +22,25 @@ import platform
 import sqlite3
 #@-<< imports >>
 #@+others
+#@+node:ekr.20200502134930.1: ** commands: leoApp.py
+@g.command('exit-leo')
+@g.command('quit-leo')
+def exit_leo(event):
+    """Exit Leo, prompting to save unsaved outlines first."""
+    g.app.onQuit(event)
+
+@g.command('listen-to-log')
+@g.command('log-listen')
+def listen_to_log(event):
+    """
+    A socket listener, listening on localhost. See:
+    https://docs.python.org/2/howto/logging-cookbook.html#sending-and-receiving-logging-events-across-a-network
+
+    Start this listener first, then start the broadcaster.
+
+    leo/plugins/cursesGui2.py is a typical broadcaster.
+    """
+    g.app.listenToLog(event)
 #@+node:ekr.20161026122804.1: ** class IdleTimeManager
 class IdleTimeManager:
     """
@@ -1439,8 +1458,6 @@ class LeoApp:
         if trace: g.pr('before finishQuit')
         self.finishQuit()
     #@+node:ekr.20031218072017.2617: *4* app.onQuit
-    @cmd('exit-leo')
-    @cmd('quit-leo')
     def onQuit(self, event=None):
         """Exit Leo, prompting to save unsaved outlines first."""
         if 'shutdown' in g.app.debug:
@@ -1589,8 +1606,6 @@ class LeoApp:
             return scanner_for_ext_cb
         return None
     #@+node:ekr.20170429152049.1: *3* app.listenToLog
-    @cmd('listen-to-log')
-    @cmd('log-listen')
     def listenToLog(self, event=None):
         """
         A socket listener, listening on localhost. See:

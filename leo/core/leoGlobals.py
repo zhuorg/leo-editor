@@ -89,8 +89,7 @@ globalDirectiveList = [
 #@@nobeautify
 #@@language rest
 #@+at
-# *Don't even think about removing the @cmd decorators!*
-# See https://github.com/leo-editor/leo-editor/issues/325
+# To be removed. See https://github.com/leo-editor/leo-editor/issues/325
 #
 # The cmd_instance_dict supports the @cmd decorators in various files. For
 # example, the following appears in leo.commands.
@@ -111,7 +110,6 @@ global_commands_dict = {}
 
 cmd_instance_dict = {
     # Keys are class names, values are attribute chains.
-    ### 'AbbrevCommandsClass':      ['c', 'abbrevCommands'],
     'AtFile':                   ['c', 'atFileCommands'],
     'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
     'ChapterController':        ['c', 'chapterController'],
