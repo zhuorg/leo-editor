@@ -86,41 +86,22 @@ globalDirectiveList = [
 #@-<< define g.globalDirectiveList >>
 #@+<< define global decorator dicts >>
 #@+node:ekr.20150510103918.1: ** << define global decorator dicts >> (leoGlobals.py)
-#@@nobeautify
-#@@language rest
-#@+at
-# To be removed. See https://github.com/leo-editor/leo-editor/issues/325
-#
-# The cmd_instance_dict supports the @cmd decorators in various files. For
-# example, the following appears in leo.commands.
-#
-#     def cmd(name):
-#         """Command decorator for the abbrevCommands class."""
-#         return g.new_cmd_decorator(name, ['c', 'abbrevCommands',])
-#
-# **Important**
-#
-# All *new* commands should be defined using @g.command, but
-# this dict will remain forever so as not to break existing code.
-#
-#@@c
-#@@language python
-
 global_commands_dict = {}
 
+# To be removed. See https://github.com/leo-editor/leo-editor/issues/325
+
 cmd_instance_dict = {
-    # Keys are class names, values are attribute chains.
+    # Keys are class names; values are attribute chains.
     'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
     'ControlCommandsClass':     ['c', 'controlCommands'],
     'DebugCommandsClass':       ['c', 'debugCommands'],
     'EditCommandsClass':        ['c', 'editCommands'],
     'EditFileCommandsClass':    ['c', 'editFileCommands'],
-    'FileCommands':             ['c', 'fileCommands'],
+    # 'FileCommands':             ['c', 'fileCommands'],
     'HelpCommandsClass':        ['c', 'helpCommands'],
     'KeyHandlerClass':          ['c', 'k'],
     'KeyHandlerCommandsClass':  ['c', 'keyHandlerCommands'],
     'KillBufferCommandsClass':  ['c', 'killBufferCommands'],
-    'LeoApp':                   ['g', 'app'],
     'LeoFind':                  ['c', 'findCommands'],
     'LeoImportCommands':        ['c', 'importCommands'],
     'PrintingController':       ['c', 'printingController'],

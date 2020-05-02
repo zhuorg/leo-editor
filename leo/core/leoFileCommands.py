@@ -29,6 +29,43 @@ from contextlib import contextmanager
 #@-<< imports >>
 PRIVAREA = '---begin-private-area---'
 #@+others
+#@+node:ekr.20200502183238.1: ** commands: leoFileCommands.py
+#@+node:ekr.20200502183238.2: *3* 'write-at-file-nodes'
+@g.command('write-at-file-nodes')
+def write_at_file_nodes(event):
+    """Write all @file nodes in the selected outline."""
+    c = event.get('c')
+    if not c:
+        return
+    c.fileCommands.writeAtFileNodes(event)
+
+#@+node:ekr.20200502183238.3: *3* 'write-dirty-at-file-nodes'
+@g.command('write-dirty-at-file-nodes')
+def write_dirty_at_file_nodes(event):
+    """Write all changed @file Nodes."""
+    c = event.get('c')
+    if not c:
+        return
+    c.fileCommands.writeDirtyAtFileNodes(event)
+
+#@+node:ekr.20200502183238.4: *3* 'write-missing-at-file-nodes'
+@g.command('write-missing-at-file-nodes')
+def write_missing_at_file_nodes(event):
+    """Write all @file nodes for which the corresponding external file does not exist."""
+    c = event.get('c')
+    if not c:
+        return
+    c.fileCommands.writeMissingAtFileNodes(event)
+
+#@+node:ekr.20200502183238.5: *3* 'write-outline-only'
+@g.command('write-outline-only')
+def write_outline_only(event):
+    """Write the entire outline without writing any derived files."""
+    c = event.get('c')
+    if not c:
+        return
+    c.fileCommands.writeOutlineOnly(event)
+
 #@+node:ekr.20060918164811: ** class BadLeoFile
 class BadLeoFile(Exception):
 
@@ -373,11 +410,6 @@ class FileCommands:
     """A class creating the FileCommands subcommander."""
     #@+others
     #@+node:ekr.20090218115025.4: *3* fc.Birth
-    #@+node:ekr.20150509194827.1: *4* fc.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the FileCommands class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'fileCommands',])
     #@+node:ekr.20031218072017.3019: *4* fc.ctor
     def __init__(self, c):
         """Ctor for FileCommands class."""
@@ -1810,7 +1842,6 @@ class FileCommands:
             'replace into extra_infos(name, value) values(?,?)',
             map(lambda x: (x[1], md5(x[0])), files))
     #@+node:ekr.20031218072017.2012: *4* fc.writeAtFileNodes
-    @cmd('write-at-file-nodes')
     def writeAtFileNodes(self, event=None):
         """Write all @file nodes in the selected outline."""
         c = self.c
@@ -1818,7 +1849,6 @@ class FileCommands:
         c.atFileCommands.writeAll(all=True)
         c.raise_error_dialogs(kind='write')
     #@+node:ekr.20031218072017.1666: *4* fc.writeDirtyAtFileNodes
-    @cmd('write-dirty-at-file-nodes')
     def writeDirtyAtFileNodes(self, event=None):
         """Write all changed @file Nodes."""
         c = self.c
@@ -1830,14 +1860,12 @@ class FileCommands:
         """Write all changed @shadow Nodes."""
         self.c.atFileCommands.writeDirtyAtShadowNodes()
     #@+node:ekr.20031218072017.2013: *4* fc.writeMissingAtFileNodes
-    @cmd('write-missing-at-file-nodes')
     def writeMissingAtFileNodes(self, event=None):
         """Write all @file nodes for which the corresponding external file does not exist."""
         c = self.c
         if c.p:
             c.atFileCommands.writeMissing(c.p)
     #@+node:ekr.20031218072017.3050: *4* fc.writeOutlineOnly
-    @cmd('write-outline-only')
     def writeOutlineOnly(self, event=None):
         """Write the entire outline without writing any derived files."""
         c = self.c
