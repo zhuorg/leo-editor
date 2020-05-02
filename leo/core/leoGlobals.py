@@ -260,8 +260,7 @@ def new_cmd_decorator(name, ivars):
     """
     Return a new decorator for a command with the given name.
     Compute the class *instance* using the ivar string or list.
-    
-    Don't even think about removing the @cmd decorators!
+
     See https://github.com/leo-editor/leo-editor/issues/325
     """
 
