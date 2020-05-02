@@ -8,12 +8,72 @@
 import leo.core.leoGlobals as g
 from leo.commands.baseCommands import BaseEditCommandsClass as BaseEditCommandsClass
 #@-<< imports >>
-
-def cmd(name):
-    """Command decorator for the BufferCommands class."""
-    return g.new_cmd_decorator(name, ['c', 'bufferCommands',])
-
 #@+others
+#@+node:ekr.20200502143512.1: ** commands: bufferCommands.py
+#@+node:ekr.20200502143512.2: *3* 'buffer-append-to'
+@g.command('buffer-append-to')
+def buffer_append_to(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.appendToBuffer(event)
+
+#@+node:ekr.20200502143512.3: *3* 'buffer-copy'
+@g.command('buffer-copy')
+def buffer_copy(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.copyToBuffer(event)
+
+#@+node:ekr.20200502143512.4: *3* 'buffer-insert'
+@g.command('buffer-insert')
+def buffer_insert(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.insertToBuffer(event)
+
+#@+node:ekr.20200502143512.5: *3* 'buffer-kill'
+@g.command('buffer-kill')
+def buffer_kill(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.killBuffer(event)
+
+#@+node:ekr.20200502143512.6: *3* 'buffers-list'
+@g.command('buffers-list')
+def buffers_list(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.listBuffers(event)
+
+#@+node:ekr.20200502143746.1: *3* 'buffers-list-alphabetically'
+@g.command('buffers-list-alphabetically')
+def buffers_list_alphabertically(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.listBuffersAlphabetically(event)
+
+#@+node:ekr.20200502143512.7: *3* 'buffer-prepend-to'
+@g.command('buffer-prepend-to')
+def buffer_prepend_to(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.prependToBuffer(event)
+
+#@+node:ekr.20200502143512.8: *3* 'buffer-switch-to'
+@g.command('buffer-switch-to')
+def buffer_switch_to(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.bufferCommands.switchToBuffer(event)
+
 #@+node:ekr.20160514095727.1: ** class BufferCommandsClass
 class BufferCommandsClass(BaseEditCommandsClass):
     """
@@ -36,7 +96,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             # Keys are n: <headline>, values are tnodes.
     #@+node:ekr.20150514045829.5: *3* buffer.Entry points
     #@+node:ekr.20150514045829.6: *4* appendToBuffer
-    @cmd('buffer-append-to')
     def appendToBuffer(self, event):
         """Add the selected body text to the end of the body text of a named buffer (node)."""
         self.w = self.editWidget(event)
@@ -59,7 +118,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             c.redraw_after_icons_changed()
             c.recolor()
     #@+node:ekr.20150514045829.7: *4* copyToBuffer
-    @cmd('buffer-copy')
     def copyToBuffer(self, event):
         """Add the selected body text to the end of the body text of a named buffer (node)."""
         self.w = self.editWidget(event)
@@ -80,7 +138,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             c.redraw_after_icons_changed()
             c.recolor()
     #@+node:ekr.20150514045829.8: *4* insertToBuffer
-    @cmd('buffer-insert')
     def insertToBuffer(self, event):
         """Add the selected body text at the insert point of the body text of a named buffer (node)."""
         self.w = self.editWidget(event)
@@ -101,7 +158,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             self.endCommand()
             c.redraw_after_icons_changed()
     #@+node:ekr.20150514045829.9: *4* killBuffer
-    @cmd('buffer-kill')
     def killBuffer(self, event):
         """Delete a buffer (node) and all its descendants."""
         self.w = self.editWidget(event)
@@ -121,7 +177,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             self.c.k.setLabelBlue(f"Killed buffer: {h}")
             c.redraw(current)
     #@+node:ekr.20150514045829.10: *4* listBuffers & listBuffersAlphabetically
-    @cmd('buffers-list')
     def listBuffers(self, event):
         """
         List all buffers (node headlines), in outline order. Nodes with the
@@ -132,7 +187,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
         for name in self.nameList:
             g.es('', name)
 
-    @cmd('buffers-list-alphabetically')
     def listBuffersAlphabetically(self, event):
         """
         List all buffers (node headlines), in alphabetical order. Nodes with
@@ -145,7 +199,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
         for name in names:
             g.es('', name)
     #@+node:ekr.20150514045829.11: *4* prependToBuffer
-    @cmd('buffer-prepend-to')
     def prependToBuffer(self, event):
         """Add the selected body text to the start of the body text of a named buffer (node)."""
         self.w = self.editWidget(event)
@@ -188,7 +241,6 @@ class BufferCommandsClass(BaseEditCommandsClass):
             c.setHeadString(p, name)
             c.redraw(p)
     #@+node:ekr.20150514045829.13: *4* switchToBuffer
-    @cmd('buffer-switch-to')
     def switchToBuffer(self, event):
         """Select a buffer (node) by its name (headline)."""
         self.c.k.setLabelBlue('Switch to buffer: ')
