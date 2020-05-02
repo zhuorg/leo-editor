@@ -19,12 +19,48 @@ try:
 except ImportError:
     tabnanny = None
 #@-<< imports >>
-
-def cmd(name):
-    """Command decorator for the Commands class."""
-    return g.new_cmd_decorator(name, ['c',])
-
 #@+others
+#@+node:ekr.20200502145821.1: ** commands: leoCommands.py
+#@+node:ekr.20200502145821.5: *3* 'dump-expanded'
+@g.command('dump-expanded')
+def dump_expanded(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.dump_expanded(event)
+
+#@+node:ekr.20200502145821.3: *3* 'execute-pytest'
+@g.command('execute-pytest')
+def execute_pytest(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.execute_pytest(event)
+
+#@+node:ekr.20200502145821.2: *3* 'execute-script'
+@g.command('execute-script')
+def execute_script(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.executeScript(event)
+
+#@+node:ekr.20200502145821.4: *3* 'recolor'
+@g.command('recolor')
+def recolor(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.recolorCommand(event)
+
+#@+node:ekr.20200502145821.6: *3* 'redraw'
+@g.command('redraw')
+def redraw(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.redraw_command(event)
+
 #@+node:ekr.20160514120615.1: ** class Commands (object)
 class Commands:
     """
@@ -577,7 +613,6 @@ class Commands:
         else:
             c.windowPosition = 500, 700, 50, 50  # width,height,left,top.
     #@+node:ekr.20171123135625.4: *3* @cmd c.executeScript & public helpers
-    @cmd('execute-script')
     def executeScript(self, event=None,
         args=None, p=None, script=None, useSelectedText=True,
         define_g=True, define_name='__main__',
@@ -698,7 +733,6 @@ class Commands:
             g.restoreStderr()
             g.restoreStdout()
     #@+node:vitalije.20190924191405.1: *3* @cmd c.execute_pytest
-    @cmd('execute-pytest')
     def execute_pytest(self, event=None):
         c = self
 
@@ -758,7 +792,6 @@ class Commands:
         finally:
             del sys.path[:2]
     #@+node:ekr.20080514131122.12: *3* @cmd c.recolorCommand
-    @cmd('recolor')
     def recolorCommand(self, event=None):
         """Force a full recolor."""
         c = self
@@ -945,7 +978,6 @@ class Commands:
 
     currentVnode = currentPosition
     #@+node:ekr.20190506060937.1: *5* c.dumpExpanded
-    @cmd('dump-expanded')
     def dump_expanded(self, event):
         c = event.get('c')
         if not c:
@@ -2929,7 +2961,6 @@ class Commands:
         c = self
         c.enableRedrawFlag = True
     #@+node:ekr.20090110073010.1: *6* c.redraw
-    @cmd('redraw')
     def redraw_command(self, event):
         c = event.get('c')
         if c:
