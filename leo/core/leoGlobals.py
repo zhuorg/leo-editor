@@ -111,7 +111,6 @@ global_commands_dict = {}
 cmd_instance_dict = {
     # Keys are class names, values are attribute chains.
     'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
-    'ChapterController':        ['c', 'chapterController'],
     'Commands':                 ['c'],
     'ControlCommandsClass':     ['c', 'controlCommands'],
     'DebugCommandsClass':       ['c', 'debugCommands'],
@@ -125,7 +124,6 @@ cmd_instance_dict = {
     'LeoApp':                   ['g', 'app'],
     'LeoFind':                  ['c', 'findCommands'],
     'LeoImportCommands':        ['c', 'importCommands'],
-    # 'MacroCommandsClass':       ['c', 'macroCommands'],
     'PrintingController':       ['c', 'printingController'],
     'RectangleCommandsClass':   ['c', 'rectangleCommands'],
     'RstCommands':              ['c', 'rstCommands'],

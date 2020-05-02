@@ -5,6 +5,31 @@ import re
 import string
 import leo.core.leoGlobals as g
 #@+others
+#@+node:ekr.20200502144359.1: ** commands: leoChapters.py
+#@+node:ekr.20200502144359.3: *3* 'chapter-back'
+@g.command('chapter-back')
+def chapter_back(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.chapterController.backChapter(event)
+
+#@+node:ekr.20200502144359.4: *3* 'chapter-next'
+@g.command('chapter-next')
+def chapter_next(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.chapterController.nextChapter(event)
+
+#@+node:ekr.20200502144359.2: *3* 'chapter-select'
+@g.command('chapter-select')
+def chapter_select(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.chapterController.selectChapter(event)
+
 #@+node:ekr.20070317085437: ** class ChapterController
 class ChapterController:
     """A per-commander controller that manages chapters and related nodes."""
@@ -86,13 +111,7 @@ class ChapterController:
         bindings = (None, binding) if binding else (None,)
         for shortcut in bindings:
             c.k.registerCommand(commandName, select_chapter_callback, shortcut=shortcut)
-    #@+node:ekr.20150509030349.1: *3* cc.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the ChapterController class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'chapterController',])
     #@+node:ekr.20070604165126: *3* cc.selectChapter
-    @cmd('chapter-select')
     def selectChapter(self, event=None):
         """Use the minibuffer to get a chapter name, then create the chapter."""
         cc, k = self, self.c.k
@@ -107,8 +126,7 @@ class ChapterController:
         k.resetLabel()
         if k.arg:
             cc.selectChapterByName(k.arg)
-    #@+node:ekr.20170202061705.1: *3* cc.selectNext/Back
-    @cmd('chapter-back')
+    #@+node:ekr.20170202061705.1: *3* cc.selectBack
     def backChapter(self, event=None):
         cc = self
         names = sorted(cc.setAllChapterNames())
@@ -117,7 +135,7 @@ class ChapterController:
         new_name = names[i - 1 if i > 0 else len(names) - 1]
         cc.selectChapterByName(new_name)
 
-    @cmd('chapter-next')
+    #@+node:ekr.20200502144135.1: *3* cc.selectNext
     def nextChapter(self, event=None):
         cc = self
         names = sorted(cc.setAllChapterNames())
