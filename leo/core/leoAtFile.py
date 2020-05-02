@@ -15,6 +15,44 @@ import time
 import unittest
 #@-<< imports >>
 #@+others
+#@+node:ekr.20200502140314.1: ** commands: leoAtFile.py
+#@+node:ekr.20200502141918.1: *3* 'check-derived-file'
+@g.command('check-derived-file')
+def check_derived_file(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.atFileCommands.checkDerivedFile(event)
+
+#@+node:ekr.20200502141921.1: *3* 'write-at-auto-nodes'
+@g.command('write-at-auto-nodes')
+def write_at_auto_nodes(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.atFileCommands.writeAtAutoNodes(event)
+
+#@+node:ekr.20200502141922.1: *3* 'write-at-shadow-nodes'
+@g.command('write-at-shadow-nodes')
+def write_at_shadow_nodes(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.atFileCommands.writeAtShadowNodes(event)
+#@+node:ekr.20200502142212.1: *3* 'write-dirty-at-auto-nodes'
+@g.command('write-dirty-at-auto-nodes')
+def write_dirty_at_auto_nodes(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.atFileCommands.writeDirtyAtAutoNodes(event)
+#@+node:ekr.20200502141922.2: *3* 'write-dirty-at-shadow-nodes'
+@g.command('write-dirty-at-shadow-nodes')
+def write_dirty_at_shadow_nodes(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.atFileCommands.writeDirtyAtShadowNodes(event)
 #@+node:ekr.20160514120655.1: ** class AtFile
 class AtFile:
     """A class implementing the atFile subcommander."""
@@ -68,11 +106,6 @@ class AtFile:
             'run-pyflakes-on-write', default=False)
         self.underindentEscapeString = c.config.getString(
             'underindent-escape-string') or '\\-'
-    #@+node:ekr.20150509194251.1: *4* at.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the AtFileCommands class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'atFileCommands',])
     #@+node:ekr.20041005105605.10: *4* at.initCommonIvars
     def initCommonIvars(self):
         """
@@ -252,7 +285,6 @@ class AtFile:
     #@+node:ekr.20041005105605.17: *3* at.Reading
     #@+node:ekr.20041005105605.18: *4* at.Reading (top level)
     #@+node:ekr.20070919133659: *5* at.checkDerivedFile
-    @cmd('check-derived-file')
     def checkDerivedFile(self, event=None):
         """Make sure an external file written by Leo may be read properly."""
         at = self; c = at.c; p = c.p
@@ -981,7 +1013,6 @@ class AtFile:
     #@+node:ekr.20041005105605.133: *4* Writing (top level)
     #@+node:ekr.20190111153551.1: *5* at.commands
     #@+node:ekr.20070806105859: *6* at.writeAtAutoNodes & writeDirtyAtAutoNodes & helpers
-    @cmd('write-at-auto-nodes')
     def writeAtAutoNodes(self, event=None):
         '''Write all @auto nodes in the selected outline.'''
         at = self; c = at.c
@@ -989,7 +1020,6 @@ class AtFile:
         at.writeAtAutoNodesHelper(writeDirtyOnly=False)
         c.raise_error_dialogs(kind='write')
 
-    @cmd('write-dirty-at-auto-nodes')
     def writeDirtyAtAutoNodes(self, event=None):
         '''Write all dirty @auto nodes in the selected outline.'''
         at = self; c = at.c
@@ -997,7 +1027,6 @@ class AtFile:
         at.writeAtAutoNodesHelper(writeDirtyOnly=True)
         c.raise_error_dialogs(kind='write')
     #@+node:ekr.20080711093251.3: *6* at.writeAtShadowNodes & writeDirtyAtShadowNodes & helpers
-    @cmd('write-at-shadow-nodes')
     def writeAtShadowNodes(self, event=None):
         '''Write all @shadow nodes in the selected outline.'''
         at = self; c = at.c
@@ -1006,7 +1035,6 @@ class AtFile:
         c.raise_error_dialogs(kind='write')
         return val
 
-    @cmd('write-dirty-at-shadow-nodes')
     def writeDirtyAtShadowNodes(self, event=None):
         '''Write all dirty @shadow nodes in the selected outline.'''
         at = self; c = at.c

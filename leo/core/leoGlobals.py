@@ -110,7 +110,7 @@ global_commands_dict = {}
 
 cmd_instance_dict = {
     # Keys are class names, values are attribute chains.
-    'AtFile':                   ['c', 'atFileCommands'],
+    # 'AtFile':                   ['c', 'atFileCommands'],
     'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
     'ChapterController':        ['c', 'chapterController'],
     'Commands':                 ['c'],
