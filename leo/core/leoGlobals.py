@@ -105,7 +105,6 @@ cmd_instance_dict = {
     'LeoImportCommands':        ['c', 'importCommands'],
     'RectangleCommandsClass':   ['c', 'rectangleCommands'],
     'SpellCommandsClass':       ['c', 'spellCommands'],
-    'Undoer':                   ['c', 'undoer'],
     'VimCommands':              ['c', 'vimCommands'],
 }
 #@-<< define global decorator dicts >>

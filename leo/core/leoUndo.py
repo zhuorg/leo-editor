@@ -43,6 +43,25 @@
 import leo.core.leoGlobals as g
 # pylint: disable=unpacking-non-sequence
 #@+others
+#@+node:ekr.20200503091103.1: ** commands: leoUndo.py
+#@+node:ekr.20200503091103.2: *3* 'redo'
+@g.command('redo')
+def redo(event):
+    """Redo the operation undone by the last undo."""
+    c = event.get('c')
+    if not c:
+        return
+    c.undoer.redo(event)
+
+#@+node:ekr.20200503091103.3: *3* 'undo'
+@g.command('undo')
+def undo(event):
+    """Undo the operation described by the undo parameters."""
+    c = event.get('c')
+    if not c:
+        return
+    c.undoer.undo(event)
+
 #@+node:ekr.20031218072017.3605: ** class Undoer
 class Undoer:
     """A class that implements unlimited undo and redo."""
@@ -117,11 +136,6 @@ class Undoer:
             self.granularity = self.granularity.lower()
         if self.granularity not in ('node', 'line', 'word', 'char'):
             self.granularity = 'line'
-    #@+node:ekr.20150509193222.1: *4* u.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the Undoer class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'undoer',])
     #@+node:ekr.20050416092908.1: *3* u.Internal helpers
     #@+node:ekr.20031218072017.3607: *4* u.clearOptionalIvars
     def clearOptionalIvars(self):
@@ -1085,7 +1099,6 @@ class Undoer:
             u.putIvarsToVnode(p)
         return bunch  # Never used.
     #@+node:ekr.20031218072017.2030: *3* u.redo
-    @cmd('redo')
     def redo(self, event=None):
         """Redo the operation undone by the last undo."""
         c, u = self.c, self
@@ -1354,7 +1367,6 @@ class Undoer:
             c.bodyWantsFocus()
             w.setYScrollPosition(u.yview)
     #@+node:ekr.20031218072017.2039: *3* u.undo
-    @cmd('undo')
     def undo(self, event=None):
         """Undo the operation described by the undo parameters."""
         u = self; c = u.c
