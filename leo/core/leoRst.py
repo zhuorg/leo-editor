@@ -59,6 +59,36 @@ StringIO = io.StringIO
 import time
 #@-<< imports >>
 #@+others
+#@+node:ekr.20200503053712.1: ** commands: leoRst.py
+#@+node:ekr.20200503053712.2: *3* 'code-to-rst'
+@g.command('code-to-rst')
+def code_to_rst(event):
+    """
+    Format the presently selected node as computer code.
+    Settings from scriptSettingsDict override normal settings.
+
+    On exit:
+        self.source contains rst sources
+        self.stringOutput contains docutils output if docutils called.
+
+    **Important**: This command works as much like the rst3 command as possible.
+    Difference arise because there is no @rst node to specify a filename.
+    Instead we get the filename from scriptSettingsDict, or use 'code_to_rst.html'
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.rstCommands.code_to_rst_command(event)
+
+#@+node:ekr.20200503053712.3: *3* 'rst3'
+@g.command('rst3')
+def rst3(event):
+    """Write all @rst nodes."""
+    c = event.get('c')
+    if not c:
+        return
+    c.rstCommands.rst3(event)
+
 #@+node:ekr.20090502071837.12: ** code_block
 def code_block(name, arguments, options,
     content, lineno, content_offset, block_text, state, state_machine
@@ -189,11 +219,6 @@ class RstCommands:
     def reloadSettings(self):
         """RstCommand.reloadSettings"""
         self.debug = self.c.config.getBool('rst3-debug', default=False)
-    #@+node:ekr.20150509035745.1: *4* rst.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the RstCommands class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'rstCommands',])
     #@+node:ekr.20090502071837.42: *4* rst.createD0
     def createD0(self):
         """Create the default options dict."""
@@ -304,7 +329,6 @@ class RstCommands:
             d['http_server_support'] = False
     #@+node:ekr.20100813041139.5920: *3* rst.Entry points
     #@+node:ekr.20100812082517.5945: *4* rst.code_to_rst_command & helpers
-    @cmd('code-to-rst')
     def code_to_rst_command(
         self, event=None, p=None, scriptSettingsDict=None, toString=False):
         """
@@ -500,7 +524,6 @@ class RstCommands:
         while p and p != after:
             self.write_code_node(p)  # Side effect: advances p.
     #@+node:ekr.20090511055302.5793: *4* rst.rst3 command & helpers
-    @cmd('rst3')
     def rst3(self, event=None):
         """Write all @rst nodes."""
         t1 = time.time()

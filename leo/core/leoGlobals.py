@@ -104,7 +104,6 @@ cmd_instance_dict = {
     'LeoFind':                  ['c', 'findCommands'],
     'LeoImportCommands':        ['c', 'importCommands'],
     'RectangleCommandsClass':   ['c', 'rectangleCommands'],
-    'RstCommands':              ['c', 'rstCommands'],
     'SpellCommandsClass':       ['c', 'spellCommands'],
     'Undoer':                   ['c', 'undoer'],
     'VimCommands':              ['c', 'vimCommands'],
