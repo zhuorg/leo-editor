@@ -29,6 +29,155 @@ def show_stroke(stroke):
         'space':        ' ',
     }
     return d.get(s, s)
+#@+node:ekr.20200503092839.1: ** commands: leoVim.py
+#@+node:ekr.20200503092839.2: *3* ':q!'
+@g.command(':q!')
+def colon_q_exclam(event):
+    """Quit immediately."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.quit_now(event)
+
+#@+node:ekr.20200503092839.3: *3* ':e'
+@g.command(':e')
+def colon_e(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.e_command(event)
+
+#@+node:ekr.20200503092839.4: *3* ':%s'
+@g.command(':%s')
+def colon_percent_s(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.percent_s_command(event)
+
+#@+node:ekr.20200503092839.5: *3* ':print-dot'
+@g.command(':print-dot')
+def colon_print_dot(event):
+    """Print the dot."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.print_dot(event)
+
+#@+node:ekr.20200503092839.6: *3* ':q'
+@g.command(':q')
+def colon_q(event):
+    """Quit the present Leo outline, prompting for saves."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.q_command(event)
+
+#@+node:ekr.20200503092839.7: *3* ':qa'
+@g.command(':qa')
+def colon_qa(event):
+    """Quit only if there are no unsaved changes."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.qa_command(event)
+
+#@+node:ekr.20200503092839.8: *3* ':r'
+@g.command(':r')
+def colon_r(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.r_command(event)
+
+#@+node:ekr.20200503092839.9: *3* ':e!'
+@g.command(':e!')
+def colon_e_exclam(event):
+    """Revert all changes to a .leo file, prompting if there have been changes."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.revert(event)
+
+#@+node:ekr.20200503092839.10: *3* ':s'
+@g.command(':s')
+def colon_s(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.s_command(event)
+
+#@+node:ekr.20200503092839.11: *3* ':!'
+@g.command(':!')
+def colon_exclam(event):
+    """Execute a shell command."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.shell_command(event)
+
+#@+node:ekr.20200503092839.12: *3* ':tabnew'
+@g.command(':tabnew')
+def colon_tabnew(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.tabnew_command(event)
+
+#@+node:ekr.20200503092839.13: *3* ':toggle-vim-mode'
+@g.command(':toggle-vim-mode')
+def colon_toggle_vim_mode(event):
+    """toggle vim-mode."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.toggle_vim_mode(event)
+
+#@+node:ekr.20200503092839.14: *3* ':toggle-vim-trace'
+@g.command(':toggle-vim-trace')
+def colon_toggle_vim_trace(event):
+    """toggle vim tracing."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.toggle_vim_trace(event)
+
+#@+node:ekr.20200503092839.15: *3* ':toggle-vim-trainer-mode'
+@g.command(':toggle-vim-trainer-mode')
+def colon_toggle_vim_trainer_mode(event):
+    """toggle vim-trainer mode."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.toggle_vim_trainer_mode(event)
+
+#@+node:ekr.20200503092839.16: *3* ':w'
+@g.command(':w')
+def colon_w(event):
+    """Save the .leo file."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.w_command(event)
+
+#@+node:ekr.20200503092839.17: *3* ':wq'
+@g.command(':wq')
+def colon_wq(event):
+    """Save all open files and exit."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.wq_command(event)
+
+#@+node:ekr.20200503092839.18: *3* ':xa'
+@g.command(':xa')
+def colon_xa(event):
+    """Save all open files and keep working."""
+    c = event.get('c')
+    if not c:
+        return
+    c.vimCommands.xa_command(event)
+
 #@+node:ekr.20140802183521.17996: ** class VimEvent
 class VimEvent:
     """A class to contain the components of the dot."""
@@ -460,11 +609,6 @@ class VimCommands:
             # cleared after doing the j,j abbreviation.
     #@+node:ekr.20140803220119.18102: *4* vc.top-level inits
     # Called from command handlers or the ctor.
-    #@+node:ekr.20150509040011.1: *3*  vc.cmd (decorator)
-    def cmd(name):
-        """Command decorator for the VimCommands class."""
-        # pylint: disable=no-self-argument
-        return g.new_cmd_decorator(name, ['c', 'vimCommands',])
     #@+node:ekr.20140802225657.18023: *3* vc.acceptance methods
     # All acceptance methods must set the return_value ivar.
     # All key handlers must end with a call to an acceptance method.
@@ -2050,16 +2194,18 @@ class VimCommands:
             """Called when the user types :tabnew<tab>"""
             self.vc.c.k.getFileName(event=None, callback=self.open_file_by_name)
         #@-others
-    #@+node:ekr.20150509050905.1: *4* vc.e_command & tabnew_command
-    @cmd(':e')
+    #@+node:ekr.20200503091647.1: *4* v.quit_now (:q!)
+    def quit_now(self, event=None):
+        """Quit immediately."""
+        g.app.forceShutdown()
+    #@+node:ekr.20150509050905.1: *4* vc.e_command
     def e_command(self, event=None):
         self.Tabnew(self)
 
-    @cmd(':tabnew')
-    def tabnew_command(self, event=None):
-        self.Tabnew(self)
+    #@+node:ekr.20200503091807.1: *4* vc.percent_s_command (:%s)
+    def percent_s_command(self, event=None):
+        self.Substitution(self, all_lines=True)
     #@+node:ekr.20140815160132.18824: *4* vc.print_dot (:print-dot)
-    @cmd(':print-dot')
     def print_dot(self, event=None):
         """Print the dot."""
         aList = [z.stroke if isinstance(z, VimEvent) else z for z in self.dot_list]
@@ -2071,13 +2217,12 @@ class VimCommands:
             g.es_print(f"dot[{n}]:", ''.join(aList[i : i + 10]))
             i += 10
             n += 1
-    #@+node:ekr.20140815160132.18825: *4* vc.q/qa_command & quit_now (:q & q! & :qa)
-    @cmd(':q')
+    #@+node:ekr.20140815160132.18825: *4* vc.q (:q)
     def q_command(self, event=None):
         """Quit the present Leo outline, prompting for saves."""
         g.app.closeLeoWindow(self.c.frame, new_c=None)
 
-    @cmd(':qa')
+    #@+node:ekr.20200503091646.1: *4* vc.qa_command (:qa)
     def qa_command(self, event=None):
         """Quit only if there are no unsaved changes."""
         for c in g.app.commanders():
@@ -2085,29 +2230,17 @@ class VimCommands:
                 return
         g.app.onQuit(event)
 
-    @cmd(':q!')
-    def quit_now(self, event=None):
-        """Quit immediately."""
-        g.app.forceShutdown()
     #@+node:ekr.20150509050918.1: *4* vc.r_command
-    @cmd(':r')
     def r_command(self, event=None):
         self.LoadFileAtCursor(self)
     #@+node:ekr.20140815160132.18826: *4* vc.revert (:e!)
-    @cmd(':e!')
     def revert(self, event=None):
         """Revert all changes to a .leo file, prompting if there have been changes."""
         self.c.revert()
-    #@+node:ekr.20150509050755.1: *4* vc.s_command & percent_s_command
-    @cmd(':%s')
-    def percent_s_command(self, event=None):
-        self.Substitution(self, all_lines=True)
-
-    @cmd(':s')
+    #@+node:ekr.20150509050755.1: *4* vc.s_command (:s)
     def s_command(self, event=None):
         self.Substitution(self, all_lines=False)
     #@+node:ekr.20140815160132.18827: *4* vc.shell_command (:!)
-    @cmd(':!')
     def shell_command(self, event=None):
         """Execute a shell command."""
         c, k = self.c, self.c.k
@@ -2117,8 +2250,10 @@ class VimCommands:
         else:
             event = VimEvent(c=self.c, char='', stroke='', w=self.colon_w)
             self.do('shell-command', event=event)
+    #@+node:ekr.20200503091602.1: *4* vc.tabnew_command
+    def tabnew_command(self, event=None):
+        self.Tabnew(self)
     #@+node:ekr.20140815160132.18830: *4* vc.toggle_vim_mode
-    @cmd(':toggle-vim-mode')
     def toggle_vim_mode(self, event=None):
         """toggle vim-mode."""
         c = self.c
@@ -2137,38 +2272,34 @@ class VimCommands:
                 # g.es_exception()
                 pass
     #@+node:ekr.20140909140052.18128: *4* vc.toggle_vim_trace
-    @cmd(':toggle-vim-trace')
     def toggle_vim_trace(self, event=None):
         """toggle vim tracing."""
         self.trace_flag = not self.trace_flag
         val = 'On' if self.trace_flag else 'Off'
         g.es_print(f"vim tracing: {val}")
     #@+node:ekr.20140815160132.18831: *4* vc.toggle_vim_trainer_mode
-    @cmd(':toggle-vim-trainer-mode')
     def toggle_vim_trainer_mode(self, event=None):
         """toggle vim-trainer mode."""
         self.trainer = not self.trainer
         val = 'on' if self.trainer else 'off'
         g.es(f"vim-trainer-mode: {val}", color='red')
-    #@+node:ekr.20140815160132.18832: *4* w/xa/wq_command (:w & :xa & wq)
-    @cmd(':w')
+    #@+node:ekr.20140815160132.18832: *4* vc.w_command (:w)
     def w_command(self, event=None):
         """Save the .leo file."""
         self.c.save()
-
-    @cmd(':xa')
-    def xa_command(self, event=None):  # same as :xa
-        """Save all open files and keep working."""
-        for c in g.app.commanders():
-            if c.isChanged():
-                c.save()
-
-    @cmd(':wq')
+    #@+node:ekr.20200503091904.2: *4* vc.wq_command (:wq)
     def wq_command(self, event=None):
         """Save all open files and exit."""
         for c in g.app.commanders():
             c.save()
         g.app.onQuit(event)
+    #@+node:ekr.20200503091904.1: *4* vc.xa_command (:xa)
+    def xa_command(self, event=None):
+        """Save all open files and keep working."""
+        for c in g.app.commanders():
+            if c.isChanged():
+                c.save()
+
     #@+node:ekr.20140802225657.18026: *3* vc.state handlers
     # Neither state handler nor key handlers ever return non-None.
     #@+node:ekr.20140803220119.18089: *4* vc.do_inner_motion
