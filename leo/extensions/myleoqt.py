@@ -2,11 +2,12 @@
 #@+node:vitalije.20200502083732.1: * @file myleoqt.py
 #@@language python
 #@@tabwidth -4
-LEO_INSTALLED_AT = '/opt/programi/leo/trunk'
 #@+<<imports>>
 #@+node:vitalije.20200502091628.1: ** <<imports>>
 import sqlite3
 import sys
+import os
+LEO_INSTALLED_AT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if LEO_INSTALLED_AT not in sys.path:
     sys.path.append(LEO_INSTALLED_AT)
 import leo.core.leoNodes as leoNodes
@@ -523,7 +524,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         fname = sys.argv[1]
     else:
-        fname = '/opt/programi/leo/trunk/leo/core/LeoPyRef.db'
+        fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
     c = DummyLeoController(fname)
     myapp = MyGUI(c)
     myapp.create_main_window()
