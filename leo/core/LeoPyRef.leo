@@ -315,6 +315,9 @@
 <v t="ekr.20090717092906.12765"><vh>@file leoVersion.py</vh></v>
 </v>
 </v>
+<v t="vitalije.20200503214550.1"><vh>@path ../extensions</vh>
+<v t="vitalije.20200502083732.1"><vh>@file myleoqt.py</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="EKR.20040430162943">@nosearch
@@ -2005,5 +2008,6 @@ for v in c.all_nodes():
             print(f"gnx clash: {gnx}")
             g.printObj(aList)
 print('done')</t>
+<t tx="vitalije.20200503214550.1"></t>
 </tnodes>
 </leo_file>
