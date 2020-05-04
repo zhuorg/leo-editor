@@ -60,6 +60,479 @@ import unittest
 # involved by setting self.s_text and its insert and sel attributes.
 #@-<< Theory of operation of find/change >>
 #@+others
+#@+node:ekr.20200504114935.1: ** commands: leoFind.py
+#@+node:ekr.20200504114935.17: *3* 'clone-find-all'
+@g.command('clone-find-all')
+@g.command('find-clone-all')
+@g.command('cfa')
+def minibufferCloneFindAll(event):
+    """
+    clone-find-all ( aka find-clone-all and cfa).
+
+    Create an organizer node whose descendants contain clones of all nodes
+    matching the search string, except @nosearch trees.
+
+    The list is *not* flattened: clones appear only once in the
+    descendants of the organizer node.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferCloneFindAll(event)
+
+#@+node:ekr.20200504114935.18: *3* 'clone-find-all-flattened'
+@g.command('clone-find-all-flattened')
+@g.command('find-clone-all-flattened')
+@g.command('cff')
+def minibufferCloneFindAllFlattened(event):
+    """
+    clone-find-all-flattened (aka find-clone-all-flattened and cff).
+
+    Create an organizer node whose direct children are clones of all nodes
+    matching the search string, except @nosearch trees.
+
+    The list is flattened: every cloned node appears as a direct child
+    of the organizer node, even if the clone also is a descendant of
+    another cloned node.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferCloneFindAllFlattened(event)
+
+#@+node:ekr.20200504114935.19: *3* 'clone-find-tag'
+@g.command('clone-find-tag')
+@g.command('find-clone-tag')
+@g.command('cft')
+def minibufferCloneFindTag(event):
+    """
+    clone-find-tag (aka find-clone-tag and cft).
+
+    Create an organizer node whose descendants contain clones of all
+    nodes matching the given tag, except @nosearch trees.
+
+    The list is *always* flattened: every cloned node appears as a
+    direct child of the organizer node, even if the clone also is a
+    descendant of another cloned node.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferCloneFindTag(event)
+
+#@+node:ekr.20200504114935.20: *3* 'find-all'
+@g.command('find-all')
+def minibufferFindAll(event):
+    """
+    Create a summary node containing descriptions of all matches of the
+    search string.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferFindAll(event)
+
+#@+node:ekr.20200504114935.21: *3* 'find-all-unique-regex'
+@g.command('find-all-unique-regex')
+def minibufferFindAllUniqueRegex(event):
+    """
+    Create a summary node containing all unique matches of the regex search
+    string. This command shows only the matched string itself.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferFindAllUniqueRegex(event)
+
+#@+node:ekr.20200504114935.3: *3* 'find-def'
+@g.command('find-def')
+def findDef(event):
+    """Find the def or class under the cursor."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.findDef(event)
+
+#@+node:ekr.20200504114935.5: *3* 'find-next'
+@g.command('find-next')
+def findNextCommand(event):
+    """The find-next command."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.findNextCommand(event)
+
+#@+node:ekr.20200504114935.6: *3* 'find-prev'
+@g.command('find-prev')
+def findPrevCommand(event):
+    """Handle F2 (find-previous)"""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.findPrevCommand(event)
+
+#@+node:ekr.20200504114935.8: *3* 'find-tab-hide'
+@g.command('find-tab-hide')
+def hideFindTab(event):
+    """Hide the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.hideFindTab(event)
+
+#@+node:ekr.20200504114935.9: *3* 'find-tab-open'
+@g.command('find-tab-open')
+def openFindTab(event):
+    """Open the Find tab in the log pane."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.openFindTab(event)
+
+#@+node:ekr.20200504114935.4: *3* 'find-var'
+@g.command('find-var')
+def findVar(event):
+    """Find the var under the cursor."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.findVar(event)
+
+#@+node:ekr.20200504114935.7: *3* 'focus-to-find'
+@g.command('focus-to-find')
+def focusToFind(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.focusToFind(event)
+
+#@+node:ekr.20200504114935.13: *3* 'isearch-backward'
+@g.command('isearch-backward')
+def isearchBackward(event):
+    """
+    Begin a backward incremental search.
+
+    - Plain characters extend the search backward.
+    - !<isearch-forward>! repeats the search.
+    - Esc or any non-plain key ends the search.
+    - Backspace reverses the search.
+    - Backspacing to an empty search pattern
+      completely undoes the effect of the search.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.isearchBackward(event)
+
+#@+node:ekr.20200504114935.15: *3* 'isearch-backward-regexp'
+@g.command('isearch-backward-regexp')
+def isearchBackwardRegexp(event):
+    """
+    Begin a backward incremental regexp search.
+
+    - Plain characters extend the search.
+    - !<isearch-forward-regexp>! repeats the search.
+    - Esc or any non-plain key ends the search.
+    - Backspace reverses the search.
+    - Backspacing to an empty search pattern
+      completely undoes the effect of the search.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.isearchBackwardRegexp(event)
+
+#@+node:ekr.20200504114935.12: *3* 'isearch-forward'
+@g.command('isearch-forward')
+def isearchForward(event):
+    """
+    Begin a forward incremental search.
+
+    - Plain characters extend the search.
+    - !<isearch-forward>! repeats the search.
+    - Esc or any non-plain key ends the search.
+    - Backspace reverses the search.
+    - Backspacing to an empty search pattern
+      completely undoes the effect of the search.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.isearchForward(event)
+
+#@+node:ekr.20200504114935.14: *3* 'isearch-forward-regexp'
+@g.command('isearch-forward-regexp')
+def isearchForwardRegexp(event):
+    """
+    Begin a forward incremental regexp search.
+
+    - Plain characters extend the search.
+    - !<isearch-forward-regexp>! repeats the search.
+    - Esc or any non-plain key ends the search.
+    - Backspace reverses the search.
+    - Backspacing to an empty search pattern
+      completely undoes the effect of the search.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.isearchForwardRegexp(event)
+
+#@+node:ekr.20200504114935.16: *3* 'isearch-with-present-options'
+@g.command('isearch-with-present-options')
+def isearchWithPresentOptions(event):
+    """
+    Begin an incremental search using find panel options.
+
+    - Plain characters extend the search.
+    - !<isearch-forward-regexp>! repeats the search.
+    - Esc or any non-plain key ends the search.
+    - Backspace reverses the search.
+    - Backspacing to an empty search pattern
+      completely undoes the effect of the search.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.isearchWithPresentOptions(event)
+
+#@+node:ekr.20200504114935.24: *3* 're-search-backward'
+@g.command('re-search-backward')
+def reSearchBackward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.reSearchBackward(event)
+
+#@+node:ekr.20200504114935.25: *3* 're-search-forward'
+@g.command('re-search-forward')
+def reSearchForward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.reSearchForward(event)
+
+#@+node:ekr.20200504114935.45: *3* 'replace'
+@g.command('replace')
+def change(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.change(event)
+
+#@+node:ekr.20200504114935.22: *3* 'replace-all'
+@g.command('replace-all')
+def minibufferReplaceAll(event):
+    """Replace all instances of the search string with the replacement string."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferReplaceAll(event)
+
+#@+node:ekr.20200504114935.2: *3* 'replace-then-find'
+@g.command('replace-then-find')
+def changeThenFindCommand(event):
+    """Handle the replace-then-find command."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.changeThenFindCommand(event)
+
+#@+node:ekr.20200504114935.26: *3* 'search-backward'
+@g.command('search-backward')
+def searchBackward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.searchBackward(event)
+
+#@+node:ekr.20200504114935.27: *3* 'search-forward'
+@g.command('search-forward')
+def searchForward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.searchForward(event)
+
+#@+node:ekr.20200504114935.11: *3* 'search-return-to-origin'
+@g.command('search-return-to-origin')
+def returnToOrigin(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.returnToOrigin(event)
+
+#@+node:ekr.20200504114935.41: *3* 'set-find-everywhere'
+@g.command('set-find-everywhere')
+def setFindScopeEveryWhere(event):
+    """Set the 'Entire Outline' radio button in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.setFindScopeEveryWhere(event)
+
+#@+node:ekr.20200504114935.42: *3* 'set-find-node-only'
+@g.command('set-find-node-only')
+def setFindScopeNodeOnly(event):
+    """Set the 'Node Only' radio button in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.setFindScopeNodeOnly(event)
+
+#@+node:ekr.20200504114935.43: *3* 'set-find-suboutline-only'
+@g.command('set-find-suboutline-only')
+def setFindScopeSuboutlineOnly(event):
+    """Set the 'Suboutline Only' radio button in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.setFindScopeSuboutlineOnly(event)
+
+#@+node:ekr.20200504114935.28: *3* 'set-replace-string'
+@g.command('set-replace-string')
+def setReplaceString(event):
+    """A state handler to get the replacement string."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.setReplaceString(event)
+
+#@+node:ekr.20200504114935.29: *3* 'set-search-string'
+@g.command('set-search-string')
+def searchWithPresentOptions(event):
+    """Open the search pane and get the search string."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.searchWithPresentOptions(event)
+
+#@+node:ekr.20200504114935.44: *3* 'show-find-options'
+@g.command('show-find-options')
+def showFindOptions(event):
+    """
+    Show the present find options in the status line.
+    This is useful for commands like search-forward that do not show the Find Panel.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.showFindOptions(event)
+
+#@+node:ekr.20200504114935.10: *3* 'start-search'
+@g.command('start-search')
+def startSearch(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.startSearch(event)
+
+#@+node:ekr.20200504114935.23: *3* 'tag-children'
+@g.command('tag-children')
+def minibufferTagChildren(event):
+    """tag-children: prompt for a tag and add it to all children of c.p."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.minibufferTagChildren(event)
+
+#@+node:ekr.20200504114935.32: *3* 'toggle-find-collapses-nodes'
+@g.command('toggle-find-collapses-nodes')
+def toggleFindCollapesNodes(event):
+    """Toggle the 'Collapse Nodes' checkbox in the find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleFindCollapesNodes(event)
+
+#@+node:ekr.20200504114935.33: *3* 'toggle-find-ignore-case-option'
+@g.command('toggle-find-ignore-case-option')
+def toggleIgnoreCaseOption(event):
+    """Toggle the 'Ignore Case' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleIgnoreCaseOption(event)
+
+#@+node:ekr.20200504114935.37: *3* 'toggle-find-in-body-option'
+@g.command('toggle-find-in-body-option')
+def toggleSearchBodyOption(event):
+    """Set the 'Search Body' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleSearchBodyOption(event)
+
+#@+node:ekr.20200504114935.38: *3* 'toggle-find-in-headline-option'
+@g.command('toggle-find-in-headline-option')
+def toggleSearchHeadlineOption(event):
+    """Toggle the 'Search Headline' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleSearchHeadlineOption(event)
+
+#@+node:ekr.20200504114935.34: *3* 'toggle-find-mark-changes-option'
+@g.command('toggle-find-mark-changes-option')
+def toggleMarkChangesOption(event):
+    """Toggle the 'Mark Changes' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleMarkChangesOption(event)
+
+#@+node:ekr.20200504114935.35: *3* 'toggle-find-mark-finds-option'
+@g.command('toggle-find-mark-finds-option')
+def toggleMarkFindsOption(event):
+    """Toggle the 'Mark Finds' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleMarkFindsOption(event)
+
+#@+node:ekr.20200504114935.36: *3* 'toggle-find-regex-option'
+@g.command('toggle-find-regex-option')
+def toggleRegexOption(event):
+    """Toggle the 'Regexp' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleRegexOption(event)
+
+#@+node:ekr.20200504114935.39: *3* 'toggle-find-word-option'
+@g.command('toggle-find-word-option')
+def toggleWholeWordOption(event):
+    """Toggle the 'Whole Word' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleWholeWordOption(event)
+
+#@+node:ekr.20200504114935.40: *3* 'toggle-find-wrap-around-option'
+@g.command('toggle-find-wrap-around-option')
+def toggleWrapSearchOption(event):
+    """Toggle the 'Wrap Around' checkbox in the Find tab."""
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.toggleWrapSearchOption(event)
+
+#@+node:ekr.20200504114935.30: *3* 'word-search-backward'
+@g.command('word-search-backward')
+def wordSearchBackward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.wordSearchBackward(event)
+
+#@+node:ekr.20200504114935.31: *3* 'word-search-forward'
+@g.command('word-search-forward')
+def wordSearchForward(event):
+    c = event.get('c')
+    if not c:
+        return
+    c.findCommands.wordSearchForward(event)
+
 #@+node:ekr.20070105092022.1: ** class SearchWidget
 class SearchWidget:
     """A class to simulating high-level interface widget."""
@@ -299,7 +772,6 @@ class LeoFind:
         self.setup_command()
         self.change()
     #@+node:ekr.20031218072017.3062: *4* find.changeThenFindCommand
-    @cmd('replace-then-find')
     def changeThenFindCommand(self, event=None):
         """Handle the replace-then-find command."""
         self.setup_command()
@@ -317,12 +789,10 @@ class LeoFind:
         self.setup_command()
         self.findAll()
     #@+node:ekr.20150629084204.1: *4* find.findDef, findVar & helpers
-    @cmd('find-def')
     def findDef(self, event=None):
         """Find the def or class under the cursor."""
         self.findDefHelper(event, defFlag=True)
 
-    @cmd('find-var')
     def findVar(self, event=None):
         """Find the var under the cursor."""
         self.findDefHelper(event, defFlag=False)
@@ -485,13 +955,11 @@ class LeoFind:
             self.whole_word = b.whole_word
             self.find_def_data = None
     #@+node:ekr.20031218072017.3063: *4* find.findNextCommand
-    @cmd('find-next')
     def findNextCommand(self, event=None):
         """The find-next command."""
         self.setup_command()
         self.findNext()
     #@+node:ekr.20031218072017.3064: *4* find.findPrevCommand
-    @cmd('find-prev')
     def findPrevCommand(self, event=None):
         """Handle F2 (find-previous)"""
         self.setup_command()
@@ -501,7 +969,6 @@ class LeoFind:
         finally:
             self.reverse = False
     #@+node:ekr.20141113094129.6: *4* find.focusToFind
-    @cmd('focus-to-find')
     def focusToFind(self, event=None):
         c = self.c
         if c.config.getBool('use-find-dialog', default=True):
@@ -513,7 +980,6 @@ class LeoFind:
         """Called from Find panel.  Redirect."""
         self.c.helpCommands.helpForFindCommands(event)
     #@+node:ekr.20131117164142.17015: *4* find.hideFindTab
-    @cmd('find-tab-hide')
     def hideFindTab(self, event=None):
         """Hide the Find tab."""
         c = self.c
@@ -522,7 +988,6 @@ class LeoFind:
         else:
             self.c.frame.log.selectTab('Log')
     #@+node:ekr.20131117164142.16916: *4* find.openFindTab
-    @cmd('find-tab-open')
     def openFindTab(self, event=None, show=True):
         """Open the Find tab in the log pane."""
         c = self.c
@@ -576,7 +1041,6 @@ class LeoFind:
         self.buttonFlag = False
         self.update_ivars()
     #@+node:ekr.20131119060731.22452: *4* find.startSearch
-    @cmd('start-search')
     def startSearch(self, event):
         w = self.editWidget(event)
         # This causes problems.
@@ -592,7 +1056,6 @@ class LeoFind:
             self.openFindTab(event)
             self.ftm.init_focus()
     #@+node:vitalije.20170712162056.1: *4* find.returnToOrigin
-    @cmd('search-return-to-origin')
     def returnToOrigin(self, event):
         data = self.state_on_start_of_search
         if not data: return
@@ -600,7 +1063,6 @@ class LeoFind:
         self.restoreAllExpansionStates(data[-1], redraw=True)
     #@+node:ekr.20131117164142.16939: *3* LeoFind.ISearch
     #@+node:ekr.20131117164142.16941: *4* find.isearchForward
-    @cmd('isearch-forward')
     def isearchForward(self, event):
         """
         Begin a forward incremental search.
@@ -615,7 +1077,6 @@ class LeoFind:
         self.startIncremental(event, 'isearch-forward',
             forward=True, ignoreCase=False, regexp=False)
     #@+node:ekr.20131117164142.16942: *4* find.isearchBackward
-    @cmd('isearch-backward')
     def isearchBackward(self, event):
         """
         Begin a backward incremental search.
@@ -630,7 +1091,6 @@ class LeoFind:
         self.startIncremental(event, 'isearch-backward',
             forward=False, ignoreCase=False, regexp=False)
     #@+node:ekr.20131117164142.16943: *4* find.isearchForwardRegexp
-    @cmd('isearch-forward-regexp')
     def isearchForwardRegexp(self, event):
         """
         Begin a forward incremental regexp search.
@@ -645,7 +1105,6 @@ class LeoFind:
         self.startIncremental(event, 'isearch-forward-regexp',
             forward=True, ignoreCase=False, regexp=True)
     #@+node:ekr.20131117164142.16944: *4* find.isearchBackwardRegexp
-    @cmd('isearch-backward-regexp')
     def isearchBackwardRegexp(self, event):
         """
         Begin a backward incremental regexp search.
@@ -660,7 +1119,6 @@ class LeoFind:
         self.startIncremental(event, 'isearch-backward-regexp',
             forward=False, ignoreCase=False, regexp=True)
     #@+node:ekr.20131117164142.16945: *4* find.isearchWithPresentOptions
-    @cmd('isearch-with-present-options')
     def isearchWithPresentOptions(self, event):
         """
         Begin an incremental search using find panel options.
@@ -857,9 +1315,6 @@ class LeoFind:
         c.minibufferWantsFocus()
     #@+node:ekr.20131117164142.17013: *3* LeoFind.Minibuffer commands
     #@+node:ekr.20131117164142.17011: *4* find.minibufferCloneFindAll
-    @cmd('clone-find-all')
-    @cmd('find-clone-all')
-    @cmd('cfa')
     def minibufferCloneFindAll(self, event=None, preloaded=None):
         """
         clone-find-all ( aka find-clone-all and cfa).
@@ -885,9 +1340,6 @@ class LeoFind:
         self.generalSearchHelper(k.arg, cloneFindAll=True)
         c.treeWantsFocus()
     #@+node:ekr.20131117164142.16996: *4* find.minibufferCloneFindAllFlattened
-    @cmd('clone-find-all-flattened')
-    @cmd('find-clone-all-flattened')
-    @cmd('cff')
     def minibufferCloneFindAllFlattened(self, event=None, preloaded=None):
         """
         clone-find-all-flattened (aka find-clone-all-flattened and cff).
@@ -914,9 +1366,6 @@ class LeoFind:
         self.generalSearchHelper(k.arg, cloneFindAllFlattened=True)
         c.treeWantsFocus()
     #@+node:ekr.20160920110324.1: *4* find.minibufferCloneFindTag
-    @cmd('clone-find-tag')
-    @cmd('find-clone-tag')
-    @cmd('cft')
     def minibufferCloneFindTag(self, event=None):
         """
         clone-find-tag (aka find-clone-tag and cft).
@@ -941,7 +1390,6 @@ class LeoFind:
         self.cloneFindTag(k.arg)
         c.treeWantsFocus()
     #@+node:ekr.20131117164142.16998: *4* find.minibufferFindAll
-    @cmd('find-all')
     def minibufferFindAll(self, event=None):
         """
         Create a summary node containing descriptions of all matches of the
@@ -950,7 +1398,6 @@ class LeoFind:
         self.ftm.clear_focus()
         self.searchWithPresentOptions(event, findAllFlag=True)
     #@+node:ekr.20171226140643.1: *4* find.minibufferFindAllUnique
-    @cmd('find-all-unique-regex')
     def minibufferFindAllUniqueRegex(self, event=None):
         """
         Create a summary node containing all unique matches of the regex search
@@ -961,13 +1408,11 @@ class LeoFind:
         self.unique_matches = set()
         self.searchWithPresentOptions(event, findAllFlag=True, findAllUniqueFlag=True)
     #@+node:ekr.20131117164142.16994: *4* find.minibufferReplaceAll
-    @cmd('replace-all')
     def minibufferReplaceAll(self, event=None):
         """Replace all instances of the search string with the replacement string."""
         self.ftm.clear_focus()
         self.searchWithPresentOptions(event, changeAllFlag=True)
     #@+node:ekr.20160920164418.2: *4* find.minibufferTagChildren & helper
-    @cmd('tag-children')
     def minibufferTagChildren(self, event=None):
         """tag-children: prompt for a tag and add it to all children of c.p."""
         if self.editWidget(event):  # sets self.w
@@ -1071,14 +1516,12 @@ class LeoFind:
         k.resetLabel()
         k.showStateAndMode()
     #@+node:ekr.20131117164142.17003: *4* find.reSearchBackward/Forward
-    @cmd('re-search-backward')
     def reSearchBackward(self, event):
         self.setupArgs(forward=False, regexp=True, word=None)
         self.stateZeroHelper(event,
             'Regexp Search Backward:', self.reSearch1,
             escapes=['\t'])  # The Tab Easter Egg.
 
-    @cmd('re-search-forward')
     def reSearchForward(self, event):
         self.setupArgs(forward=True, regexp=True, word=None)
         self.stateZeroHelper(event,
@@ -1095,7 +1538,6 @@ class LeoFind:
             self.lastStateHelper()
             self.generalSearchHelper(k.arg)
     #@+node:ekr.20131117164142.17004: *4* find.seachForward/Backward
-    @cmd('search-backward')
     def searchBackward(self, event):
         self.setupArgs(forward=False, regexp=False, word=False)
         self.stateZeroHelper(event,
@@ -1103,7 +1545,6 @@ class LeoFind:
             handler=self.search1,
             escapes=['\t'])  # The Tab Easter Egg.
 
-    @cmd('search-forward')
     def searchForward(self, event):
         self.setupArgs(forward=True, regexp=False, word=False)
         self.stateZeroHelper(event,
@@ -1121,7 +1562,6 @@ class LeoFind:
             self.lastStateHelper()
             self.generalSearchHelper(k.arg)
     #@+node:ekr.20131117164142.17002: *4* find.setReplaceString
-    @cmd('set-replace-string')
     def setReplaceString(self, event):
         """A state handler to get the replacement string."""
         prompt = 'Replace ' + ('Regex' if self.pattern_match else 'String')
@@ -1146,7 +1586,6 @@ class LeoFind:
         self.lastStateHelper()
         self.generalChangeHelper(self._sString, k.arg, changeAll=self.changeAllFlag)
     #@+node:ekr.20131117164142.17005: *4* find.searchWithPresentOptions & helpers
-    @cmd('set-search-string')
     def searchWithPresentOptions(self, event,
     findAllFlag=False,
     findAllUniqueFlag=False,
@@ -1247,14 +1686,12 @@ class LeoFind:
         if s not in self.findTextList:
             self.findTextList.append(s)
     #@+node:ekr.20131117164142.17009: *4* find.wordSearchBackward/Forward (test)
-    @cmd('word-search-backward')
     def wordSearchBackward(self, event):
         self.setupArgs(forward=False, regexp=False, word=True)
         self.stateZeroHelper(event,
             prefix='Word Search Backward: ',
             handler=self.wordSearch1)
 
-    @cmd('word-search-forward')
     def wordSearchForward(self, event):
         self.setupArgs(forward=True, regexp=False, word=True)
         self.stateZeroHelper(event,
@@ -1267,7 +1704,6 @@ class LeoFind:
         self.generalSearchHelper(k.arg)
     #@+node:ekr.20131117164142.16915: *3* LeoFind.Option commands
     #@+node:ekr.20131117164142.16919: *4* LeoFind.toggle-find-*-option commands
-    @cmd('toggle-find-collapses-nodes')
     def toggleFindCollapesNodes(self, event):
         """Toggle the 'Collapse Nodes' checkbox in the find tab."""
         c = self.c
@@ -1275,42 +1711,34 @@ class LeoFind:
         if not g.unitTesting:
             g.es('sparse_find', c.sparse_find)
 
-    @cmd('toggle-find-ignore-case-option')
     def toggleIgnoreCaseOption(self, event):
         """Toggle the 'Ignore Case' checkbox in the Find tab."""
         return self.toggleOption('ignore_case')
 
-    @cmd('toggle-find-mark-changes-option')
     def toggleMarkChangesOption(self, event):
         """Toggle the 'Mark Changes' checkbox in the Find tab."""
         return self.toggleOption('mark_changes')
 
-    @cmd('toggle-find-mark-finds-option')
     def toggleMarkFindsOption(self, event):
         """Toggle the 'Mark Finds' checkbox in the Find tab."""
         return self.toggleOption('mark_finds')
 
-    @cmd('toggle-find-regex-option')
     def toggleRegexOption(self, event):
         """Toggle the 'Regexp' checkbox in the Find tab."""
         return self.toggleOption('pattern_match')
 
-    @cmd('toggle-find-in-body-option')
     def toggleSearchBodyOption(self, event):
         """Set the 'Search Body' checkbox in the Find tab."""
         return self.toggleOption('search_body')
 
-    @cmd('toggle-find-in-headline-option')
     def toggleSearchHeadlineOption(self, event):
         """Toggle the 'Search Headline' checkbox in the Find tab."""
         return self.toggleOption('search_headline')
 
-    @cmd('toggle-find-word-option')
     def toggleWholeWordOption(self, event):
         """Toggle the 'Whole Word' checkbox in the Find tab."""
         return self.toggleOption('whole_word')
 
-    @cmd('toggle-find-wrap-around-option')
     def toggleWrapSearchOption(self, event):
         """Toggle the 'Wrap Around' checkbox in the Find tab."""
         return self.toggleOption('wrap')
@@ -1321,17 +1749,14 @@ class LeoFind:
         options = fc.computeFindOptionsInStatusArea()
         c.frame.statusLine.put(options)
     #@+node:ekr.20131117164142.17019: *4* LeoFind.set-find-* commands
-    @cmd('set-find-everywhere')
     def setFindScopeEveryWhere(self, event=None):
         """Set the 'Entire Outline' radio button in the Find tab."""
         return self.setFindScope('entire-outline')
 
-    @cmd('set-find-node-only')
     def setFindScopeNodeOnly(self, event=None):
         """Set the 'Node Only' radio button in the Find tab."""
         return self.setFindScope('node-only')
 
-    @cmd('set-find-suboutline-only')
     def setFindScopeSuboutlineOnly(self, event=None):
         """Set the 'Suboutline Only' radio button in the Find tab."""
         return self.setFindScope('suboutline-only')
@@ -1343,7 +1768,6 @@ class LeoFind:
         options = fc.computeFindOptionsInStatusArea()
         c.frame.statusLine.put(options)
     #@+node:ekr.20131117164142.16989: *4* LeoFind.showFindOptions & helper
-    @cmd('show-find-options')
     def showFindOptions(self, event=None):
         """
         Show the present find options in the status line.
@@ -1398,7 +1822,6 @@ class LeoFind:
         self.ftm.setFindText(pattern)
     #@+node:ekr.20031218072017.3067: *3* LeoFind.Utils
     #@+node:ekr.20031218072017.3068: *4* find.change
-    @cmd('replace')
     def change(self, event=None):
         if self.checkArgs():
             self.initInHeadline()
