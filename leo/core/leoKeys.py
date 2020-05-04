@@ -135,6 +135,214 @@ assert time
 # (8) Keys are command names, values are lists of BindingInfo objects.
 #@-<< about key dicts >>
 #@+others
+#@+node:ekr.20200504133229.1: ** commands: leoKeys.py
+#@+node:ekr.20200504133229.2: *3* 'auto-complete'
+@g.command('auto-complete')
+def autoComplete(event):
+    """An event handler for autocompletion."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.autoComplete(event)
+
+#@+node:ekr.20200504133229.3: *3* 'auto-complete-force'
+@g.command('auto-complete-force')
+def autoCompleteForce(event):
+    """Show autocompletion, even if autocompletion is not presently enabled."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.autoCompleteForce(event)
+
+#@+node:ekr.20200504133229.4: *3* 'disable-autocompleter'
+@g.command('disable-autocompleter')
+def disableAutocompleter(event):
+    """Disable the autocompleter."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.disableAutocompleter(event)
+
+#@+node:ekr.20200504133229.5: *3* 'disable-calltips'
+@g.command('disable-calltips')
+def disableCalltips(event):
+    """Disable calltips."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.disableCalltips(event)
+
+#@+node:ekr.20200504133229.6: *3* 'enable-autocompleter'
+@g.command('enable-autocompleter')
+def enableAutocompleter(event):
+    """Enable the autocompleter."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.enableAutocompleter(event)
+
+#@+node:ekr.20200504133229.7: *3* 'enable-calltips'
+@g.command('enable-calltips')
+def enableCalltips(event):
+    """Enable calltips."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.enableCalltips(event)
+
+#@+node:ekr.20200504133229.8: *3* 'toggle-autocompleter'
+@g.command('toggle-autocompleter')
+def toggleAutocompleter(event):
+    """Toggle whether the autocompleter is enabled."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.toggleAutocompleter(event)
+
+#@+node:ekr.20200504133229.9: *3* 'toggle-calltips'
+@g.command('toggle-calltips')
+def toggleCalltips(event):
+    """Toggle whether calltips are enabled."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.toggleCalltips(event)
+
+#@+node:ekr.20200504133229.10: *3* 'show-calltips'
+@g.command('show-calltips')
+def showCalltips(event):
+    """Show the calltips at the cursor."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.showCalltips(event)
+
+#@+node:ekr.20200504133229.11: *3* 'show-calltips-force'
+@g.command('show-calltips-force')
+def showCalltipsForce(event):
+    """Show the calltips at the cursor, even if calltips are not presently enabled."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.autoCompleter.showCalltipsForce(event)
+
+#@+node:ekr.20200504133259.1: *3* 'full-command'
+@g.command('full-command')
+def fullCommand(event):
+    """Handle 'full-command' (alt-x) mode."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.fullCommand(event)
+
+#@+node:ekr.20200504133259.2: *3* 'show-bindings'
+@g.command('show-bindings')
+def printBindings(event):
+    """Print all the bindings presently in effect."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.printBindings(event)
+
+#@+node:ekr.20200504133259.3: *3* 'show-buttons'
+@g.command('show-buttons')
+def printButtons(event):
+    """Print all @button and @command commands, their bindings and their source."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.printButtons(event)
+
+#@+node:ekr.20200504133259.4: *3* 'show-commands'
+@g.command('show-commands')
+def printCommands(event):
+    """Print all the known commands and their bindings, if any."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.printCommands(event)
+
+#@+node:ekr.20200504133259.5: *3* 'repeat-complex-command'
+@g.command('repeat-complex-command')
+def repeatComplexCommand(event):
+    """Repeat the previously executed minibuffer command."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.repeatComplexCommand(event)
+
+#@+node:ekr.20200504133259.6: *3* 'set-command-state'
+@g.command('set-command-state')
+def setCommandState(event):
+    """Enter the 'command' editing state."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.setCommandState(event)
+
+#@+node:ekr.20200504133259.7: *3* 'set-insert-state'
+@g.command('set-insert-state')
+def setInsertState(event):
+    """Enter the 'insert' editing state."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.setInsertState(event)
+
+#@+node:ekr.20200504133259.8: *3* 'set-overwrite-state'
+@g.command('set-overwrite-state')
+def setOverwriteState(event):
+    """Enter the 'overwrite' editing state."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.setOverwriteState(event)
+
+#@+node:ekr.20200504133259.9: *3* 'toggle-input-state'
+@g.command('toggle-input-state')
+def toggleInputState(event):
+    """The toggle-input-state command."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.toggleInputState(event)
+
+#@+node:ekr.20200504133259.10: *3* 'keyboard-quit'
+@g.command('keyboard-quit')
+def keyboardQuit(event):
+    """
+    This method clears the state and the minibuffer label.
+
+    k.endCommand handles all other end-of-command chores.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.k.keyboardQuit(event)
+
+#@+node:ekr.20200504133259.11: *3* 'exit-named-mode'
+@g.command('exit-named-mode')
+def exitNamedMode(event):
+    """Exit an input mode."""
+    c = event.get('c')
+    if not c:
+        return
+    c.k.exitNamedMode(event)
+
+#@+node:ekr.20200504133259.12: *3* 'mode-help'
+@g.command('mode-help')
+def modeHelp(event):
+    """
+    The mode-help command.
+
+    A possible convention would be to bind <Tab> to this command in most modes,
+    by analogy with tab completion.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.k.modeHelp(event)
+
 #@+node:ekr.20061031131434.4: ** class AutoCompleterClass
 class AutoCompleterClass:
     """A class that inserts autocompleted and calltip text in text widgets.
@@ -4570,214 +4778,6 @@ class ModeInfo:
         k.createModeBindings(self.name, self.d, w)
         k.showStateAndMode(prompt=self.name)
     #@-others
-#@+node:ekr.20200504133229.1: ** commands: leoKeys.py
-#@+node:ekr.20200504133229.2: *3* 'auto-complete'
-@g.command('auto-complete')
-def autoComplete(event):
-    """An event handler for autocompletion."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.autoComplete(event)
-
-#@+node:ekr.20200504133229.3: *3* 'auto-complete-force'
-@g.command('auto-complete-force')
-def autoCompleteForce(event):
-    """Show autocompletion, even if autocompletion is not presently enabled."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.autoCompleteForce(event)
-
-#@+node:ekr.20200504133229.4: *3* 'disable-autocompleter'
-@g.command('disable-autocompleter')
-def disableAutocompleter(event):
-    """Disable the autocompleter."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.disableAutocompleter(event)
-
-#@+node:ekr.20200504133229.5: *3* 'disable-calltips'
-@g.command('disable-calltips')
-def disableCalltips(event):
-    """Disable calltips."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.disableCalltips(event)
-
-#@+node:ekr.20200504133229.6: *3* 'enable-autocompleter'
-@g.command('enable-autocompleter')
-def enableAutocompleter(event):
-    """Enable the autocompleter."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.enableAutocompleter(event)
-
-#@+node:ekr.20200504133229.7: *3* 'enable-calltips'
-@g.command('enable-calltips')
-def enableCalltips(event):
-    """Enable calltips."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.enableCalltips(event)
-
-#@+node:ekr.20200504133229.8: *3* 'toggle-autocompleter'
-@g.command('toggle-autocompleter')
-def toggleAutocompleter(event):
-    """Toggle whether the autocompleter is enabled."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.toggleAutocompleter(event)
-
-#@+node:ekr.20200504133229.9: *3* 'toggle-calltips'
-@g.command('toggle-calltips')
-def toggleCalltips(event):
-    """Toggle whether calltips are enabled."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.toggleCalltips(event)
-
-#@+node:ekr.20200504133229.10: *3* 'show-calltips'
-@g.command('show-calltips')
-def showCalltips(event):
-    """Show the calltips at the cursor."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.showCalltips(event)
-
-#@+node:ekr.20200504133229.11: *3* 'show-calltips-force'
-@g.command('show-calltips-force')
-def showCalltipsForce(event):
-    """Show the calltips at the cursor, even if calltips are not presently enabled."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.autoCompleter.showCalltipsForce(event)
-
-#@+node:ekr.20200504133259.1: *3* 'full-command'
-@g.command('full-command')
-def fullCommand(event):
-    """Handle 'full-command' (alt-x) mode."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.fullCommand(event)
-
-#@+node:ekr.20200504133259.2: *3* 'show-bindings'
-@g.command('show-bindings')
-def printBindings(event):
-    """Print all the bindings presently in effect."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.printBindings(event)
-
-#@+node:ekr.20200504133259.3: *3* 'show-buttons'
-@g.command('show-buttons')
-def printButtons(event):
-    """Print all @button and @command commands, their bindings and their source."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.printButtons(event)
-
-#@+node:ekr.20200504133259.4: *3* 'show-commands'
-@g.command('show-commands')
-def printCommands(event):
-    """Print all the known commands and their bindings, if any."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.printCommands(event)
-
-#@+node:ekr.20200504133259.5: *3* 'repeat-complex-command'
-@g.command('repeat-complex-command')
-def repeatComplexCommand(event):
-    """Repeat the previously executed minibuffer command."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.repeatComplexCommand(event)
-
-#@+node:ekr.20200504133259.6: *3* 'set-command-state'
-@g.command('set-command-state')
-def setCommandState(event):
-    """Enter the 'command' editing state."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.setCommandState(event)
-
-#@+node:ekr.20200504133259.7: *3* 'set-insert-state'
-@g.command('set-insert-state')
-def setInsertState(event):
-    """Enter the 'insert' editing state."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.setInsertState(event)
-
-#@+node:ekr.20200504133259.8: *3* 'set-overwrite-state'
-@g.command('set-overwrite-state')
-def setOverwriteState(event):
-    """Enter the 'overwrite' editing state."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.setOverwriteState(event)
-
-#@+node:ekr.20200504133259.9: *3* 'toggle-input-state'
-@g.command('toggle-input-state')
-def toggleInputState(event):
-    """The toggle-input-state command."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.toggleInputState(event)
-
-#@+node:ekr.20200504133259.10: *3* 'keyboard-quit'
-@g.command('keyboard-quit')
-def keyboardQuit(event):
-    """
-    This method clears the state and the minibuffer label.
-
-    k.endCommand handles all other end-of-command chores.
-    """
-    c = event.get('c')
-    if not c:
-        return
-    c.k.keyboardQuit(event)
-
-#@+node:ekr.20200504133259.11: *3* 'exit-named-mode'
-@g.command('exit-named-mode')
-def exitNamedMode(event):
-    """Exit an input mode."""
-    c = event.get('c')
-    if not c:
-        return
-    c.k.exitNamedMode(event)
-
-#@+node:ekr.20200504133259.12: *3* 'mode-help'
-@g.command('mode-help')
-def modeHelp(event):
-    """
-    The mode-help command.
-
-    A possible convention would be to bind <Tab> to this command in most modes,
-    by analogy with tab completion.
-    """
-    c = event.get('c')
-    if not c:
-        return
-    c.k.modeHelp(event)
-
 #@-others
 #@@language python
 #@@tabwidth -4
