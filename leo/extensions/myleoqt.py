@@ -10,6 +10,7 @@ import os
 LEO_INSTALLED_AT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if LEO_INSTALLED_AT not in sys.path:
     sys.path.append(LEO_INSTALLED_AT)
+LEO_ICONS_DIR = os.path.join(LEO_INSTALLED_AT, 'leo', 'themes', 'light', 'Icons')
 import leo.core.leoNodes as leoNodes
 import leo.core.leoGlobals as g
 g.app = g.bunch(nodeIndices=leoNodes.NodeIndices('vitalije'))
@@ -172,6 +173,7 @@ class MyGUI(QtWidgets.QApplication):
         QtWidgets.QApplication.__init__(self, [])
         self.c = c
         self.hoistStack = []
+        self.icons = leo_icons()
     #@+others
     #@+node:vitalije.20200502142944.1: *3* create_main_window
     def create_main_window(self):
@@ -182,7 +184,7 @@ class MyGUI(QtWidgets.QApplication):
         dock_l.setWidget(self.tree)
         self.tree.setHeaderHidden(True)
         self.tree.setSelectionMode(self.tree.SingleSelection)
-        draw_tree(self.tree, self.c.hiddenRootNode)
+        draw_tree(self.tree, self.c.hiddenRootNode, self.icons)
         self.tree.currentItemChanged.connect(self.select_item)
         self.tree.itemChanged.connect(self.update_headline)
         self.mw.addDockWidget(Q.LeftDockWidgetArea, dock_l, Q.Vertical)
@@ -206,6 +208,8 @@ class MyGUI(QtWidgets.QApplication):
         self.toolbar.addAction('right', self.move_node_right)
         self.toolbar.addAction('promote', self.promote)
         self.toolbar.addAction('demote', self.demote)
+        self.toolbar.addAction('clone', self.clone_node)
+        self.toolbar.addAction('delete', self.delete_node)
         self.hoistAction = self.toolbar.addAction('hoist', self.set_hoist)
         self.dehoistAction = self.toolbar.addAction('dehoist', self.unset_hoist)
         self.undoAction = self.toolbar.addAction('undo', self.c.undo)
@@ -308,13 +312,33 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503145321.1: *3* outline modifications
     #@+node:vitalije.20200503145328.1: *4* make_undoable_move
     def make_undoable_move(self, oldparent, srcindex, newparent, dstindex):
+        t = self.tree
+        trash = []
+
         def domove():
+            for item in all_other_items(t.invisibleRootItem(), oldparent):
+                trash.append(item.takeChild(srcindex))
+
             curr = move_treeitem(oldparent, srcindex, newparent, dstindex)
+
+            for item in all_other_items(t.invisibleRootItem(), newparent):
+                item.insertChild(dstindex, newparent.child(dstindex).clone())
+
             self.tree.setCurrentItem(curr)
+
         def undomove():
+            for item in all_other_items(t.invisibleRootItem(), newparent):
+                item.takeChild(dstindex)
+
+            for item in all_other_items(t.invisibleRootItem(), oldparent):
+                item.insertChild(srcindex, trash.pop())
+
             curr = move_treeitem(newparent, dstindex, oldparent, srcindex)
+
             self.tree.setCurrentItem(curr)
+
         domove()
+
         self.c.addUndo(undomove, domove)
     #@+node:vitalije.20200503145331.1: *4* move_node_up
     def move_node_up(self):
@@ -394,20 +418,37 @@ class MyGUI(QtWidgets.QApplication):
         curr = t.currentItem()
         if curr.childCount() == 0:
             return
+        t = self.tree
+
+        trash = []
+
         newparent = curr.parent() or t.invisibleRootNode()
         dstindex = newparent.indexOfChild(curr) + 1
         oldparent = curr
         links = [(oldparent, i, newparent, dstindex)
                     for i in range(curr.childCount(), 0, -1)]
+
         def dopromote():
+            for item in all_other_items(t.invisibleRootItem(), curr):
+                for x in links:
+                    trash.append(item.takeChild(0))
+
             for oldparent, srcindex, newparent, dstindex in links:
+                for item in all_other_items(t.invisibleRootItem(), newparent):
+                    item.insertChild(dstindex, oldparent.child(srcindex).clone())
                 move_treeitem(oldparent, srcindex-1, newparent, dstindex)
             t.setCurrentItem(oldparent)
+
         def undopromote():
+            for item in all_other_items(t.invisibleRootItem(), curr):
+                for x in links:
+                    item.insertChild(0, trash.pop())
             for oldparent, srcindex, newparent, dstindex in reversed(links):
                 move_treeitem(newparent, dstindex, oldparent, srcindex-1)
             t.setCurrentItem(oldparent)
+
         dopromote()
+
         self.c.addUndo(undopromote, dopromote)
     #@+node:vitalije.20200503175440.1: *4* demote
     def demote(self):
@@ -424,16 +465,101 @@ class MyGUI(QtWidgets.QApplication):
             return
         links = [(oldparent, srcindex, newparent, dstindex + i)
                    for i in range(n)]
+
         def dodemote():
             for oldparent, srcindex, newparent, dstindex in links:
                 move_treeitem(oldparent, srcindex, newparent, dstindex)
+
+            for item in all_other_items(t.invisibleRootItem(), curr):
+                for i in range(curr.childCount()):
+                    item.addChild(curr.child(i).clone())
+                item.setExpanded(False)
+            newparent.setExpanded(True)
+            assert t.indexFromItem(newparent).isValid()
             t.setCurrentItem(newparent)
+
         def undodemote():
+            for item in all_other_items(t.invisibleRootItem(), curr):
+                item.takeChildren()
             for oldparent, srcindex, newparent, dstindex in reversed(links):
                 move_treeitem(newparent, dstindex, oldparent, srcindex)
             t.setCurrentItem(newparent)
+
         dodemote()
         self.c.addUndo(undodemote, dodemote)
+    #@+node:vitalije.20200504070427.1: *4* clone_node
+    def clone_node(self):
+        t = self.tree
+        curr = t.currentItem()
+        parent = curr.parent() or t.invisibleRootItem()
+
+        parent_v = parent.data(0, 1024)
+        v = curr.data(0, 1024)
+
+        index = parent.indexOfChild(curr)
+
+        # remembers cloned nodes so that redo reuses the same items
+        newitems = [(x, curr.clone()) 
+                        for x in iter_all_v_items(t.invisibleRootItem(), parent_v)]
+        def do_clone_node():
+            parent_v.children.insert(index, v)
+            v.parents.append(parent_v)
+
+            for item, child in newitems:
+                item.insertChild(index + 1, child)
+
+            icon = self.icons[v.computeIcon()]
+            for item in iter_all_v_items(t.invisibleRootItem(), v):
+                item.setIcon(0, icon)
+            t.setCurrentItem(parent.child(index + 1))
+
+        def undo_clone_node():
+            for item, child in newitems:
+                item.takeChild(index + 1)
+
+            del parent_v.children[index + 1]
+            v.parents.remove(parent_v)
+
+            icon = self.icons[v.computeIcon()]
+            for item in iter_all_v_items(t.invisibleRootItem(), v):
+                item.setIcon(0, icon)
+
+        do_clone_node()
+        self.c.addUndo(undo_clone_node, do_clone_node)
+    #@+node:vitalije.20200504071530.1: *4* delete_node
+    def delete_node(self):
+        t = self.tree
+        curr = t.currentItem()
+        parent = curr.parent() or t.invisibleRootItem()
+
+        parent_v = parent.data(0, 1024)
+        v = curr.data(0, 1024)
+
+        index = parent.indexOfChild(curr)
+
+        deleted_items = []
+        def do_delete():
+            for item in iter_all_v_items(t.invisibleRootItem(), parent_v):
+                deleted_items.append(item.takeChild(index))
+
+            del parent_v.children[index]
+            v.parents.remove(parent_v)
+
+            n = len(parent_v.children)
+            if n == 0:
+                t.setCurrentItem(parent)
+            else:
+                t.setCurrentItem(parent.child(min(index, n-1)))
+
+        def undo_delete():
+            for item in iter_all_v_items(t.invisibleRootItem(), parent_v):
+                item.insertChild(index, deleted_items.pop(0))
+            parent_v.children.insert(index, v)
+            v.parents.append(parent_v)
+            t.setCurrentItem(curr)
+
+        do_delete()
+        self.c.addUndo(undo_delete, do_delete)
     #@+node:vitalije.20200503153529.1: *4* hide_node
     # this was used just to see what is it like when item is hidden
     # hoist/dehoist works similar as chapters in Leo
@@ -469,8 +595,7 @@ def move_treeitem(oldparent, srcindex, newparent, dstindex):
     '''
 
     # first let's deal with the items
-    item = oldparent.takeChild(srcindex)
-    newparent.insertChild(dstindex, item)
+    item = move_just_treeitem(oldparent, srcindex, newparent, dstindex)
 
     # and now let's deal with the v node links
     par_v = oldparent.data(0, 1024)
@@ -481,6 +606,11 @@ def move_treeitem(oldparent, srcindex, newparent, dstindex):
     newpar_v.children.insert(dstindex, v)
     v.parents.append(newpar_v)
 
+    return item
+
+def move_just_treeitem(oldparent, srcindex, newparent, dstindex):
+    item = oldparent.takeChild(srcindex)
+    newparent.insertChild(dstindex, item)
     return item
 #@+node:vitalije.20200503142637.1: *3* item_after
 # For implementing basic outline modification commands
@@ -504,7 +634,7 @@ def item_after(tree, item):
     twi += n
     return twi.value()
 #@+node:vitalije.20200502103535.1: *3* draw_tree
-def draw_tree(tree, root):
+def draw_tree(tree, root, icons):
     def additem(par, parItem):
         for ch in par.children:
             item = QtWidgets.QTreeWidgetItem()
@@ -515,10 +645,47 @@ def draw_tree(tree, root):
             item.setText(0, ch.h)
             item.setData(0, 1024, ch)
             item.setExpanded(ch.isExpanded())
+            item.setIcon(0, icons[ch.computeIcon()])
             additem(ch, item)
     ritem = tree.invisibleRootItem()
     ritem.setData(0, 1024, root)
     additem(root, ritem)
+#@+node:vitalije.20200504055245.1: *3* iter_all_v_items
+def iter_all_v_items(rootItem, v, stack=None):
+    """Generates all tree items in this outline pointing to v"""
+    if stack is None:stack = []
+
+    def allinds(par, ch):
+        for i, x in enumerate(par.children):
+            if x is ch:
+                yield i
+
+    def stack2item(stack):
+        item = rootItem
+        for v, i in stack:
+            item = item.child(i)
+        return item
+    vroot = rootItem.data(0, 1024)
+    for par in set(v.parents):
+        for i in allinds(par, v):
+            stack.insert(0, (v, i))
+            if par is vroot:
+                yield stack2item(stack)
+            else:
+                yield from iter_all_v_items(rootItem, par, stack)
+            stack.pop(0)
+#@+node:vitalije.20200504072828.1: *3* all_other_items
+def all_other_items(rootItem, item):
+    '''Yields all other items in the outline pointing at the same v'''
+    v = item.data(0, 1024)
+    for x in iter_all_v_items(rootItem, v):
+        if x != item:
+            yield x
+#@+node:vitalije.20200504063636.1: *3* leo_icons
+def leo_icons():
+    def fname(i):
+        return os.path.join(LEO_ICONS_DIR, f'box{i:02d}.png')
+    return [QtGui.QIcon(fname(i)) for i in range(16)]
 #@-others
 if __name__ == '__main__':
     if len(sys.argv) > 1:
