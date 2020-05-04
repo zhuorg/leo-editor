@@ -474,7 +474,15 @@
 <v t="ekr.20060824111500.181"><vh>getMode</vh></v>
 </v>
 </v>
-<v t="ekr.20200503152509.1"><vh>script: use g.command</vh></v>
+<v t="ekr.20200503152509.1"><vh>OLD: script: use g.command</vh></v>
+<v t="ekr.20200504112942.1"><vh>@command cvt-cmd</vh>
+<v t="ekr.20200504112942.2"><vh>&lt;&lt; define patterns &gt;&gt;</vh></v>
+<v t="ekr.20200504112942.3"><vh>dump_parts</vh></v>
+<v t="ekr.20200504112942.4"><vh>find_parts</vh></v>
+<v t="ekr.20200504112942.5"><vh>make_command_node</vh></v>
+<v t="ekr.20200504112942.6"><vh>make_command_root</vh></v>
+<v t="ekr.20200504112942.7"><vh>do_part</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20060824111500.108">'''Convert jEdit language description file to an equivalent .py file.'''
@@ -6044,6 +6052,141 @@ for p in root.self_and_subtree():
 c.redraw()
 print('')
 print('Remember: delete cmd and update g.cmd_instance_dict')
+</t>
+<t tx="ekr.20200504112942.1">"""Script to convert one file."""
+# Use at your own risk.
+g.cls()
+import re
+&lt;&lt; define patterns &gt;&gt;
+# Data...
+change_file = False
+require_c = True
+fn = 'leoFind.py'
+instance = 'c.findCommands'
+root = g.findNodeAnywhere(c, f"@file {fn}")
+assert root
+@others
+command_root = make_command_root(fn, root) if change_file else None
+for p in root.self_and_subtree():
+    any_changed, parts, result = False, find_parts(p), []
+    for i, part in enumerate(parts):
+        new_body, command_lines, headline = do_part(p, part)
+        if command_lines:
+            any_changed = True
+            make_command_node(command_root, command_lines, headline)
+        result.extend(new_body)
+    if any_changed:
+        if change_file: ### Not tested!
+            p.b = ''.join(result)
+        else:
+            g.printObj(result, tag=f"new body for {p.h}")
+c.redraw()
+print('')
+print('Remember: delete cmd and update g.cmd_instance_dict')
+</t>
+<t tx="ekr.20200504112942.2"># Invariant patterns...
+cmd_pat = re.compile(r'^@cmd\(\'(.+)\'\)')
+def_pat = re.compile(r'^def (\w+)')
+doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
+</t>
+<t tx="ekr.20200504112942.3">def dump_parts(p, parts):
+    for i, part in enumerate(parts):
+        g.trace(f"part {i+1} of {len(parts)}: {p.h}")
+        g.printObj(part.head, tag='head')
+        g.printObj(part.commands, tag='commands')
+        g.printObj(part.tail, tag='tail')
+</t>
+<t tx="ekr.20200504112942.4">def find_parts(p):
+    """
+    Return a list of parts g.Bunch(commands, head, tail).
+    """
+    parts = []
+    commands, head, tail = [], [], []
+    for line in g.splitLines(p.b):
+        m = cmd_pat.match(line)
+        if m and tail:
+            # End of previous part.
+            parts.append(g.Bunch(commands=commands, head=head, tail=tail))
+            commands, head, tail = [m], [], []
+        elif m:
+            # Add the command to *this* part.
+            commands.append(m)
+        elif commands:
+            # Append to tail.
+            tail.append(line)
+        else:
+            # Append to head.
+            head.append(line)
+    # End the previous part.
+    if head or commands or tail:
+        parts.append(g.Bunch(commands=commands, head=head, tail=tail))
+    return parts</t>
+<t tx="ekr.20200504112942.5">def make_command_node(command_root, command_lines, headline): ###, trace=False):
+
+    if 1:
+        g.trace('-----', headline)
+        g.printObj(command_lines)
+        
+    # # Update p.b.
+    # if change_file:
+        # child = command_node.insertAsLastChild()
+        # child.h = f"'{m.group(1)}'"
+        # child.b += ''.join(new_lines)
+        # p.b = ''.join(lines)
+    # else:
+        # lines = new_lines + lines
+        # print(''.join(lines))
+</t>
+<t tx="ekr.20200504112942.6">def make_command_root(fn, root):
+    """Find or make the node containing commands."""
+    h = f"commands: {fn}"
+    p = g.findNodeAnywhere(c, h)
+    if p:
+        p = root.insertAsLastChild()
+        p.h = h
+    return p
+</t>
+<t tx="ekr.20200504112942.7">def do_part(p, part):
+    """
+    Handle the next part of node p.
+    Return (new_body, command, headline)
+    """
+    commands, head, tail = part.commands, part.head, part.tail
+    if not commands:
+        return [], [], []
+    def_line = tail.pop(0) if tail else ''
+    m2 = def_pat.match(def_line)
+    headline = def_name = m2.group(1) if m2 else '&lt;no name&gt;'
+    call = f"{instance}.{m2.group(1)}(event)" if m2 else 'pass'
+    #
+    # Create the body lines, so we can copy the docstring later.
+    body_lines = head + [def_line] + tail
+    body_s = ''.join(body_lines)
+    #
+    # Create the command_lines
+    command_lines = [
+        f"@g.command('{z.group(1)}')" + '\n' for z in commands
+    ]
+    command_lines += [
+        f"def {def_name}(event):" + '\n',
+    ]
+    # Copy the doc part from body_s, *not* p.b!
+    doc = doc_pat.search(body_s)
+    if doc:
+        doc_lines = g.splitLines(doc.group(1))
+        command_lines += ['    ' + doc_lines[0]]
+        command_lines += doc_lines[1:]
+    if require_c:
+        command_lines += [
+            f"    c = event.get('c')" + '\n',
+            f"    if not c:" + '\n',
+            f"        return" + '\n',
+        ]
+    command_lines += [
+        f"    {call}" + '\n',
+        '\n',
+    ]
+    return body_lines, command_lines, headline
 </t>
 <t tx="lkj.20190712002811.1"></t>
 <t tx="maphew.20190209160547.1">gnx: maphew.20130809155103.2863
