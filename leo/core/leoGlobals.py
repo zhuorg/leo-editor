@@ -84,10 +84,9 @@ globalDirectiveList = [
     'unit', 'verbose', 'wrap',
 ]
 #@-<< define g.globalDirectiveList >>
+global_commands_dict = {}
 #@+<< define global decorator dicts >>
 #@+node:ekr.20150510103918.1: ** << define global decorator dicts >> (leoGlobals.py)
-global_commands_dict = {}
-
 # To be removed. See https://github.com/leo-editor/leo-editor/issues/325
 
 cmd_instance_dict = {
