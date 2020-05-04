@@ -162,6 +162,7 @@ class DummyLeoController:
     #@+node:vitalije.20200503181127.1: *3* updateHeadline
     def updateHeadline(self, h):
         self._p.v.h = h
+        self.guiapi.resetHeadline(h)
     #@+node:vitalije.20200503181130.1: *3* getCurrentPosition
     def getCurrentPosition(self):
         return self._p
@@ -210,6 +211,7 @@ class MyGUI(QtWidgets.QApplication):
         self.toolbar.addAction('demote', self.demote)
         self.toolbar.addAction('clone', self.clone_node)
         self.toolbar.addAction('delete', self.delete_node)
+        self.toolbar.addAction('insert', self.new_node)
         self.hoistAction = self.toolbar.addAction('hoist', self.set_hoist)
         self.dehoistAction = self.toolbar.addAction('dehoist', self.unset_hoist)
         self.undoAction = self.toolbar.addAction('undo', self.c.undo)
@@ -276,10 +278,13 @@ class MyGUI(QtWidgets.QApplication):
         self.body.blockSignals(False)
     #@+node:vitalije.20200503145914.1: *4* resetHeadline
     def resetHeadline(self, h):
-        curr = self.currentItem()
-        oldh = curr.text(0)
-        if oldh != h:
-            curr.setText(0, h)
+        t = self.tree
+        curr = t.currentItem()
+        v = curr.data(0, 1024)
+        for item in iter_all_v_items(t.invisibleRootItem(), v):
+            oldh = item.text(0)
+            if oldh != h:
+                item.setText(0, h)
     #@+node:vitalije.20200503145425.1: *3* event handlers
     #@+node:vitalije.20200502142951.1: *4* select_item
     def select_item(self, newitem, olditem):
@@ -466,20 +471,26 @@ class MyGUI(QtWidgets.QApplication):
         links = [(oldparent, srcindex, newparent, dstindex + i)
                    for i in range(n)]
 
+        # we must create new items before to allow redo to reuse the same items
+        def cloneitems():
+            return tuple(oldparent.child(i + srcindex).clone() for i in range(n))
+
+        newitems = [(x, cloneitems()) for x in all_other_items(t.invisibleRootItem(), curr)]
+
         def dodemote():
             for oldparent, srcindex, newparent, dstindex in links:
                 move_treeitem(oldparent, srcindex, newparent, dstindex)
 
-            for item in all_other_items(t.invisibleRootItem(), curr):
-                for i in range(curr.childCount()):
-                    item.addChild(curr.child(i).clone())
+            for item, children in newitems:
+                for child in children:
+                    item.addChild(child)
                 item.setExpanded(False)
             newparent.setExpanded(True)
             assert t.indexFromItem(newparent).isValid()
             t.setCurrentItem(newparent)
 
         def undodemote():
-            for item in all_other_items(t.invisibleRootItem(), curr):
+            for item, children in newitems:
                 item.takeChildren()
             for oldparent, srcindex, newparent, dstindex in reversed(links):
                 move_treeitem(newparent, dstindex, oldparent, srcindex)
@@ -487,6 +498,47 @@ class MyGUI(QtWidgets.QApplication):
 
         dodemote()
         self.c.addUndo(undodemote, dodemote)
+    #@+node:vitalije.20200504081013.1: *4* new_node
+    def new_node(self):
+        t = self.tree
+        curr = t.currentItem()
+
+        parent = curr.parent() or t.invisibleRootItem()
+        index = parent.indexOfChild(curr) + 1
+
+        parent_v = parent.data(0, 1024)
+        new_v = leoNodes.VNode(context=self.c)
+        icon = self.icons[new_v.computeIcon()]
+        head = new_v.h
+
+        def makeitem():
+            res = QtWidgets.QTreeWidgetItem()
+            res.setData(0, 1024, new_v)
+            res.setText(0, head)
+            res.setIcon(0, icon)
+            res.setFlags(res.flags() |
+                          Q.ItemIsEditable |
+                          res.DontShowIndicatorWhenChildless)
+            return res
+        newitems = [(item, makeitem())
+                        for item in iter_all_v_items(t.invisibleRootItem(), parent_v)]
+
+
+        parent_v.children.insert(index, new_v)
+        new_v.parents.append(parent_v)
+
+        def do_insert():
+            for item, child in newitems:
+                item.insertChild(index, child)
+            t.setCurrentItem(parent.child(index))
+            t.editItem(parent.child(index), 0)
+
+        def undo_insert():
+            for item, child in newitems:
+                item.takeChild(index)
+
+        do_insert()
+        self.c.addUndo(undo_insert, do_insert)
     #@+node:vitalije.20200504070427.1: *4* clone_node
     def clone_node(self):
         t = self.tree
