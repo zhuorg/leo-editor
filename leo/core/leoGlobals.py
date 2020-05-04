@@ -101,7 +101,6 @@ cmd_instance_dict = {
     'KeyHandlerClass':          ['c', 'k'],
     'KeyHandlerCommandsClass':  ['c', 'keyHandlerCommands'],
     'KillBufferCommandsClass':  ['c', 'killBufferCommands'],
-    'LeoFind':                  ['c', 'findCommands'],
     'LeoImportCommands':        ['c', 'importCommands'],
     'RectangleCommandsClass':   ['c', 'rectangleCommands'],
     'SpellCommandsClass':       ['c', 'spellCommands'],
