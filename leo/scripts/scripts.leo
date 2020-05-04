@@ -474,14 +474,13 @@
 <v t="ekr.20060824111500.181"><vh>getMode</vh></v>
 </v>
 </v>
-<v t="ekr.20200503152509.1"><vh>OLD: script: use g.command</vh></v>
-<v t="ekr.20200504112942.1"><vh>@command cvt-cmd</vh>
-<v t="ekr.20200504112942.2"><vh>&lt;&lt; define patterns &gt;&gt;</vh></v>
-<v t="ekr.20200504112942.3"><vh>dump_parts</vh></v>
-<v t="ekr.20200504112942.4"><vh>find_parts</vh></v>
-<v t="ekr.20200504112942.5"><vh>make_command_node</vh></v>
-<v t="ekr.20200504112942.6"><vh>make_command_root</vh></v>
-<v t="ekr.20200504112942.7"><vh>do_part</vh></v>
+<v t="ekr.20200504115530.1"><vh>@command cvt-cmd</vh>
+<v t="ekr.20200504115530.2"><vh>&lt;&lt; define patterns &gt;&gt;</vh></v>
+<v t="ekr.20200504115530.3"><vh>dump_parts</vh></v>
+<v t="ekr.20200504115530.4"><vh>find_parts</vh></v>
+<v t="ekr.20200504115530.5"><vh>make_command_node</vh></v>
+<v t="ekr.20200504115530.6"><vh>make_command_root</vh></v>
+<v t="ekr.20200504115530.7"><vh>do_part</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -5978,88 +5977,12 @@ while p:
         break
     p.moveToThreadNext()
 </t>
-<t tx="ekr.20200503152509.1">"""Script to convert one file. Remember to split nodes first!"""
-# 2020/05/02.
-g.cls()
-import re
-# Proto switch.
-change_file = True
-# Define variable data: file name, instance name, etc.
-fn = 'xxx.py'
-instance = 'c.xxx'
-require_c = True
-root = g.findNodeAnywhere(c, f"@file {fn}")
-assert root
-if change_file:
-    new_p = root.insertAsLastChild()
-    new_p.h = f"commands: {fn}"
-# Invariant patterns...
-# cmd_pat = re.compile(r'^@cmd\(\'([\w-]+)\'\)')
-cmd_pat = re.compile(r'^@cmd\(\'(.+)\'\)')
-def_pat = re.compile(r'^def (\w+)')
-doc_pat = re.compile(r'(""".*""")', (re.MULTILINE | re.DOTALL))
-for p in root.self_and_subtree():
-    # Find the docstring.
-    doc = doc_pat.search(p.b)
-    # Assume all @cmd lines are at the start of p.b.
-    commands = []
-    for s in g.splitLines(p.b):
-        m = cmd_pat.match(s)
-        if m:
-            commands.append(m)
-        else:
-            break
-    if not commands:
-        continue
-    print('# -----', p.h)
-    # Use the first @cmd name as the def name.
-    m = commands[0]
-    lines = g.splitlines(p.b)[len(commands):]
-    name = m.group(1).replace('-', '_')
-    def_line = lines[0]
-    m2 = def_pat.match(def_line)
-    def_name = m2.group(1) # .replace(':', 'colon').replace('!', 'exclam')
-    call = f"{instance}.{m2.group(1)}(event)" if m2 else 'pass'
-    # Add all decorators.
-    new_lines = [
-        f"@g.command('{z.group(1)}')" + '\n' for z in commands]
-    new_lines.extend([
-        f"def {name}(event):" + '\n',
-    ])
-    if doc:
-        new_lines.extend([
-            f"    {doc.group(1)}" + '\n',
-        ])
-    if require_c:
-        new_lines.extend([
-        f"    c = event.get('c')" + '\n',
-        f"    if not c:" + '\n',
-        f"        return" + '\n',
-    ])
-    new_lines.extend([
-        f"    {call}" + '\n',
-        '\n',
-    ])
-    # Update p.b.
-    if change_file:
-        child = new_p.insertAsLastChild()
-        child.h = f"'{m.group(1)}'"
-        child.b += ''.join(new_lines)
-        p.b = ''.join(lines)
-    else:
-        lines = new_lines + lines
-        print(''.join(lines))
-c.redraw()
-print('')
-print('Remember: delete cmd and update g.cmd_instance_dict')
-</t>
-<t tx="ekr.20200504112942.1">"""Script to convert one file."""
-# Use at your own risk.
+<t tx="ekr.20200504115530.1">"""Script to convert one file. Remember to split nodes first!"""
 g.cls()
 import re
 &lt;&lt; define patterns &gt;&gt;
 # Data...
-change_file = False
+change_file = False  # For safety. True does work.
 require_c = True
 fn = 'leoFind.py'
 instance = 'c.findCommands'
@@ -6076,7 +5999,8 @@ for p in root.self_and_subtree():
             make_command_node(command_root, command_lines, headline)
         result.extend(new_body)
     if any_changed:
-        if change_file: ### Not tested!
+        if change_file:
+            print('-----', p.h)
             p.b = ''.join(result)
         else:
             g.printObj(result, tag=f"new body for {p.h}")
@@ -6084,19 +6008,19 @@ c.redraw()
 print('')
 print('Remember: delete cmd and update g.cmd_instance_dict')
 </t>
-<t tx="ekr.20200504112942.2"># Invariant patterns...
+<t tx="ekr.20200504115530.2"># Invariant patterns...
 cmd_pat = re.compile(r'^@cmd\(\'(.+)\'\)')
 def_pat = re.compile(r'^def (\w+)')
 doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
 </t>
-<t tx="ekr.20200504112942.3">def dump_parts(p, parts):
+<t tx="ekr.20200504115530.3">def dump_parts(p, parts):
     for i, part in enumerate(parts):
         g.trace(f"part {i+1} of {len(parts)}: {p.h}")
         g.printObj(part.head, tag='head')
         g.printObj(part.commands, tag='commands')
         g.printObj(part.tail, tag='tail')
 </t>
-<t tx="ekr.20200504112942.4">def find_parts(p):
+<t tx="ekr.20200504115530.4">def find_parts(p):
     """
     Return a list of parts g.Bunch(commands, head, tail).
     """
@@ -6121,32 +6045,26 @@ doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
     if head or commands or tail:
         parts.append(g.Bunch(commands=commands, head=head, tail=tail))
     return parts</t>
-<t tx="ekr.20200504112942.5">def make_command_node(command_root, command_lines, headline): ###, trace=False):
+<t tx="ekr.20200504115530.5">def make_command_node(command_root, command_lines, headline):
 
-    if 1:
+    if change_file:
+        p = command_root.insertAsLastChild()
+        p.b += ''.join(command_lines)
+        p.h = headline
+    else:
         g.trace('-----', headline)
         g.printObj(command_lines)
-        
-    # # Update p.b.
-    # if change_file:
-        # child = command_node.insertAsLastChild()
-        # child.h = f"'{m.group(1)}'"
-        # child.b += ''.join(new_lines)
-        # p.b = ''.join(lines)
-    # else:
-        # lines = new_lines + lines
-        # print(''.join(lines))
 </t>
-<t tx="ekr.20200504112942.6">def make_command_root(fn, root):
+<t tx="ekr.20200504115530.6">def make_command_root(fn, root):
     """Find or make the node containing commands."""
     h = f"commands: {fn}"
     p = g.findNodeAnywhere(c, h)
-    if p:
+    if not p:
         p = root.insertAsLastChild()
         p.h = h
     return p
 </t>
-<t tx="ekr.20200504112942.7">def do_part(p, part):
+<t tx="ekr.20200504115530.7">def do_part(p, part):
     """
     Handle the next part of node p.
     Return (new_body, command, headline)
@@ -6154,12 +6072,15 @@ doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
     commands, head, tail = part.commands, part.head, part.tail
     if not commands:
         return [], [], []
-    def_line = tail.pop(0) if tail else ''
-    m2 = def_pat.match(def_line)
-    headline = def_name = m2.group(1) if m2 else '&lt;no name&gt;'
-    call = f"{instance}.{m2.group(1)}(event)" if m2 else 'pass'
     #
-    # Create the body lines, so we can copy the docstring later.
+    # Let block.
+    def_line = tail.pop(0) if tail else ''
+    m = def_pat.match(def_line)
+    def_name = m.group(1) if m else '&lt;no name&gt;'
+    call = f"{instance}.{m.group(1)}(event)" if m else 'pass'
+    headline = f"'{commands[0].group(1)}'"
+    #
+    # Define the body lines first, so we can copy the docstring later.
     body_lines = head + [def_line] + tail
     body_s = ''.join(body_lines)
     #
@@ -6176,6 +6097,7 @@ doc_pat = re.compile(r'(""".*?""")', (re.MULTILINE | re.DOTALL))
         doc_lines = g.splitLines(doc.group(1))
         command_lines += ['    ' + doc_lines[0]]
         command_lines += doc_lines[1:]
+        command_lines += ['\n']
     if require_c:
         command_lines += [
             f"    c = event.get('c')" + '\n',
