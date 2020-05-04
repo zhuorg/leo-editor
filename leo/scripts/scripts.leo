@@ -474,6 +474,7 @@
 <v t="ekr.20060824111500.181"><vh>getMode</vh></v>
 </v>
 </v>
+<v t="ekr.20200503152509.1"><vh>script: use g.command</vh></v>
 </vnodes>
 <tnodes>
 <t tx="ekr.20060824111500.108">'''Convert jEdit language description file to an equivalent .py file.'''
@@ -5968,6 +5969,81 @@ while p:
         c.selectPosition(p)
         break
     p.moveToThreadNext()
+</t>
+<t tx="ekr.20200503152509.1">"""Script to convert one file. Remember to split nodes first!"""
+# 2020/05/02.
+g.cls()
+import re
+# Proto switch.
+change_file = True
+# Define variable data: file name, instance name, etc.
+fn = 'xxx.py'
+instance = 'c.xxx'
+require_c = True
+root = g.findNodeAnywhere(c, f"@file {fn}")
+assert root
+if change_file:
+    new_p = root.insertAsLastChild()
+    new_p.h = f"commands: {fn}"
+# Invariant patterns...
+# cmd_pat = re.compile(r'^@cmd\(\'([\w-]+)\'\)')
+cmd_pat = re.compile(r'^@cmd\(\'(.+)\'\)')
+def_pat = re.compile(r'^def (\w+)')
+doc_pat = re.compile(r'(""".*""")', (re.MULTILINE | re.DOTALL))
+for p in root.self_and_subtree():
+    # Find the docstring.
+    doc = doc_pat.search(p.b)
+    # Assume all @cmd lines are at the start of p.b.
+    commands = []
+    for s in g.splitLines(p.b):
+        m = cmd_pat.match(s)
+        if m:
+            commands.append(m)
+        else:
+            break
+    if not commands:
+        continue
+    print('# -----', p.h)
+    # Use the first @cmd name as the def name.
+    m = commands[0]
+    lines = g.splitlines(p.b)[len(commands):]
+    name = m.group(1).replace('-', '_')
+    def_line = lines[0]
+    m2 = def_pat.match(def_line)
+    def_name = m2.group(1) # .replace(':', 'colon').replace('!', 'exclam')
+    call = f"{instance}.{m2.group(1)}(event)" if m2 else 'pass'
+    # Add all decorators.
+    new_lines = [
+        f"@g.command('{z.group(1)}')" + '\n' for z in commands]
+    new_lines.extend([
+        f"def {name}(event):" + '\n',
+    ])
+    if doc:
+        new_lines.extend([
+            f"    {doc.group(1)}" + '\n',
+        ])
+    if require_c:
+        new_lines.extend([
+        f"    c = event.get('c')" + '\n',
+        f"    if not c:" + '\n',
+        f"        return" + '\n',
+    ])
+    new_lines.extend([
+        f"    {call}" + '\n',
+        '\n',
+    ])
+    # Update p.b.
+    if change_file:
+        child = new_p.insertAsLastChild()
+        child.h = f"'{m.group(1)}'"
+        child.b += ''.join(new_lines)
+        p.b = ''.join(lines)
+    else:
+        lines = new_lines + lines
+        print(''.join(lines))
+c.redraw()
+print('')
+print('Remember: delete cmd and update g.cmd_instance_dict')
 </t>
 <t tx="lkj.20190712002811.1"></t>
 <t tx="maphew.20190209160547.1">gnx: maphew.20130809155103.2863
