@@ -47,6 +47,65 @@ assert time
 #     These are thin wrappers for updateBody and updateTree.
 #@-<< About handling events >>
 #@+others
+#@+node:ekr.20200504132301.1: ** commands: leoFrame.py
+#@+node:ekr.20200504132301.6: *3* 'abort-edit-headline'
+@g.command('abort-edit-headline')
+def abortEditLabelCommand(event):
+    """End editing of a headline and revert to its previous value."""
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.abortEditLabelCommand(event)
+
+#@+node:ekr.20200504132301.3: *3* 'copy-text'
+@g.command('copy-text')
+def copyText(event):
+    """Copy the selected text from the widget to the clipboard."""
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.copyText(event)
+
+#@+node:ekr.20200504132301.4: *3* 'cut-text'
+@g.command('cut-text')
+def cutText(event):
+    """Invoked from the mini-buffer and from shortcuts."""
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.cutText(event)
+
+#@+node:ekr.20200504132301.2: *3* 'editor-cycle-focus'
+@g.command('editor-cycle-focus')
+@g.command('cycle-editor-focus')
+def cycleEditorFocus(event):
+    """Cycle keyboard focus between the body text editors."""
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.cycleEditorFocus(event)
+
+#@+node:ekr.20200504132301.7: *3* 'end-edit-headline'
+@g.command('end-edit-headline')
+def endEditLabelCommand(event):
+    """End editing of a headline and move focus to the body pane."""
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.endEditLabelCommand(event)
+
+#@+node:ekr.20200504132301.5: *3* 'paste-text'
+@g.command('paste-text')
+def pasteText(event):
+    """
+    Paste the clipboard into a widget.
+    If middleButton is True, support x-windows middle-mouse-button easter-egg.
+    """
+    c = event.get('c')
+    if not c:
+        return
+    c.frame.pasteText(event)
+
 #@+node:ekr.20140907201613.18660: ** API classes
 # These classes are for documentation and unit testing.
 # They are the base class for no class.
@@ -322,8 +381,6 @@ class LeoBody:
         self.updateInjectedIvars(w, p)
         self.selectLabel(w)
     #@+node:ekr.20200415041750.1: *5* LeoBody.cycleEditorFocus (restored)
-    @cmd('editor-cycle-focus')
-    @cmd('cycle-editor-focus')  # There is no LeoQtBody method
     def cycleEditorFocus(self, event=None):
         """Cycle keyboard focus between the body text editors."""
         c = self.c
@@ -921,7 +978,6 @@ class LeoFrame:
         if self.statusLine: self.statusLine.update()
     #@+node:ekr.20070130115927.4: *4* LeoFrame.Cut/Copy/Paste
     #@+node:ekr.20070130115927.5: *5* LeoFrame.copyText
-    @cmd('copy-text')
     def copyText(self, event=None):
         """Copy the selected text from the widget to the clipboard."""
         # f = self
@@ -942,7 +998,6 @@ class LeoFrame:
 
     OnCopyFromMenu = copyText
     #@+node:ekr.20070130115927.6: *5* LeoFrame.cutText
-    @cmd('cut-text')
     def cutText(self, event=None):
         """Invoked from the mini-buffer and from shortcuts."""
         f = self; c = f.c; w = event and event.widget
@@ -978,7 +1033,6 @@ class LeoFrame:
 
     OnCutFromMenu = cutText
     #@+node:ekr.20070130115927.7: *5* LeoFrame.pasteText
-    @cmd('paste-text')
     def pasteText(self, event=None, middleButton=False):
         """
         Paste the clipboard into a widget.
@@ -1046,7 +1100,6 @@ class LeoFrame:
         return self.pasteText(event=event, middleButton=True)
     #@+node:ekr.20031218072017.3980: *4* LeoFrame.Edit Menu
     #@+node:ekr.20031218072017.3981: *5* LeoFrame.abortEditLabelCommand
-    @cmd('abort-edit-headline')
     def abortEditLabelCommand(self, event=None):
         """End editing of a headline and revert to its previous value."""
         frame = self; c = frame.c; tree = frame.tree
@@ -1060,7 +1113,6 @@ class LeoFrame:
         c.setHeadString(p, tree.revertHeadline)
         c.redraw(p)
     #@+node:ekr.20031218072017.3982: *5* LeoFrame.endEditLabelCommand
-    @cmd('end-edit-headline')
     def endEditLabelCommand(self, event=None, p=None):
         """End editing of a headline and move focus to the body pane."""
         frame = self
