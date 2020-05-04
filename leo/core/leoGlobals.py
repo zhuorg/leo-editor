@@ -92,13 +92,11 @@ global_commands_dict = {}
 
 cmd_instance_dict = {
     # Keys are class names; values are attribute chains.
-    'AutoCompleterClass':       ['c', 'k', 'autoCompleter'],
     'ControlCommandsClass':     ['c', 'controlCommands'],
     'DebugCommandsClass':       ['c', 'debugCommands'],
     'EditCommandsClass':        ['c', 'editCommands'],
     'EditFileCommandsClass':    ['c', 'editFileCommands'],
     'HelpCommandsClass':        ['c', 'helpCommands'],
-    'KeyHandlerClass':          ['c', 'k'],
     'KeyHandlerCommandsClass':  ['c', 'keyHandlerCommands'],
     'KillBufferCommandsClass':  ['c', 'killBufferCommands'],
     'LeoImportCommands':        ['c', 'importCommands'],
