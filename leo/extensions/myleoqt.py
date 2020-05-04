@@ -626,6 +626,161 @@ class MyGUI(QtWidgets.QApplication):
         curr.setHidden(True)
         t.setCurrentItem(after)
     #@-others
+#@+node:vitalije.20200504103729.1: ** QtPosition
+class QtPosition:
+    def __init__(self, item):
+        self.v = item.data(0, 1024) if item else None
+        self.item = item
+        self._root = item.treeWidget().invisibleRootItem() if item else None
+
+    def __bool__(self):
+        return bool(self.item)
+
+    def copy(self):
+        return QtPosition(self.item)
+    #@+others
+    #@+node:vitalije.20200504105024.1: *3* hasBack
+    def hasBack(self):
+        item = self.item
+        if item:
+            parent = item.parent() or self._root
+            ind = parent.indexOfChild(item)
+            return ind > 0
+        return False
+    #@+node:vitalije.20200504105147.1: *3* hasNext
+    def hasNext(self):
+        item = self.item
+        if item:
+            parent = item.parent() or self._root
+            ind = parent.indexOfChild(item)
+            return ind + 1 < parent.childCount()
+        return False
+    #@+node:vitalije.20200504103744.1: *3* moveToNext
+    def moveToNext(self):
+        item = self.item
+        if item:
+            parent = item.parent() or self._root
+            ind = parent.indexOfChild(item)
+            self.item = item = parent.child(ind + 1)
+            self.v = item and item.data(0, 1024)
+        return self
+    #@+node:vitalije.20200504103748.1: *3* moveToBack
+    def moveToBack(self):
+        item = self.item
+        if item:
+            parent = item.parent() or self._root
+            ind = parent.indexOfChild(item)
+            self.item = item = parent.child(ind - 1)
+            self.v = item and item.data(0, 1024)
+        return self
+    #@+node:vitalije.20200504103752.1: *3* moveToThreadBack
+    def moveToThreadBack(self):
+        item = self.item
+        if not item:
+            return self
+        parent = item.parent() or self._root
+        ind = parent.indexOfChild(item)
+        if ind > 0:
+            self.item = item = parent.child(ind)
+            self.v = item.data(0, 1024)
+            self.moveToLastNode()
+        elif parent == self._root:
+            self.item = None
+            self.v = None
+        else:
+            self.item = parent
+            self.v = parent.data(0, 1024)
+        return self
+    #@+node:vitalije.20200504103758.1: *3* moveToThreadNext
+    def moveToThreadNext(self):
+        item = self.item
+        if not item:
+            return self
+
+        if item.childCount():
+            self.item = item = item.child(0)
+            self.v = item.data(0, 1024)
+            return self
+        else:
+            while True:
+                parent = item.parent() or self._root
+                ind = parent.indexOfChild(item)
+                if ind + 1 < parent.childCount():
+                    self.item = item = parent.child(ind + 1)
+                    self.v = item.data(0, 1024)
+                    return self
+                elif parent == self._root:
+                    self.item = None
+                    self.v = None
+                    return self
+                else:
+                    item = parent
+    #@+node:vitalije.20200504103801.1: *3* moveToParent
+    def moveToParent(self):
+        item = self.item
+        if item:
+            self.item = item = item.parent()
+            self.v = item.data(0, 1024) if item else None
+        return self
+    #@+node:vitalije.20200504103804.1: *3* moveToNthChild
+    def moveToNthChild(self, i):
+        item = self.item
+        if item:
+            self.item = item = item.child(i)
+            self.v = item.data(0, 1024) if item else None
+        return self
+
+    def moveToFirstChild(self):
+        return self.moveToNthChild(0)
+
+    def moveToLastChild(self):
+        item = self.item
+        if item:
+            self.item = item = item.child(item.childCount() - 1)
+            self.v = item.data(0, 1024) if item else None
+        return self
+    #@+node:vitalije.20200504103807.1: *3* moveToLastNode
+    def moveToLastNode(self):
+        item = self.item
+        if item:
+            n = item.childCount()
+            while n:
+                item = item.child(n - 1)
+                n = item.childCount()
+            self.item = item
+            self.v = item.data(0, 1024) if item else None
+        return self
+    #@+node:vitalije.20200504104844.1: *3* moveToNodeAfterTree
+    def moveToNodeAfterTree(self):
+        """Move a position to the node after the position's tree."""
+        item = self.item
+        if item:
+            while True:
+                parent = item.parent() or self._root
+                i = parent.indexOfChild(item)
+                n = parent.childCount()
+                if n > i + 1:
+                    self.item = item = parent.child(i + 1)
+                    self.v = item.data(0, 1024)
+                    return self
+                elif parent != self._root:
+                    item = parent
+                else:
+                    self.item = None
+                    self.v = None
+                    return self
+        return self
+    #@-others
+    def next(self): return self.copy().moveToNext()
+    def back(self): return self.copy().moveToBack()
+    def nodeAfterTree(self): return self.copy().moveToNodeAfterTree()
+    def lastNode(self): return self.copy().moveToLastNode()
+    def nthChild(self, i): return self.copy().moveToNthChild(i)
+    def parent(self): return self.copy().moveToParent()
+    def firstChild(self): return self.copy().moveToFirstChild()
+    def lastChild(self): return self.copy().moveToLastChild()
+    def threadBack(self): return self.copy().moveToThreadBack()
+    def threadNext(self): return self.copy().moveToThreadNext()
 #@+node:vitalije.20200503141908.1: ** utilities
 #@+node:vitalije.20200503134536.1: *3* is_move_allowed
 def is_move_allowed(oldparent, srcindex, newparent, dstindex):
@@ -673,18 +828,16 @@ def move_just_treeitem(oldparent, srcindex, newparent, dstindex):
 # (In case controller needs to tell tree widget to select
 #  programaticaly any of adjacent items)
 def item_after(tree, item):
-    paritem = item.parent() or tree.invisibleRootItem()
-    i = paritem.indexOfChild(item)
-    if i + 1 < paritem.childCount():
-        return paritem.child(i+1)
-    def it(v):
-        yield 1
-        for ch in v.children:
-            yield from it(ch)
-    n = sum(it(item.data(0, 1024)))
-    twi = QtWidgets.QTreeWidgetItemIterator(item)
-    twi += n
-    return twi.value()
+    root = tree.invisibleRootItem()
+    while True:
+        paritem = item.parent() or root
+        i = paritem.indexOfChild(item)
+        if i + 1 < paritem.childCount():
+            return paritem.child(i+1)
+        elif paritem == root:
+            return None
+        item = paritem
+
 #@+node:vitalije.20200502103535.1: *3* draw_tree
 def draw_tree(tree, root, icons):
     def additem(par, parItem):
