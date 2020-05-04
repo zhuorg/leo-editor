@@ -307,6 +307,7 @@ class MyGUI(QtWidgets.QApplication):
         # we just ask it to updateBody which in turn
         # will usually call back resetBody
         self.c.updateBody(self.body.toPlainText())
+        self.update_icon(self.c.p.v)
     #@+node:vitalije.20200502142959.1: *4* update_headline
     def update_headline(self, item, col):
         if col == 0:
@@ -318,24 +319,27 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503145328.1: *4* make_undoable_move
     def make_undoable_move(self, oldparent, srcindex, newparent, dstindex):
         t = self.tree
+        root = t.invisibleRootItem()
         trash = []
 
+        newitems = [(x, oldparent.child(srcindex).clone())
+                        for x in all_other_items(root, newparent)]
         def domove():
-            for item in all_other_items(t.invisibleRootItem(), oldparent):
+            for item in all_other_items(root, oldparent):
                 trash.append(item.takeChild(srcindex))
 
-            curr = move_treeitem(oldparent, srcindex, newparent, dstindex)
+            for item, child in newitems:
+                item.insertChild(dstindex, child)
 
-            for item in all_other_items(t.invisibleRootItem(), newparent):
-                item.insertChild(dstindex, newparent.child(dstindex).clone())
+            curr = move_treeitem(oldparent, srcindex, newparent, dstindex)
 
             self.tree.setCurrentItem(curr)
 
         def undomove():
-            for item in all_other_items(t.invisibleRootItem(), newparent):
+            for item, child in newitems:
                 item.takeChild(dstindex)
 
-            for item in all_other_items(t.invisibleRootItem(), oldparent):
+            for item in all_other_items(root, oldparent):
                 item.insertChild(srcindex, trash.pop())
 
             curr = move_treeitem(newparent, dstindex, oldparent, srcindex)
@@ -348,8 +352,9 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503145331.1: *4* move_node_up
     def move_node_up(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        oldparent = curr.parent() or t.invisibleRootItem()
+        oldparent = curr.parent() or root
         srcindex = oldparent.indexOfChild(curr)
         prev = t.itemAbove(curr) # this might be the parent if srcindex == 0
         prev2 = prev and t.itemAbove(prev) 
@@ -358,10 +363,10 @@ class MyGUI(QtWidgets.QApplication):
         elif srcindex == 0 and prev2 and prev2 is not prev.parent():
             # prev2 is not the parent of prev, therefore prev2 is the last
             # child of our newparent. We are moving just after the prev2
-            newparent = prev2.parent() or t.invisibleRootItem()
+            newparent = prev2.parent() or root
             dstindex = newparent.indexOfChild(prev2) + 1
         else:
-            newparent = prev.parent() or t.invisibleRootItem()
+            newparent = prev.parent() or root
             dstindex =  newparent.indexOfChild(prev)
         if is_move_allowed(oldparent.data(0, 1024), srcindex,
                            newparent.data(0, 1024), dstindex):
@@ -369,13 +374,14 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503164722.1: *4* move_node_left
     def move_node_left(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
         oldparent = curr.parent()
         if not oldparent:
             # already top level node. Can't move left.
             return
         srcindex = oldparent.indexOfChild(curr)
-        newparent = oldparent.parent() or t.invisibleRootItem()
+        newparent = oldparent.parent() or root
         dstindex = newparent.indexOfChild(oldparent) + 1
         # moving left is always safe.
         # No cycles can be made by moving node left.
@@ -384,8 +390,9 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503165313.1: *4* move_node_right
     def move_node_right(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        oldparent = curr.parent() or t.invisibleRootItem()
+        oldparent = curr.parent() or root
         srcindex = oldparent.indexOfChild(curr)
         if srcindex == 0:
             # can't move right
@@ -398,18 +405,19 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503151525.1: *4* move_node_down
     def move_node_down(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        oldparent = curr.parent() or t.invisibleRootItem()
+        oldparent = curr.parent() or root
         srcindex = oldparent.indexOfChild(curr)
         after = item_after(t, curr)
         if after and after.childCount() > 0 and after.isExpanded():
             newparent = after
             dstindex = 0
         elif after:
-            newparent = after.parent() or t.invisibleRootItem()
+            newparent = after.parent() or root
             dstindex = newparent.indexOfChild(after) + 1
         else:
-            newparent = t.invisibleRootItem()
+            newparent = root
             dstindex = newparent.childCount()
         if newparent == oldparent:
             dstindex -= 1
@@ -420,32 +428,32 @@ class MyGUI(QtWidgets.QApplication):
     def promote(self):
         '''Promotes children to siblings'''
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
         if curr.childCount() == 0:
             return
-        t = self.tree
 
         trash = []
 
-        newparent = curr.parent() or t.invisibleRootNode()
+        newparent = curr.parent() or root
         dstindex = newparent.indexOfChild(curr) + 1
         oldparent = curr
         links = [(oldparent, i, newparent, dstindex)
                     for i in range(curr.childCount(), 0, -1)]
 
         def dopromote():
-            for item in all_other_items(t.invisibleRootItem(), curr):
+            for item in all_other_items(root, curr):
                 for x in links:
                     trash.append(item.takeChild(0))
 
             for oldparent, srcindex, newparent, dstindex in links:
-                for item in all_other_items(t.invisibleRootItem(), newparent):
+                for item in all_other_items(root, newparent):
                     item.insertChild(dstindex, oldparent.child(srcindex).clone())
                 move_treeitem(oldparent, srcindex-1, newparent, dstindex)
             t.setCurrentItem(oldparent)
 
         def undopromote():
-            for item in all_other_items(t.invisibleRootItem(), curr):
+            for item in all_other_items(root, curr):
                 for x in links:
                     item.insertChild(0, trash.pop())
             for oldparent, srcindex, newparent, dstindex in reversed(links):
@@ -459,8 +467,9 @@ class MyGUI(QtWidgets.QApplication):
     def demote(self):
         '''Turns all following siblings to children of current node'''
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        oldparent = curr.parent() or t.invisibleRootNode()
+        oldparent = curr.parent() or root
         srcindex = oldparent.indexOfChild(curr) + 1
         newparent = curr
         dstindex = newparent.childCount()
@@ -475,7 +484,7 @@ class MyGUI(QtWidgets.QApplication):
         def cloneitems():
             return tuple(oldparent.child(i + srcindex).clone() for i in range(n))
 
-        newitems = [(x, cloneitems()) for x in all_other_items(t.invisibleRootItem(), curr)]
+        newitems = [(x, cloneitems()) for x in all_other_items(root, curr)]
 
         def dodemote():
             for oldparent, srcindex, newparent, dstindex in links:
@@ -486,7 +495,6 @@ class MyGUI(QtWidgets.QApplication):
                     item.addChild(child)
                 item.setExpanded(False)
             newparent.setExpanded(True)
-            assert t.indexFromItem(newparent).isValid()
             t.setCurrentItem(newparent)
 
         def undodemote():
@@ -501,10 +509,15 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200504081013.1: *4* new_node
     def new_node(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-
-        parent = curr.parent() or t.invisibleRootItem()
-        index = parent.indexOfChild(curr) + 1
+        below = t.itemBelow(curr)
+        if below and curr == below.parent():
+            parent = curr
+            index = 0
+        else:
+            parent = curr.parent() or root
+            index = parent.indexOfChild(curr) + 1
 
         parent_v = parent.data(0, 1024)
         new_v = leoNodes.VNode(context=self.c)
@@ -521,29 +534,35 @@ class MyGUI(QtWidgets.QApplication):
                           res.DontShowIndicatorWhenChildless)
             return res
         newitems = [(item, makeitem())
-                        for item in iter_all_v_items(t.invisibleRootItem(), parent_v)]
+                        for item in iter_all_v_items(root, parent_v)]
 
 
-        parent_v.children.insert(index, new_v)
-        new_v.parents.append(parent_v)
 
         def do_insert():
+            parent_v.children.insert(index, new_v)
+            new_v.parents.append(parent_v)
+
             for item, child in newitems:
                 item.insertChild(index, child)
             t.setCurrentItem(parent.child(index))
             t.editItem(parent.child(index), 0)
 
         def undo_insert():
+            del parent_v.children[index]
+            new_v.parents.remove(parent_v)
+
             for item, child in newitems:
                 item.takeChild(index)
+            t.setCurrentItem(curr)
 
         do_insert()
         self.c.addUndo(undo_insert, do_insert)
     #@+node:vitalije.20200504070427.1: *4* clone_node
     def clone_node(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        parent = curr.parent() or t.invisibleRootItem()
+        parent = curr.parent() or root
 
         parent_v = parent.data(0, 1024)
         v = curr.data(0, 1024)
@@ -552,7 +571,7 @@ class MyGUI(QtWidgets.QApplication):
 
         # remembers cloned nodes so that redo reuses the same items
         newitems = [(x, curr.clone()) 
-                        for x in iter_all_v_items(t.invisibleRootItem(), parent_v)]
+                        for x in iter_all_v_items(root, parent_v)]
         def do_clone_node():
             parent_v.children.insert(index, v)
             v.parents.append(parent_v)
@@ -560,9 +579,8 @@ class MyGUI(QtWidgets.QApplication):
             for item, child in newitems:
                 item.insertChild(index + 1, child)
 
-            icon = self.icons[v.computeIcon()]
-            for item in iter_all_v_items(t.invisibleRootItem(), v):
-                item.setIcon(0, icon)
+            self.update_icon(v)
+
             t.setCurrentItem(parent.child(index + 1))
 
         def undo_clone_node():
@@ -572,17 +590,18 @@ class MyGUI(QtWidgets.QApplication):
             del parent_v.children[index + 1]
             v.parents.remove(parent_v)
 
-            icon = self.icons[v.computeIcon()]
-            for item in iter_all_v_items(t.invisibleRootItem(), v):
-                item.setIcon(0, icon)
+            self.update_icon(v)
+
+            t.setCurrentItem(parent.child(index))
 
         do_clone_node()
         self.c.addUndo(undo_clone_node, do_clone_node)
     #@+node:vitalije.20200504071530.1: *4* delete_node
     def delete_node(self):
         t = self.tree
+        root = t.invisibleRootItem()
         curr = t.currentItem()
-        parent = curr.parent() or t.invisibleRootItem()
+        parent = curr.parent() or root
 
         parent_v = parent.data(0, 1024)
         v = curr.data(0, 1024)
@@ -591,11 +610,13 @@ class MyGUI(QtWidgets.QApplication):
 
         deleted_items = []
         def do_delete():
-            for item in iter_all_v_items(t.invisibleRootItem(), parent_v):
+            for item in iter_all_v_items(root, parent_v):
                 deleted_items.append(item.takeChild(index))
 
             del parent_v.children[index]
             v.parents.remove(parent_v)
+
+            self.update_icon(v)
 
             n = len(parent_v.children)
             if n == 0:
@@ -604,14 +625,27 @@ class MyGUI(QtWidgets.QApplication):
                 t.setCurrentItem(parent.child(min(index, n-1)))
 
         def undo_delete():
-            for item in iter_all_v_items(t.invisibleRootItem(), parent_v):
+            for item in iter_all_v_items(root, parent_v):
                 item.insertChild(index, deleted_items.pop(0))
+
             parent_v.children.insert(index, v)
             v.parents.append(parent_v)
+
+            self.update_icon(v)
+
             t.setCurrentItem(curr)
 
         do_delete()
         self.c.addUndo(undo_delete, do_delete)
+    #@+node:vitalije.20200504114204.1: *4* update_icon
+    def update_icon(self, v):
+        t = self.tree
+        old_bs = t.blockSignals(True)
+        root = t.invisibleRootItem()
+        icon = self.icons[v.computeIcon()]
+        for item in iter_all_v_items(root, v):
+            item.setIcon(0, icon)
+        t.blockSignals(old_bs)
     #@+node:vitalije.20200503153529.1: *4* hide_node
     # this was used just to see what is it like when item is hidden
     # hoist/dehoist works similar as chapters in Leo
