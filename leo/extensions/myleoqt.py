@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:vitalije.20200502083732.1: * @file ../extensions/myleoqt.py
+#@+node:vitalije.20200502083732.1: * @file myleoqt.py
 #@@language python
 #@@tabwidth -4
 #@+<<imports>>
@@ -573,7 +573,7 @@ class MyGUI(QtWidgets.QApplication):
         index = parent.indexOfChild(curr)
 
         # remembers cloned nodes so that redo reuses the same items
-        newitems = [(x, curr.clone()) 
+        newitems = [(x, curr.clone())
                         for x in iter_all_v_items(root, parent_v)]
         def do_clone_node():
             parent_v.children.insert(index, v)
@@ -908,14 +908,17 @@ def iter_all_v_items(rootItem, v, stack=None):
             item = item.child(i)
         return item
     vroot = rootItem.data(0, 1024)
-    for par in set(v.parents):
-        for i in allinds(par, v):
-            stack.insert(0, (v, i))
-            if par is vroot:
-                yield stack2item(stack)
-            else:
-                yield from iter_all_v_items(rootItem, par, stack)
-            stack.pop(0)
+    if v == vroot:
+        yield rootItem
+    else:
+        for par in set(v.parents):
+            for i in allinds(par, v):
+                stack.insert(0, (v, i))
+                if par is vroot:
+                    yield stack2item(stack)
+                else:
+                    yield from iter_all_v_items(rootItem, par, stack)
+                stack.pop(0)
 #@+node:vitalije.20200504072828.1: *3* all_other_items
 def all_other_items(rootItem, item):
     '''Yields all other items in the outline pointing at the same v'''
