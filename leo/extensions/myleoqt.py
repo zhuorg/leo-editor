@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:vitalije.20200502083732.1: * @file myleoqt.py
+#@+node:vitalije.20200502083732.1: * @file ../extensions/myleoqt.py
 #@@language python
 #@@tabwidth -4
 #@+<<imports>>
@@ -73,7 +73,7 @@ class DummyLeoController:
                 v.parents = parents.split()
                 v.iconVal = iconVal
                 v.statusBits = statusBits
-                v.expand()
+                v.contract()  # EKR
                 v.u = ua
                 vnodes.append(v)
         except sqlite3.Error as er:
