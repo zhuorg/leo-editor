@@ -182,6 +182,7 @@ class MyGUI(QtWidgets.QApplication):
         self.mw.resize(800, 600)
         dock_l = QtWidgets.QDockWidget(self.mw)
         self.tree = QtWidgets.QTreeWidget(dock_l)
+        self.tree.setStyleSheet('font-size: 14pt;')  # EKR.
         dock_l.setWidget(self.tree)
         self.tree.setHeaderHidden(True)
         self.tree.setSelectionMode(self.tree.SingleSelection)
@@ -190,6 +191,7 @@ class MyGUI(QtWidgets.QApplication):
         self.tree.itemChanged.connect(self.update_headline)
         self.mw.addDockWidget(Q.LeftDockWidgetArea, dock_l, Q.Vertical)
         self.body = QtWidgets.QTextBrowser(self.mw)
+        self.body.setStyleSheet('font-size: 14pt;')  # EKR.
         self.body.setReadOnly(False)
         self.body.textChanged.connect(self.body_changed)
         self.mw.setCentralWidget(self.body)
@@ -201,6 +203,7 @@ class MyGUI(QtWidgets.QApplication):
     def create_toolbar(self):
         dock_t = QtWidgets.QDockWidget(self.mw)
         self.toolbar = QtWidgets.QToolBar(dock_t)
+        self.toolbar.setStyleSheet('font-size: 12pt;')  # EKR.
         dock_t.setWidget(self.toolbar)
         self.mw.addDockWidget(Q.TopDockWidgetArea, dock_t, Q.Horizontal)
         self.toolbar.addAction('up', self.move_node_up)
