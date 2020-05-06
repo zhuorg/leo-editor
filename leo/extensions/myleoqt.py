@@ -286,9 +286,12 @@ class MyGUI(QtWidgets.QApplication):
     # I don't expect any of these methods to be hard to implement.
     #@+node:vitalije.20200503141521.1: *4* resetBody
     def resetBody(self, b):
-        self.body.blockSignals(True)
-        self.body.setPlainText(b)
-        self.body.blockSignals(False)
+        
+        try:
+            self.body.blockSignals(True)
+            self.body.setPlainText(b)
+        finally:
+            self.body.blockSignals(False)
     #@+node:vitalije.20200503145914.1: *4* resetHeadline
     def resetHeadline(self, h):
         t = self.tree
