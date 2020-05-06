@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:vitalije.20200502083732.1: * @file myleoqt.py
+#@+node:vitalije.20200502083732.1: * @file ../extensions/myleoqt.py
 #@@language python
 #@@tabwidth -4
 #@+<<imports>>
@@ -28,8 +28,11 @@ class DummyLeoController:
         self.mFileName = fname
         self.c = self
         self.hiddenRootNode = leoNodes.VNode(self, 'hidden-root-vnode-gnx')
-        conn = sqlite3.connect(fname)
-        self.retrieveVnodesFromDb(conn)
+        if fname:
+            conn = sqlite3.connect(fname)
+            self.retrieveVnodesFromDb(conn)
+        else:
+            self.createEmptyTree()
         self.guiapi = g.bunch(
             body = None,
             tree = None,
@@ -41,6 +44,17 @@ class DummyLeoController:
         self.undoPos = 0
 
     #@+others
+    #@+node:ekr.20200506065949.1: *3* createEmptyTree
+    def createEmptyTree(self):
+        c = self
+        v = leoNodes.VNode(context=c, gnx='dummy-gnx')
+        v._headString = 'Root'
+        v.parent = self.hiddenRootNode
+        self.hiddenRootNode.children = [v]
+    #@+node:vitalije.20200503181130.1: *3* getCurrentPosition
+    def getCurrentPosition(self):
+        return self._p
+    p = property(getCurrentPosition)
     #@+node:vitalije.20200502090418.1: *3* retrieveVnodesFromDb
     # this is just copy pasted from leoFileCommands
     def retrieveVnodesFromDb(self, conn):
@@ -126,6 +140,10 @@ class DummyLeoController:
         except sqlite3.OperationalError:
             pass
         return geom
+    #@+node:vitalije.20200503181122.1: *3* setCurrentNode
+    def setCurrentNode(self, v):
+        self._p = g.bunch(v=v)
+        self.guiapi.resetBody(v.b)
     #@+node:vitalije.20200503144746.1: *3* undo/redo
     def canUndo(self):
         return self.undoPos > 0
@@ -152,10 +170,6 @@ class DummyLeoController:
             self.undoPos += 1
             ub.redo()
             self.guiapi.updateToolbarButtons()
-    #@+node:vitalije.20200503181122.1: *3* setCurrentNode
-    def setCurrentNode(self, v):
-        self._p = g.bunch(v=v)
-        self.guiapi.resetBody(v.b)
     #@+node:vitalije.20200503181125.1: *3* updateBody
     def updateBody(self, b):
         self._p.v.b = b
@@ -163,10 +177,6 @@ class DummyLeoController:
     def updateHeadline(self, h):
         self._p.v.h = h
         self.guiapi.resetHeadline(h)
-    #@+node:vitalije.20200503181130.1: *3* getCurrentPosition
-    def getCurrentPosition(self):
-        return self._p
-    p = property(getCurrentPosition)
     #@-others
 #@+node:vitalije.20200502090833.1: ** MyGUI
 class MyGUI(QtWidgets.QApplication):
@@ -936,7 +946,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         fname = sys.argv[1]
     else:
-        fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
+        # fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
+        fname = None
     c = DummyLeoController(fname)
     myapp = MyGUI(c)
     myapp.create_main_window()
