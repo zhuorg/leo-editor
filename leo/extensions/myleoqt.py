@@ -1011,10 +1011,8 @@ class Test(BaseTest):
     #@-others
 #@-others
 if __name__ == '__main__':
-    # print('sys.argv', sys.argv)
-    if len(sys.argv) == 2 and sys.argv[1] == 'test':
-        # import pdb ; pdb.set_trace()
-        sys.argv.pop()
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        sys.argv = sys.argv[0] + sys.argv[2:]
         unittest.main()
     else:
         if len(sys.argv) > 1:
