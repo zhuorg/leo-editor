@@ -1009,19 +1009,20 @@ class Test(BaseTest):
     def test_1(self):
         pass
     #@-others
-#@-others
-if __name__ == '__main__':
+#@+node:ekr.20200507111618.1: ** main
+def main():
+    
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         sys.argv = sys.argv[0] + sys.argv[2:]
         unittest.main()
-    else:
-        if len(sys.argv) > 1:
-            fname = sys.argv[1]
-        else:
-            # fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
-            fname = None
-        c = DummyLeoController(fname)
-        myapp = MyGUI(c)
-        myapp.create_main_window()
-        myapp.exec_()
+        return
+    # fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
+    fname = sys.argv[1] if len(sys.argv) > 1 else None
+    c = DummyLeoController(fname)
+    myapp = MyGUI(c)
+    myapp.create_main_window()
+    myapp.exec_()
+#@-others
+if __name__ == '__main__':
+    main()
 #@-leo
