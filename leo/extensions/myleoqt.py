@@ -4,20 +4,28 @@
 #@@tabwidth -4
 #@+<<imports>>
 #@+node:vitalije.20200502091628.1: ** <<imports>>
-import sqlite3
+from collections import defaultdict
 import sys
 import os
+import pickle
+from PyQt5 import QtCore, QtGui, QtWidgets
+assert QtGui
+import sqlite3
+import time
+import unittest
+# Set the path before importing Leo files.
 LEO_INSTALLED_AT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if LEO_INSTALLED_AT not in sys.path:
     sys.path.append(LEO_INSTALLED_AT)
 LEO_ICONS_DIR = os.path.join(LEO_INSTALLED_AT, 'leo', 'themes', 'light', 'Icons')
-import leo.core.leoNodes as leoNodes
-import leo.core.leoGlobals as g
+try:
+    import leo.core.leoNodes as leoNodes
+    import leo.core.leoGlobals as g
+except ImportError:
+    print('===== import error!')
 g.app = g.bunch(nodeIndices=leoNodes.NodeIndices('vitalije'))
-from PyQt5 import QtCore, QtGui, QtWidgets
-assert QtGui
+
 Q = QtCore.Qt
-import pickle
 #@-<<imports>>
 #@+others
 #@+node:vitalije.20200502090425.1: ** DummyLeoController
@@ -832,6 +840,9 @@ class QtPosition:
     def threadBack(self): return self.copy().moveToThreadBack()
     def threadNext(self): return self.copy().moveToThreadNext()
 #@+node:vitalije.20200503141908.1: ** utilities
+#@+node:ekr.20200507073202.1: *3* get_time
+def get_time():
+    return time.process_time()
 #@+node:vitalije.20200503134536.1: *3* is_move_allowed
 def is_move_allowed(oldparent, srcindex, newparent, dstindex):
     '''Returns False if move would create cycle in the outline'''
@@ -944,15 +955,75 @@ def leo_icons():
     def fname(i):
         return os.path.join(LEO_ICONS_DIR, f'box{i:02d}.png')
     return [QtGui.QIcon(fname(i)) for i in range(16)]
+#@+node:ekr.20200507071152.1: ** Test classes...
+#@+node:ekr.20200507071152.2: *3*  class BaseTest(TestCase)
+class BaseTest(unittest.TestCase):
+    """
+    The base class of all tests of myleoqt.py.
+    
+    This class contains only helpers.
+    """
+
+    # Statistics.
+    counts = defaultdict(int)
+    times = defaultdict(float)
+    #@+others
+    #@+node:ekr.20200507071152.5: *4* BaseTest.make_operations_data
+    def make_operations_data(self, operations, description=None):
+        """Make test data for the given operations"""
+        if not operations:  # pragma: no cover
+            return None
+        t1 = get_time()
+        for operation in operations:
+            self.make_data(self, operation)
+        t2 = get_time()
+        self.times['make-data'] += t2 - t1
+    #@+node:ekr.20200507072154.1: *4* BaseTest.make_operation_data
+    def make_operation_data(self, operation):
+        """Make test data for the given operation"""
+        g.trace(operation)
+    #@+node:ekr.20200507071152.15: *4* BaseTest.dump_stats & helpers
+    def dump_stats(self):  # pragma: no cover.
+        """Show all calculated statistics."""
+        if self.counts or self.times:
+            print('')
+            self.dump_counts()
+            self.dump_times()
+            print('')
+    #@+node:ekr.20200507071152.16: *5* BaseTest.dump_counts
+    def dump_counts(self):  # pragma: no cover.
+        """Show all calculated counts."""
+        for key, n in self.counts.items():
+            print(f"{key:>16}: {n:>6}")
+    #@+node:ekr.20200507071152.17: *5* BaseTest.dump_times
+    def dump_times(self):  # pragma: no cover.
+        """Show all calculated times."""
+        for key in sorted(self.times):
+            t = self.times.get(key)
+            print(f"{key:>16}: {t:6.3f} sec.")
+    #@-others
+#@+node:ekr.20200507071555.1: *3* class Test(BaseTest)
+class Test(BaseTest):
+    #@+others
+    #@+node:ekr.20200507071630.1: *4* test_1
+    def test_1(self):
+        pass
+    #@-others
 #@-others
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        fname = sys.argv[1]
+    # print('sys.argv', sys.argv)
+    if len(sys.argv) == 2 and sys.argv[1] == 'test':
+        # import pdb ; pdb.set_trace()
+        sys.argv.pop()
+        unittest.main()
     else:
-        # fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
-        fname = None
-    c = DummyLeoController(fname)
-    myapp = MyGUI(c)
-    myapp.create_main_window()
-    myapp.exec_()
+        if len(sys.argv) > 1:
+            fname = sys.argv[1]
+        else:
+            # fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
+            fname = None
+        c = DummyLeoController(fname)
+        myapp = MyGUI(c)
+        myapp.create_main_window()
+        myapp.exec_()
 #@-leo
