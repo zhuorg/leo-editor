@@ -18,6 +18,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 assert QtGui
 Q = QtCore.Qt
 import pickle
+from collections import defaultdict
+from hypothesis.strategies import lists, integers, sampled_from, data
+from hypothesis import given, settings
+from datetime import timedelta
+import random
+import time
+import timeit
 #@-<<imports>>
 #@+others
 #@+node:vitalije.20200502090425.1: ** DummyLeoController
@@ -175,6 +182,7 @@ class MyGUI(QtWidgets.QApplication):
         self.c = c
         self.hoistStack = []
         self.icons = leo_icons()
+        self._insert_index = 0
     #@+others
     #@+node:vitalije.20200502142944.1: *3* create_main_window
     def create_main_window(self):
@@ -186,7 +194,10 @@ class MyGUI(QtWidgets.QApplication):
         dock_l.setWidget(self.tree)
         self.tree.setHeaderHidden(True)
         self.tree.setSelectionMode(self.tree.SingleSelection)
+        t1 = time.perf_counter()
         draw_tree(self.tree, self.c.hiddenRootNode, self.icons)
+        t2 = time.perf_counter() - t1
+        print(f'Drawing tree in: {t2 * 1000:6.2f}ms')
         self.tree.currentItemChanged.connect(self.select_item)
         self.tree.itemChanged.connect(self.update_headline)
         self.mw.addDockWidget(Q.LeftDockWidgetArea, dock_l, Q.Vertical)
@@ -219,6 +230,11 @@ class MyGUI(QtWidgets.QApplication):
         self.dehoistAction = self.toolbar.addAction('dehoist', self.unset_hoist)
         self.undoAction = self.toolbar.addAction('undo', self.c.undo)
         self.redoAction = self.toolbar.addAction('redo', self.c.redo)
+        self.toolbar.addAction('▲', self.select_item_above)
+        self.toolbar.addAction('▶', self.select_thread_next_node)
+        self.toolbar.addAction('▼', self.select_item_below)
+        self.toolbar.addAction('◀', self.select_thread_prev_node)
+        self.toolbar.addAction('performance', self.check_performance)
         self.updateToolbarButtons()
     #@+node:vitalije.20200503154834.1: *3* hoist/dehoist
     def set_hoist(self):
@@ -319,38 +335,144 @@ class MyGUI(QtWidgets.QApplication):
             # let the c decide appropriate action
             # which usually will call back resetHeadline
     #@+node:vitalije.20200503145321.1: *3* outline modifications
+    #@+node:vitalije.20200506154516.1: *4* for testing
+    def undo(self):
+        self.c.undo()
+
+    def redo(self):
+        self.c.redo()
+
+    def set_c(self, c):
+        self.c = c
+        c.guiapi = self
+        self.tree.blockSignals(True)
+        self.tree.clear()
+        draw_tree(self.tree, c.hiddenRootNode, self.icons)
+        self.tree.setCurrentItem(self.tree.topLevelItem(0))
+        self.tree.blockSignals(False)
+
+    def check_performance(self):
+        t = self.tree
+        root = t.invisibleRootItem()
+
+        # store olditems and replace them with new ones
+        t.blockSignals(True)
+        olditems = [root.takeChild(0) for i in range(root.childCount())]
+        for item in olditems:
+            root.addChild(item.clone())
+        t.blockSignals(False)
+
+        # store bodies of all nodes
+        bodies = {x.fileIndex : x.b for x in c.fileCommands.gnxDict.values()}
+        def restore_bodies():
+            for gnx, b in bodies.items():
+                c.fileCommands.gnxDict[gnx].b = b
+        def f():
+            # stores bodies for full undo and redraws the whole outline
+            _ = {x.fileIndex : x.b for x in c.fileCommands.gnxDict.values()}
+            self.set_c(self.c) # this will redraw complete tree
+
+        t1 = timeit.timeit(f, number=100) * 1000 / 100
+        print(f'Average speed: {t1:6.2f}ms')
+
+        # restore olditems
+        t.blockSignals(True)
+        t.clear()
+        for item in olditems:
+            root.addChild(item)
+        t.blockSignals(False)
     #@+node:vitalije.20200503145328.1: *4* make_undoable_move
     def make_undoable_move(self, oldparent, srcindex, newparent, dstindex):
+        if oldparent.data(0, 1024) == newparent.data(0, 1024):
+            # mum ~ make_undoable_move
+            return self.mum_single_v_parent(oldparent, srcindex, newparent, dstindex)
+
         t = self.tree
         root = t.invisibleRootItem()
         trash = []
 
         newitems = [(x, oldparent.child(srcindex).clone())
                         for x in all_other_items(root, newparent)]
+        #@+others
+        #@+node:vitalije.20200506211404.1: *5* domove
         def domove():
-            for item in all_other_items(root, oldparent):
-                trash.append(item.takeChild(srcindex))
-
             for item, child in newitems:
                 item.insertChild(dstindex, child)
 
             curr = move_treeitem(oldparent, srcindex, newparent, dstindex)
 
+            for item in all_other_items(root, oldparent):
+                trash.append(item.takeChild(srcindex))
+
             self.tree.setCurrentItem(curr)
-
+        #@+node:vitalije.20200506211412.1: *5* undomove
         def undomove():
-            for item, child in newitems:
-                item.takeChild(dstindex)
-
             for item in all_other_items(root, oldparent):
                 item.insertChild(srcindex, trash.pop())
 
             curr = move_treeitem(newparent, dstindex, oldparent, srcindex)
 
+            for item, child in newitems:
+                item.takeChild(dstindex)
+
             self.tree.setCurrentItem(curr)
+        #@-others
 
         domove()
+        self.c.addUndo(undomove, domove)
+    #@+node:vitalije.20200507160855.1: *4* mum_single_v_parent
+    def mum_single_v_parent(self, oldparent, srcindex, newparent, dstindex):
+        '''
+        Moves child nodes inside clone parent.
+        Also makes this operation undoable.
+        '''
+        seldstindex = min(dstindex, oldparent.childCount() - 1)
+            # when moving to the end of the siblings list
+            # dstindex is equal to oldparent.childCount()
+            # we can't select dstindex
+        #@+<<check if the move is a noop>>
+        #@+node:vitalije.20200507162432.1: *5* <<check if the move is a noop>>
+        if srcindex  == seldstindex:
+            # nothing to do here
+            def doswap():
+                self.tree.setCurrentItem(newparent.child(srcindex))
+            def undoswap():
+                self.tree.setCurrentItem(oldparent.child(srcindex))
+            doswap()
+            self.c.addUndo(undoswap, doswap)
+            return
+        #@-<<check if the move is a noop>>
+        t = self.tree
+        root = t.invisibleRootItem()
+        parent_v = oldparent.data(0, 1024)
+        #@+others
+        #@+node:vitalije.20200507164214.1: *5* swap
+        def swap():
+            # order of indexes is important for items
+            oldbs = t.blockSignals(True)
+            i, j = sorted([srcindex, seldstindex])
+            for item in iter_all_v_items(root, parent_v):
+                childA = item.takeChild(j)
+                childB = item.takeChild(i)
+                item.insertChild(i, childA)
+                item.insertChild(j, childB)
+            t.blockSignals(oldbs)
+            # now just swap two elements in a list
+            v = parent_v.children[i]
+            parent_v.children[i] = parent_v.children[j]
+            parent_v.children[j] = v
+        #@+node:vitalije.20200507162538.1: *5* domove single v parent
+        def domove():
+            swap()
+            # select the new item
+            t.setCurrentItem(newparent.child(seldstindex))
 
+        #@+node:vitalije.20200507164225.1: *5* undomove single v parent
+        def undomove():
+            swap()
+            t.setCurrentItem(oldparent.child(srcindex))
+        #@-others
+        domove()
         self.c.addUndo(undomove, domove)
     #@+node:vitalije.20200503145331.1: *4* move_node_up
     def move_node_up(self):
@@ -443,6 +565,10 @@ class MyGUI(QtWidgets.QApplication):
         oldparent = curr
         links = [(oldparent, i, newparent, dstindex)
                     for i in range(curr.childCount(), 0, -1)]
+        newitems = []
+        for oldparent, srcindex, newparent, dstindex in links:
+            for item in all_other_items(root, newparent):
+                newitems.append((item, dstindex, oldparent.child(srcindex-1).clone()))
 
         def dopromote():
             for item in all_other_items(root, curr):
@@ -450,9 +576,11 @@ class MyGUI(QtWidgets.QApplication):
                     trash.append(item.takeChild(0))
 
             for oldparent, srcindex, newparent, dstindex in links:
-                for item in all_other_items(root, newparent):
-                    item.insertChild(dstindex, oldparent.child(srcindex).clone())
                 move_treeitem(oldparent, srcindex-1, newparent, dstindex)
+
+            for item, i, child in newitems:
+                item.insertChild(i, child)
+
             t.setCurrentItem(oldparent)
 
         def undopromote():
@@ -461,6 +589,8 @@ class MyGUI(QtWidgets.QApplication):
                     item.insertChild(0, trash.pop())
             for oldparent, srcindex, newparent, dstindex in reversed(links):
                 move_treeitem(newparent, dstindex, oldparent, srcindex-1)
+            for item, i, child in reversed(newitems):
+                item.takeChild(i)
             t.setCurrentItem(oldparent)
 
         dopromote()
@@ -482,16 +612,22 @@ class MyGUI(QtWidgets.QApplication):
             return
         links = [(oldparent, srcindex, newparent, dstindex + i)
                    for i in range(n)]
-
+        for x,i,y,j in links:
+            if not is_move_allowed(x.data(0, 1024), i + j - dstindex, y.data(0, 1024), j):
+                return
         # we must create new items before to allow redo to reuse the same items
         def cloneitems():
             return tuple(oldparent.child(i + srcindex).clone() for i in range(n))
 
         newitems = [(x, cloneitems()) for x in all_other_items(root, curr)]
+        trash = []
+        otheritems = list(all_other_items(root, oldparent))
 
         def dodemote():
             for oldparent, srcindex, newparent, dstindex in links:
                 move_treeitem(oldparent, srcindex, newparent, dstindex)
+                for item in otheritems:
+                    trash.append((srcindex, item.takeChild(srcindex)))
 
             for item, children in newitems:
                 for child in children:
@@ -502,9 +638,13 @@ class MyGUI(QtWidgets.QApplication):
 
         def undodemote():
             for item, children in newitems:
-                item.takeChildren()
+                for ch in children:
+                    item.takeChild(item.childCount()-1)
             for oldparent, srcindex, newparent, dstindex in reversed(links):
                 move_treeitem(newparent, dstindex, oldparent, srcindex)
+                for item in reversed(otheritems):
+                    i, child = trash.pop()
+                    item.insertChild(i, child)
             t.setCurrentItem(newparent)
 
         dodemote()
@@ -549,6 +689,62 @@ class MyGUI(QtWidgets.QApplication):
                 item.insertChild(index, child)
             t.setCurrentItem(parent.child(index))
             t.editItem(parent.child(index), 0)
+
+        def undo_insert():
+            del parent_v.children[index]
+            new_v.parents.remove(parent_v)
+
+            for item, child in newitems:
+                item.takeChild(index)
+            t.setCurrentItem(curr)
+
+        do_insert()
+        self.c.addUndo(undo_insert, do_insert)
+    #@+node:vitalije.20200506150127.1: *4* insert_node
+    def insert_node(self):
+        '''This is only for testing purposes, same as new_node
+           but instead of starting editing headline it gives
+           predefined headline value.'''
+        t = self.tree
+        root = t.invisibleRootItem()
+        curr = t.currentItem()
+        below = t.itemBelow(curr)
+        if below and curr == below.parent():
+            parent = curr
+            index = 0
+        else:
+            parent = curr.parent() or root
+            index = parent.indexOfChild(curr) + 1
+
+        parent_v = parent.data(0, 1024)
+        new_v = leoNodes.VNode(context=self.c)
+        self._insert_index += 1
+        new_v.h = f'inserted {self._insert_index}. node'
+        icon = self.icons[new_v.computeIcon()]
+        head = new_v.h
+
+        def makeitem():
+            res = QtWidgets.QTreeWidgetItem()
+            res.setData(0, 1024, new_v)
+            res.setText(0, head)
+            res.setIcon(0, icon)
+            res.setFlags(res.flags() |
+                          Q.ItemIsEditable |
+                          res.DontShowIndicatorWhenChildless)
+            return res
+        newitems = [(item, makeitem())
+                        for item in iter_all_v_items(root, parent_v)]
+
+
+
+        def do_insert():
+            parent_v.children.insert(index, new_v)
+            new_v.parents.append(parent_v)
+
+            for item, child in newitems:
+                item.insertChild(index, child)
+            t.setCurrentItem(parent.child(index))
+
 
         def undo_insert():
             del parent_v.children[index]
@@ -606,6 +802,10 @@ class MyGUI(QtWidgets.QApplication):
         curr = t.currentItem()
         parent = curr.parent() or root
 
+        if parent == root and root.childCount() == 1:
+            # we can't delete all top level items
+            return
+
         parent_v = parent.data(0, 1024)
         v = curr.data(0, 1024)
 
@@ -662,6 +862,40 @@ class MyGUI(QtWidgets.QApplication):
             return
         curr.setHidden(True)
         t.setCurrentItem(after)
+    #@+node:vitalije.20200506145104.1: *4* select commands
+    #@+node:vitalije.20200506144257.1: *5* select_thread_next_node
+    def select_thread_next_node(self):
+        t = self.tree
+        curr = t.currentItem()
+        p = QtPosition(curr)
+        p.moveToThreadNext()
+        if p:
+            t.setCurrentItem(p.item)
+
+
+
+    #@+node:vitalije.20200506145052.1: *5* select_thread_prev_node
+    def select_thread_prev_node(self):
+        t = self.tree
+        curr = t.currentItem()
+        p = QtPosition(curr)
+        p.moveToThreadBack()
+        if p:
+            t.setCurrentItem(p.item)
+    #@+node:vitalije.20200506145055.1: *5* select_item_below
+    def select_item_below(self):
+        t = self.tree
+        curr = t.currentItem()
+        ncurr = t.itemBelow(curr)
+        if ncurr:
+            t.setCurrentItem(ncurr)
+    #@+node:vitalije.20200506145057.1: *5* select_item_above
+    def select_item_above(self):
+        t = self.tree
+        curr = t.currentItem()
+        ncurr = t.itemAbove(curr)
+        if ncurr:
+            t.setCurrentItem(ncurr)
     #@-others
 #@+node:vitalije.20200504103729.1: ** QtPosition
 class QtPosition:
@@ -718,7 +952,7 @@ class QtPosition:
         parent = item.parent() or self._root
         ind = parent.indexOfChild(item)
         if ind > 0:
-            self.item = item = parent.child(ind)
+            self.item = item = parent.child(ind-1)
             self.v = item.data(0, 1024)
             self.moveToLastNode()
         elif parent == self._root:
@@ -822,6 +1056,7 @@ class QtPosition:
 #@+node:vitalije.20200503134536.1: *3* is_move_allowed
 def is_move_allowed(oldparent, srcindex, newparent, dstindex):
     '''Returns False if move would create cycle in the outline'''
+
     child = oldparent.children[srcindex]
     def it(v):
         yield v
@@ -843,10 +1078,10 @@ def move_treeitem(oldparent, srcindex, newparent, dstindex):
 
     # and now let's deal with the v node links
     par_v = oldparent.data(0, 1024)
-    v = par_v.children[srcindex]
-    del par_v.children[srcindex]
-    v.parents.remove(par_v)
     newpar_v = newparent.data(0, 1024)
+
+    v = par_v.children.pop(srcindex)
+    v.parents.remove(par_v)
     newpar_v.children.insert(dstindex, v)
     v.parents.append(newpar_v)
 
@@ -931,6 +1166,171 @@ def leo_icons():
     def fname(i):
         return os.path.join(LEO_ICONS_DIR, f'box{i:02d}.png')
     return [QtGui.QIcon(fname(i)) for i in range(16)]
+#@+node:vitalije.20200506130734.1: ** Test utilities
+#@+node:vitalije.20200506132431.1: *3* app_demo
+def app_demo():
+    fname = os.path.join(LEO_INSTALLED_AT, 'leo', 'core', 'LeoPyRef.db')
+    c = DummyLeoController(fname)
+    app = MyGUI(c)
+    app.create_main_window()
+    return app
+#@+node:vitalije.20200507182952.1: *3* demo_app
+def demo_app():
+    global APP_DEMO
+    if not APP_DEMO:
+        APP_DEMO = app_demo()
+    c = DummyLeoController(os.path.join(LEO_INSTALLED_AT, 'leo','core','LeoPyRef.db'))
+    APP_DEMO.set_c(c)
+    return APP_DEMO
+
+def demo2_app():
+    global APP_DEMO
+    if not APP_DEMO:
+        APP_DEMO = app_demo()
+        c = DummyLeoController(os.path.join(LEO_INSTALLED_AT, 'leo','core','LeoPyRef.db'))
+    else:
+        c = APP_DEMO.c
+        c.undoBeads = []
+        c.undoPos = 0
+    app = APP_DEMO
+    c.hiddenRootNode.children[1:] = []
+    c.hiddenRootNode.children[0].children = []
+    app.set_c(c)
+    app._insert_index = 0
+    for i in range(5):
+        app.insert_node()
+        app.insert_node()
+        app.clone_node()
+    return app
+#@+node:vitalije.20200506132425.1: *3* vlist
+def vlist(app):
+    c = app.c
+    counter = defaultdict(int)
+    def it(v, lev):
+        if lev < 100:
+            for ch in v.children:
+                i = counter[ch.gnx]
+                counter[ch.gnx] = i + 1
+                yield ch, i
+                yield from it(ch, lev + 1)
+        else:
+            raise ValueError('There must be a cycle in the outline (maximum level reached).')
+    return list(it(c.hiddenRootNode, -1))
+
+#@+node:vitalije.20200506133513.1: *3* vlist_from_items
+def vlist_from_items(app):
+    qtwiterator = QtWidgets.QTreeWidgetItemIterator(app.tree)
+    res = []
+    counter = defaultdict(int)
+    item = qtwiterator.value()
+    while item:
+        v = item.data(0, 1024)
+        i = counter[v.gnx]
+        counter[v.gnx] += 1
+        res.append((v, i))
+        qtwiterator += 1
+        item = qtwiterator.value()
+    return res
+#@+node:vitalije.20200506133517.1: *3* are_models_in_sync
+def are_models_in_sync(app):
+    '''returns True if both models: Leo model and
+       qtreewidget model are in sync'''
+    a = vlist(app)
+    b = vlist_from_items(app)
+    return a == b
+#@+node:vitalije.20200506132429.1: *3* select_item_at_index
+def select_item_at_index(app, index):
+    '''This will select item at given index modulo tree size'''
+    vitems = []
+    #print('total items:{n}', file=sys.__stdout__)
+    qtwiterator = QtWidgets.QTreeWidgetItemIterator(app.tree)
+    item = qtwiterator.value()
+    while item:
+        vitems.append(item)
+        qtwiterator += 1
+        item = qtwiterator.value()
+    n = len(vitems)
+    item = vitems[index % n]
+    del qtwiterator
+    app.tree.setCurrentItem(item)
+#@+node:vitalije.20200507183025.1: *3* run_special_test
+def run_special_test(n=100000000):
+    it = special_test()
+    for i, x in enumerate(it):
+        if i == n:break
+        pass
+    assert are_models_in_sync(APP_DEMO)
+    return it
+#@+node:vitalije.20200506145856.1: ** Tests
+method_names = '''
+select_item_above
+select_item_below
+select_thread_next_node
+select_thread_prev_node
+delete_node
+insert_node
+clone_node
+demote
+promote
+move_node_up
+move_node_down
+move_node_left
+move_node_right
+undo
+redo
+'''.strip().split()
+APP_DEMO = None
+#@+node:vitalije.20200506162954.1: *3* test_using_random
+def t_est_using_random():
+    app = demo_app()
+    index = random.randint(0, 10000)
+    names = [random.choice(method_names) for x in range(1000)]
+    print('index', index, 'methods:', '/'.join(names))
+    def putlog(s, mode='a'):
+        with open('/tmp/steps', mode, encoding='utf8') as out:
+            out.write(s)
+            out.write('\n')
+    putlog(f'index:{index}', 'w')
+    select_item_at_index(app, index)
+    for i, name in enumerate(names):
+        print(f'step:{i:03d} {name}')
+        putlog(name)
+        meth = getattr(app, name)
+        meth()
+        assert are_models_in_sync(app)
+#@+node:vitalije.20200507183032.1: *3* special_test
+def special_test():
+    index = 3
+    names = ''' 
+    
+            demote
+            select_item_below
+            demote
+            undo
+   
+    '''.strip().split()
+    app = demo2_app()
+    select_item_at_index(app, index)
+    for i, name in enumerate(names):
+        print(f'step:{i} {name}')
+        meth = getattr(app, name)
+        meth()
+        yield i, name
+#@+node:vitalije.20200507182943.1: *3* test_select_and_commnads
+@settings(max_examples=5000, deadline=timedelta(seconds=4))
+@given(data())
+def test_select_and_commnads(data):
+    app = demo2_app()
+
+    index = data.draw(integers(min_value=0, max_value=10000))
+    names = data.draw(lists(sampled_from(method_names), min_size=5,
+                             max_size=100))
+
+    select_item_at_index(app, index)
+    for name in names:
+        meth = getattr(app, name)
+        meth()
+        assert are_models_in_sync(app)
 #@-others
 if __name__ == '__main__':
     if len(sys.argv) > 1:
