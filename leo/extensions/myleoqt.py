@@ -1258,9 +1258,11 @@ def vlist_from_items(app):
 def are_models_in_sync(app):
     '''returns True if both models: Leo model and
        qtreewidget model are in sync'''
-    a = vlist(app)
-    b = vlist_from_items(app)
+    a, b = outline_shapes(app)
     return a == b
+
+def outline_shapes(app):
+    return vlist(app), vlist_from_items(app)
 #@+node:vitalije.20200506132429.1: *3* select_item_at_index
 def select_item_at_index(app, index):
     '''This will select item at given index modulo tree size'''
@@ -1299,8 +1301,6 @@ move_node_up
 move_node_down
 move_node_left
 move_node_right
-undo
-redo
 '''.strip().split()
 APP_DEMO = None
 #@+node:vitalije.20200506162954.1: *3* test_using_random
@@ -1350,11 +1350,22 @@ def test_select_and_commnads(data):
                              max_size=100))
 
     select_item_at_index(app, index)
+    a1, b1 = outline_shapes(app)
     for name in names:
         meth = getattr(app, name)
         meth()
-        assert are_models_in_sync(app)
-
+        if method_names.index(name) > 3:
+            # possible change in the outline
+            a2, b2 = outline_shapes(app)
+            assert a2 == b2
+            if a1 != a2:
+                # the change is real - let's undo it
+                app.undo()
+                a, b = outline_shapes(app)
+                assert a == a1
+                assert b == b1
+                app.redo()
+            a1, b1 = a2, b2
 #@+node:ekr.20200507071152.1: ** Test classes...
 #@+node:ekr.20200507071152.2: *3*  class BaseTest(TestCase)
 class BaseTest(unittest.TestCase):
