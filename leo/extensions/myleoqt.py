@@ -368,7 +368,7 @@ class MyGUI(QtWidgets.QApplication):
         c.guiapi = self
         self.redraw()
         item = self.tree.currentItem()
-        self.set_item(item, item)
+        self.select_item(item, item)
 
     def redraw(self):
         self.tree.blockSignals(True)
@@ -910,17 +910,8 @@ class MyGUI(QtWidgets.QApplication):
         t.setCurrentItem(ncurr)
         t.blockSignals(False)
 
-        # store old v-nodes and their links
-        old_vs = {x:(y.b,y.h, y) for x,y in c.fileCommands.gnxDict.items()}
-        seen = set()
-        def links(par):
-            if par not in seen:
-                seen.add(par)
-                for i, ch in enumerate(par.children):
-                    yield i, par, ch
-                    yield from links(ch)
-        oldlinks = sorted(links(c.hiddenRootNode),
-                            key=lambda x:(x[0], x[1].fileIndex))
+        # store old v-nodes data
+        old_vs = set((x, x.h, x.b) for x in c.fileCommands.gnxDict.values())
 
         # new values for the redo operation
         # if the script finishes without exception
@@ -929,7 +920,6 @@ class MyGUI(QtWidgets.QApplication):
         newitems = olditems
         new_vs = old_vs
         newcurr = curr
-        newlinks = oldlinks
 
         # some more data for the locals in script
         p = QtPosition(ncurr)
@@ -939,34 +929,26 @@ class MyGUI(QtWidgets.QApplication):
         #@+others
         #@+node:vitalije.20200508104717.1: *5* undoexec
         def undoexec():
-            for gnx,(b, h, v) in old_vs.items():
-                v.children = []
-                v.parents = []
+            for v, h, b in old_vs:
                 v.b = b
                 v.h = h
-            for i, parv, ch in oldlinks:
-                parv.children.insert(i, ch)
-                ch.parents.append(parv)
             t.blockSignals(True)
             root.takeChildren()
             for item in olditems:
                 root.addChild(item)
+            reconnect_vnodes(root)
             t.blockSignals(False)
             t.setCurrentItem(curr)
         #@+node:vitalije.20200508104721.1: *5* redoexec
         def redoexec():
-            for gnx, (b, h, v) in new_vs.items():
-                v.children = []
-                v.parents = []
+            for v, h, b in new_vs:
                 v.b = b
                 v.h = h
-            for i, parv, ch in newlinks:
-                parv.children.insert(i, ch)
-                ch.parents.append(parv)
             t.blockSignals(True)
             root.takeChildren()
             for item in newitems:
                 root.addChild(item)
+            reconnect_vnodes(root)
             t.blockSignals(False)
             t.setCurrentItem(newcurr)
         #@-others
@@ -974,8 +956,9 @@ class MyGUI(QtWidgets.QApplication):
         try:
             exec(script, dict(c=c, v=v, p=p, tree=t, root=root))
             # update new values and redraw the tree
-            newlinks = links(c.hiddenRootNode)
-            new_vs = {x:(y.b,y.h, y) for x,y in c.fileCommands.gnxDict.items()}
+            nset = set((x, x.h, x.b) for x in c.fileCommands.gnxDict.values())
+            new_vs =  nset - old_vs
+            old_vs = old_vs - nset
             item = t.currentItem()
             newv = item.data(0, 1024)
             npath = path_to_item(root, item)
@@ -1322,6 +1305,7 @@ def item_from_path(root, path):
     item = root
     for i in path:
         item = item.child(i)
+        if item is None: return None
     return item
 #@+node:vitalije.20200508093310.1: *3* path_to_item
 def path_to_item(root, item):
@@ -1333,6 +1317,22 @@ def path_to_item(root, item):
         curr = parent
         res.append(i)
     return res
+#@+node:vitalije.20200508150323.1: *3* reconnect_vnodes
+def reconnect_vnodes(root):
+    seen = set()
+    def getv(item, i):
+        return item.child(i).data(0, 1024)
+    def it(par_v, item):
+        v = item.data(0, 1024)
+        if v not in seen:
+            seen.add(v)
+            n = item.childCount()
+            v.parents[:] = [par_v]
+            v.children[:] = [getv(item, i) for i in range(n)]
+            for i in range(n):
+                it(v, item.child(i))
+        else:
+            v.parents.append(par_v)
 #@+node:vitalije.20200506130734.1: ** Test utilities
 #@+node:vitalije.20200506132431.1: *3* app_demo
 def app_demo():
@@ -1341,6 +1341,19 @@ def app_demo():
     app = MyGUI(c)
     app.create_main_window()
     return app
+
+def set_test_script(app):
+    c = app.c
+    v = c._p.v
+    v.b = ('r = c.hiddenRootNode\n'
+           'if len(r.children) < 5:\n'
+           '    ch = type(v)(c)\n'
+           '    r.children.append(ch)\n'
+           '    ch.parents.append(r)\n'
+           'else:\n'
+           '    ch = r.children.pop()\n'
+           '    ch.parents.remove(r)\n')
+    app.resetBody(v.b)
 #@+node:vitalije.20200507182952.1: *3* demo_app
 def demo_app():
     global APP_DEMO
