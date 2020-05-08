@@ -230,28 +230,29 @@ class MyGUI(QtWidgets.QApplication):
     #@+node:vitalije.20200503181324.1: *3* create_toolbar
     def create_toolbar(self):
         dock_t = QtWidgets.QDockWidget(self.mw)
-        self.toolbar = QtWidgets.QToolBar(dock_t)
-        self.toolbar.setStyleSheet('font-size: 12pt;')  # EKR.
-        dock_t.setWidget(self.toolbar)
+        self.toolbar = tbar = QtWidgets.QToolBar(dock_t)
+        tbar.setStyleSheet('font-size: 12pt;')  # EKR.
+        dock_t.setWidget(tbar)
         self.mw.addDockWidget(Q.TopDockWidgetArea, dock_t, Q.Horizontal)
-        self.toolbar.addAction('up', self.move_node_up)
-        self.toolbar.addAction('down', self.move_node_down)
-        self.toolbar.addAction('left', self.move_node_left)
-        self.toolbar.addAction('right', self.move_node_right)
-        self.toolbar.addAction('promote', self.promote)
-        self.toolbar.addAction('demote', self.demote)
-        self.toolbar.addAction('clone', self.clone_node)
-        self.toolbar.addAction('delete', self.delete_node)
-        self.toolbar.addAction('insert', self.new_node)
-        self.hoistAction = self.toolbar.addAction('hoist', self.set_hoist)
-        self.dehoistAction = self.toolbar.addAction('dehoist', self.unset_hoist)
-        self.undoAction = self.toolbar.addAction('undo', self.c.undo)
-        self.redoAction = self.toolbar.addAction('redo', self.c.redo)
-        self.toolbar.addAction('▲', self.select_item_above)
-        self.toolbar.addAction('▶', self.select_thread_next_node)
-        self.toolbar.addAction('▼', self.select_item_below)
-        self.toolbar.addAction('◀', self.select_thread_prev_node)
-        self.toolbar.addAction('performance', self.check_performance)
+        tbar.addAction('up', self.move_node_up)
+        tbar.addAction('down', self.move_node_down)
+        tbar.addAction('left', self.move_node_left)
+        tbar.addAction('right', self.move_node_right)
+        tbar.addAction('promote', self.promote)
+        tbar.addAction('demote', self.demote)
+        tbar.addAction('clone', self.clone_node)
+        tbar.addAction('delete', self.delete_node)
+        tbar.addAction('insert', self.new_node)
+        self.hoistAction = tbar.addAction('hoist', self.set_hoist)
+        self.dehoistAction = tbar.addAction('dehoist', self.unset_hoist)
+        self.undoAction = tbar.addAction('undo', self.c.undo)
+        self.redoAction = tbar.addAction('redo', self.c.redo)
+        tbar.addAction('▲', self.select_item_above)
+        tbar.addAction('▶', self.select_thread_next_node)
+        tbar.addAction('▼', self.select_item_below)
+        tbar.addAction('◀', self.select_thread_prev_node)
+        tbar.addAction('performance', self.check_performance)
+        tbar.addAction('run', self.execute_script)
         self.updateToolbarButtons()
     #@+node:vitalije.20200503154834.1: *3* hoist/dehoist
     def set_hoist(self):
@@ -365,9 +366,14 @@ class MyGUI(QtWidgets.QApplication):
     def set_c(self, c):
         self.c = c
         c.guiapi = self
+        self.redraw()
+        item = self.tree.currentItem()
+        self.set_item(item, item)
+
+    def redraw(self):
         self.tree.blockSignals(True)
         self.tree.clear()
-        draw_tree(self.tree, c.hiddenRootNode, self.icons)
+        draw_tree(self.tree, self.c.hiddenRootNode, self.icons)
         self.tree.setCurrentItem(self.tree.topLevelItem(0))
         self.tree.blockSignals(False)
 
@@ -882,6 +888,128 @@ class MyGUI(QtWidgets.QApplication):
             return
         curr.setHidden(True)
         t.setCurrentItem(after)
+    #@+node:vitalije.20200508091419.1: *4* execute_script
+    def execute_script(self):
+        c = self.c
+        t = self.tree
+        root = t.invisibleRootItem()
+        curr = t.currentItem()
+        currpath = path_to_item(root, curr)
+
+        # now we need to replace current top level items
+        # with the their clones so that we can preserve
+        # the original ones for undo
+        t.blockSignals(True)
+        n = root.childCount()
+        olditems = [root.takeChild(0) for x in range(n)]
+        for item in olditems:
+            root.addChild(item.clone())
+
+        # let's find current item in the new tree
+        ncurr = item_from_path(root, currpath)
+        t.setCurrentItem(ncurr)
+        t.blockSignals(False)
+
+        # store old v-nodes and their links
+        old_vs = {x:(y.b,y.h, y) for x,y in c.fileCommands.gnxDict.items()}
+        seen = set()
+        def links(par):
+            if par not in seen:
+                seen.add(par)
+                for i, ch in enumerate(par.children):
+                    yield i, par, ch
+                    yield from links(ch)
+        oldlinks = sorted(links(c.hiddenRootNode),
+                            key=lambda x:(x[0], x[1].fileIndex))
+
+        # new values for the redo operation
+        # if the script finishes without exception
+        # these values will be updated after the script finishes
+        # for now they are the same as the old values
+        newitems = olditems
+        new_vs = old_vs
+        newcurr = curr
+        newlinks = oldlinks
+
+        # some more data for the locals in script
+        p = QtPosition(ncurr)
+        v = p.v
+        script = v.b
+
+        #@+others
+        #@+node:vitalije.20200508104717.1: *5* undoexec
+        def undoexec():
+            for gnx,(b, h, v) in old_vs.items():
+                v.children = []
+                v.parents = []
+                v.b = b
+                v.h = h
+            for i, parv, ch in oldlinks:
+                parv.children.insert(i, ch)
+                ch.parents.append(parv)
+            t.blockSignals(True)
+            root.takeChildren()
+            for item in olditems:
+                root.addChild(item)
+            t.blockSignals(False)
+            t.setCurrentItem(curr)
+        #@+node:vitalije.20200508104721.1: *5* redoexec
+        def redoexec():
+            for gnx, (b, h, v) in new_vs.items():
+                v.children = []
+                v.parents = []
+                v.b = b
+                v.h = h
+            for i, parv, ch in newlinks:
+                parv.children.insert(i, ch)
+                ch.parents.append(parv)
+            t.blockSignals(True)
+            root.takeChildren()
+            for item in newitems:
+                root.addChild(item)
+            t.blockSignals(False)
+            t.setCurrentItem(newcurr)
+        #@-others
+
+        try:
+            exec(script, dict(c=c, v=v, p=p, tree=t, root=root))
+            # update new values and redraw the tree
+            newlinks = links(c.hiddenRootNode)
+            new_vs = {x:(y.b,y.h, y) for x,y in c.fileCommands.gnxDict.items()}
+            item = t.currentItem()
+            newv = item.data(0, 1024)
+            npath = path_to_item(root, item)
+            self.redraw()
+
+            newcurr = item_from_path(root, npath)
+            # we want to keep the same node selected if possible
+            # but script may delete previously selected node or
+            # some other node so their position won't match
+            if not newcurr or newcurr.data(0, 1024) != newv:
+                # let's try to find item that points to the newv
+                for item in iter_all_v_items(root, newv):
+                    newcurr = item
+                    break
+
+            # remember the newitems for redo
+            n2 = root.childCount()
+            newitems = [root.child(i) for i in range(n2)]
+
+            # select node if we found one to select
+            if newcurr:
+                t.setCurrentItem(newcurr)
+
+        except KeyboardInterrupt:
+            # sometimes script got into an infinite loop
+            # or work too long
+            undoexec()
+            return
+        except:
+            g.es_print_exception()
+            undoexec()
+            return
+        # script terminated successfully let's add undo/redo pair
+        self.c.addUndo(undoexec, redoexec)
     #@+node:vitalije.20200506145104.1: *4* select commands
     #@+node:vitalije.20200506144257.1: *5* select_thread_next_node
     def select_thread_next_node(self):
@@ -1189,6 +1317,22 @@ def leo_icons():
     def fname(i):
         return os.path.join(LEO_ICONS_DIR, f'box{i:02d}.png')
     return [QtGui.QIcon(fname(i)) for i in range(16)]
+#@+node:vitalije.20200508093305.1: *3* item_from_path
+def item_from_path(root, path):
+    item = root
+    for i in path:
+        item = item.child(i)
+    return item
+#@+node:vitalije.20200508093310.1: *3* path_to_item
+def path_to_item(root, item):
+    curr = item
+    res = []
+    while curr != root:
+        parent = curr.parent() or root
+        i = parent.indexOfChild(curr)
+        curr = parent
+        res.append(i)
+    return res
 #@+node:vitalije.20200506130734.1: ** Test utilities
 #@+node:vitalije.20200506132431.1: *3* app_demo
 def app_demo():
