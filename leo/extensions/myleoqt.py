@@ -262,8 +262,8 @@ class MyGUI(QtWidgets.QApplication):
             self.hoistStack.append(t.rootIndex())
             if curr.text(0).startswith('@chapter '):
                 ind = t.indexFromItem(curr)
-                t.setRootIndex(ind)
                 t.setCurrentItem(curr.child(0))
+                t.setRootIndex(ind)
             else:
                 par = curr.parent() or t.invisibleRootItem()
                 ind = t.indexFromItem(par)
@@ -373,6 +373,7 @@ class MyGUI(QtWidgets.QApplication):
     def redraw(self):
         self.tree.blockSignals(True)
         self.tree.clear()
+        self.hoistStack = []
         draw_tree(self.tree, self.c.hiddenRootNode, self.icons)
         self.tree.setCurrentItem(self.tree.topLevelItem(0))
         self.tree.blockSignals(False)
@@ -425,23 +426,27 @@ class MyGUI(QtWidgets.QApplication):
             for item, child in newitems:
                 item.insertChild(dstindex, child)
 
+            oldbs = t.blockSignals(True)
             curr = move_treeitem(oldparent, srcindex, newparent, dstindex)
+            t.blockSignals(oldbs)
 
             for item in all_other_items(root, oldparent):
                 trash.append(item.takeChild(srcindex))
 
-            self.tree.setCurrentItem(curr)
+            t.setCurrentItem(curr)
         #@+node:vitalije.20200506211412.1: *5* undomove
         def undomove():
             for item in all_other_items(root, oldparent):
                 item.insertChild(srcindex, trash.pop())
 
+            oldbs = t.blockSignals(True)
             curr = move_treeitem(newparent, dstindex, oldparent, srcindex)
+            t.blockSignals(oldbs)
 
             for item, child in newitems:
                 item.takeChild(dstindex)
 
-            self.tree.setCurrentItem(curr)
+            t.setCurrentItem(curr)
         #@-others
 
         domove()
@@ -776,8 +781,11 @@ class MyGUI(QtWidgets.QApplication):
             del parent_v.children[index]
             new_v.parents.remove(parent_v)
 
+            oldbs = t.blockSignals(True)
             for item, child in newitems:
                 item.takeChild(index)
+            t.blockSignals(oldbs)
+
             t.setCurrentItem(curr)
 
         do_insert()
@@ -809,8 +817,10 @@ class MyGUI(QtWidgets.QApplication):
             t.setCurrentItem(parent.child(index + 1))
 
         def undo_clone_node():
+            oldbs = t.blockSignals(True)
             for item, child in newitems:
                 item.takeChild(index + 1)
+            t.blockSignals(oldbs)
 
             del parent_v.children[index + 1]
             v.parents.remove(parent_v)
@@ -839,8 +849,10 @@ class MyGUI(QtWidgets.QApplication):
 
         deleted_items = []
         def do_delete():
+            oldbs = t.blockSignals(True)
             for item in iter_all_v_items(root, parent_v):
                 deleted_items.append(item.takeChild(index))
+            t.blockSignals(oldbs)
 
             del parent_v.children[index]
             v.parents.remove(parent_v)
@@ -1315,7 +1327,7 @@ def path_to_item(root, item):
         parent = curr.parent() or root
         i = parent.indexOfChild(curr)
         curr = parent
-        res.append(i)
+        res.insert(0, i)
     return res
 #@+node:vitalije.20200508150323.1: *3* reconnect_vnodes
 def reconnect_vnodes(root):
@@ -1372,6 +1384,7 @@ def demo2_app():
         c = APP_DEMO.c
         c.undoBeads = []
         c.undoPos = 0
+
     app = APP_DEMO
     c.hiddenRootNode.children[1:] = []
     c.hiddenRootNode.children[0].children = []
@@ -1445,6 +1458,8 @@ def run_special_test(n=100000000):
     return it
 #@+node:vitalije.20200506145856.1: ** Tests
 method_names = '''
+set_hoist
+unset_hoist
 select_item_above
 select_item_below
 select_thread_next_node
@@ -1460,6 +1475,21 @@ move_node_left
 move_node_right
 '''.strip().split()
 APP_DEMO = None
+#@+node:vitalije.20200509221051.1: *3* test_path_to_node
+def test_path_to_item():
+    app = app_demo()
+    t = app.tree
+    root = t.invisibleRootItem()
+    def it(item):
+        n = item.childCount()
+        for i in range(n):
+            yield item.child(i)
+            yield from it(item.child(i))
+    assert path_to_item(root, root) == []
+    assert item_from_path(root, []) == root
+    for item in it(root):
+        pth = path_to_item(root, item)
+        assert item_from_path(root, pth) == item
 #@+node:vitalije.20200506162954.1: *3* test_using_random
 def t_est_using_random():
     app = demo_app()
@@ -1511,7 +1541,9 @@ def test_select_and_commnads(data):
     for name in names:
         meth = getattr(app, name)
         meth()
-        if method_names.index(name) > 3:
+        print(name)
+        app.processEvents()
+        if method_names.index(name) > 5:
             # possible change in the outline
             a2, b2 = outline_shapes(app)
             assert a2 == b2
