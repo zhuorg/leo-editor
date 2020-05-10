@@ -340,6 +340,12 @@ class MyGUI(QtWidgets.QApplication):
         #    return
         self.updateToolbarButtons()
         self.c.setCurrentNode(v)
+        t = self.tree
+        while self.hoistStack:
+            if t.visualItemRect(newitem).isNull():
+                self.unset_hoist()
+            else:
+                break
     #@+node:vitalije.20200502142954.1: *4* body_changed
     def body_changed(self):
         # we can here call directly self.resetBody
